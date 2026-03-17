@@ -1,0 +1,7 @@
+name: 'AI Site Builder Trial'
+type: module
+description: 'Trial activation and management for AI Site Builder.'
+core_version_requirement: ^11
+package: 'AI Site Builder'
+dependencies:
+  - ai_site_builder:ai_site_builder

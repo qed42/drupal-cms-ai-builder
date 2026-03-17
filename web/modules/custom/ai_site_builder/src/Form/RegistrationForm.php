@@ -6,6 +6,7 @@ namespace Drupal\ai_site_builder\Form;
 
 use Drupal\ai_site_builder\Entity\SiteProfile;
 use Drupal\ai_site_builder\Entity\SiteProfileInterface;
+use Drupal\ai_site_builder_trial\Service\TrialManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -22,15 +23,21 @@ class RegistrationForm extends FormBase {
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected MailManagerInterface $mailManager,
+    protected ?TrialManagerInterface $trialManager = NULL,
   ) {}
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container): static {
+    $trial_manager = NULL;
+    if ($container->has('ai_site_builder_trial.trial_manager')) {
+      $trial_manager = $container->get('ai_site_builder_trial.trial_manager');
+    }
     return new static(
       $container->get('entity_type.manager'),
       $container->get('plugin.manager.mail'),
+      $trial_manager,
     );
   }
 
@@ -131,22 +138,32 @@ class RegistrationForm extends FormBase {
       'onboarding_step' => 1,
       'admin_email' => $email,
       'subscription_status' => SiteProfileInterface::SUBSCRIPTION_TRIAL,
-      'trial_start' => \Drupal::time()->getRequestTime(),
-      'trial_end' => \Drupal::time()->getRequestTime() + (14 * 86400),
     ]);
     $profile->save();
 
-    // 3. Log user in.
+    // 3. Activate trial via TrialManager if available.
+    if ($this->trialManager) {
+      $this->trialManager->startTrial($user);
+    }
+    else {
+      // Fallback: set trial dates directly.
+      $now = \Drupal::time()->getRequestTime();
+      $profile->set('trial_start', $now);
+      $profile->set('trial_end', $now + (14 * 86400));
+      $profile->save();
+    }
+
+    // 4. Log user in.
     user_login_finalize($user);
 
-    // 4. Send welcome email.
+    // 5. Send welcome email.
     $this->mailManager->mail('ai_site_builder', 'welcome', $email, $user->getPreferredLangcode(), [
       'account' => $user,
     ]);
 
     $this->messenger()->addStatus($this->t('Welcome! Your account has been created. Let\'s build your website.'));
 
-    // 5. Redirect to onboarding.
+    // 6. Redirect to onboarding.
     $form_state->setRedirect('ai_site_builder.onboarding');
   }
 

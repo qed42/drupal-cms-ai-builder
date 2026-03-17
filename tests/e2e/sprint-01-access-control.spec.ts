@@ -11,9 +11,10 @@ test.describe('TASK-034: Access Control & Data Isolation', () => {
     await registerUser(page, email);
 
     await page.goto('/onboarding');
-    await expect(page.getByText('Status: onboarding')).toBeVisible();
-    // Email is rendered via BigPipe — wait for it to appear in the DOM.
-    await expect(page.locator('body')).toContainText(email, { timeout: 10000 });
+    // Sprint 02: wizard form now renders instead of placeholder.
+    await expect(page.locator('#onboarding-wizard-wrapper')).toBeVisible({ timeout: 10000 });
+    // Admin email should be pre-filled with the registration email.
+    await expect(page.locator('#edit-admin-email')).toHaveValue(email);
   });
 
   test('Site owner cannot access admin site profiles page', async ({ page }) => {

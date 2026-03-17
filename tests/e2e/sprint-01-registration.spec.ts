@@ -28,10 +28,10 @@ test.describe('TASK-004: User Registration', () => {
     // Should be redirected to /onboarding.
     await expect(page).toHaveURL(/\/onboarding/);
 
-    // Should see the onboarding placeholder page content.
-    await expect(page.getByText('Onboarding Status')).toBeVisible();
-    // Email is rendered via BigPipe — wait for it to appear in the DOM.
-    await expect(page.locator('body')).toContainText(email, { timeout: 10000 });
+    // Should see the onboarding wizard form (Sprint 02 replaced the placeholder).
+    await expect(page.locator('#onboarding-wizard-wrapper')).toBeVisible({ timeout: 10000 });
+    // Progress indicator should show Step 1.
+    await expect(page.locator('body')).toContainText('Step 1 of 5', { timeout: 10000 });
   });
 
   test('User is automatically logged in after registration', async ({ page }) => {
@@ -62,10 +62,11 @@ test.describe('TASK-004: User Registration', () => {
     const email = uniqueEmail();
     await registerUser(page, email);
 
-    // Verify by checking the /onboarding page has the profile data.
+    // Verify by checking the /onboarding page loads the wizard with Step 1.
     await page.goto('/onboarding');
-    await expect(page.locator('body')).toContainText('Status: onboarding', { timeout: 10000 });
-    await expect(page.locator('body')).toContainText(email, { timeout: 10000 });
+    await expect(page.locator('#onboarding-wizard-wrapper')).toBeVisible({ timeout: 10000 });
+    // Admin email field should be pre-filled with the registration email.
+    await expect(page.locator('#edit-admin-email')).toHaveValue(email, { timeout: 10000 });
   });
 
   test('Duplicate email shows error', async ({ page }) => {

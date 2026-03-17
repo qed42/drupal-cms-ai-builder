@@ -3,3 +3,12 @@ services:
     class: Drupal\ai_site_builder\Access\SiteProfileAccessCheck
     tags:
       - { name: access_check, applies_to: _site_profile_access }
+
+  ai_site_builder.onboarding_redirect_subscriber:
+    class: Drupal\ai_site_builder\EventSubscriber\OnboardingRedirectSubscriber
+    arguments:
+      - '@current_user'
+      - '@entity_type.manager'
+      - '@current_route_match'
+    tags:
+      - { name: event_subscriber }
