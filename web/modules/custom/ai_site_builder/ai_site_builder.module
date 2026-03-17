@@ -1,0 +1,73 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for AI Site Builder module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_mail().
+ */
+function ai_site_builder_mail(string $key, array &$message, array $params): void {
+  switch ($key) {
+    case 'welcome':
+      $message['subject'] = t('Welcome to AI Site Builder');
+      $message['body'][] = t("Hello,\n\nYour account has been created. You can now start building your website.\n\nVisit @url to begin the onboarding process.\n\nThank you,\nAI Site Builder", [
+        '@url' => Url::fromRoute('ai_site_builder.onboarding', [], ['absolute' => TRUE])->toString(),
+      ]);
+      break;
+  }
+}
+
+/**
+ * Implements hook_node_access().
+ *
+ * Enforces data isolation: users can only access nodes belonging to their
+ * own site profile. Platform admins bypass this restriction.
+ * Anonymous users may only view published content from published sites.
+ */
+function ai_site_builder_node_access(NodeInterface $node, string $op, AccountInterface $account): AccessResultInterface {
+  // Only apply to nodes with the site_profile field.
+  if (!$node->hasField('field_site_profile') || $node->get('field_site_profile')->isEmpty()) {
+    return AccessResult::neutral();
+  }
+
+  // Admin bypass.
+  if ($account->hasPermission('administer site profiles')) {
+    return AccessResult::allowed()->cachePerPermissions();
+  }
+
+  $site_profile = $node->get('field_site_profile')->entity;
+  if (!$site_profile) {
+    return AccessResult::forbidden('Referenced site profile not found.')
+      ->cachePerUser()
+      ->addCacheableDependency($node);
+  }
+
+  // Owner access: allow all operations on own content.
+  if ((int) $site_profile->getOwnerId() === (int) $account->id()) {
+    return AccessResult::allowed()
+      ->cachePerUser()
+      ->addCacheableDependency($node)
+      ->addCacheableDependency($site_profile);
+  }
+
+  // Anonymous/other users: only allow viewing published content from published sites.
+  if ($op === 'view' && $node->isPublished() && $site_profile->get('status')->value === 'published') {
+    return AccessResult::allowed()
+      ->addCacheableDependency($node)
+      ->addCacheableDependency($site_profile);
+  }
+
+  return AccessResult::forbidden('You do not have access to this content.')
+    ->cachePerUser()
+    ->addCacheableDependency($node);
+}

@@ -13,7 +13,7 @@ Create the `ai_site_builder` module skeleton with info.yml, routing, services, p
 - Create empty `.module`, `.routing.yml`, `.services.yml`, `.permissions.yml` files
 - Create `src/` directory structure: Entity, Form, Controller, Service, Plugin, EventSubscriber, Event, Access
 - Create `config/install/ai_site_builder.settings.yml` with default settings
-- Install and configure Space theme
+- Install and configure Space theme. Space theme available at: https://www.drupal.org/project/space_ds. Follow README.md to also compile the CSS & JS for the theme.
 - Verify all contrib modules install cleanly on Drupal 11
 
 ## Acceptance Criteria

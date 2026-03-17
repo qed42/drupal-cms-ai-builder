@@ -1,0 +1,44 @@
+# Drupal dependencies and generated files
+/vendor/
+/web/core/
+/web/modules/contrib/
+/web/themes/contrib/
+/web/profiles/contrib/
+/web/libraries/
+/web/sites/default/files/
+/web/sites/default/settings.local.php
+
+# DDEV
+/.ddev/.ddev-docker-compose-*
+/.ddev/db_snapshots/
+/.ddev/.homeadditions/
+/.ddev/.sshimageBuild/
+/.ddev/xhprof/
+/.ddev/.webimageBuild/
+/.ddev/mutagen/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Composer
+/composer.lock
+
+# PHP
+*.pyc
+error_log
+
+# Node
+node_modules/
+tests/test-results/
+tests/test-results.json
+
+# Claude Code
+skills-lock.json
+.claude/plans/

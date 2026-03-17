@@ -1,0 +1,15 @@
+ai_site_builder.register:
+  path: '/start'
+  defaults:
+    _form: '\Drupal\ai_site_builder\Form\RegistrationForm'
+    _title: 'Build Your Website'
+  requirements:
+    _user_is_logged_in: 'FALSE'
+
+ai_site_builder.onboarding:
+  path: '/onboarding'
+  defaults:
+    _controller: '\Drupal\ai_site_builder\Controller\OnboardingController::page'
+    _title: 'Build Your Website'
+  requirements:
+    _permission: 'access onboarding wizard'

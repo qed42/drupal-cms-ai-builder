@@ -1,0 +1,5 @@
+services:
+  ai_site_builder.site_profile_access_check:
+    class: Drupal\ai_site_builder\Access\SiteProfileAccessCheck
+    tags:
+      - { name: access_check, applies_to: _site_profile_access }

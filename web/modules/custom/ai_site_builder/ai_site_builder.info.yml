@@ -1,0 +1,10 @@
+name: 'AI Site Builder'
+type: module
+description: 'AI-powered onboarding and website generation for Drupal CMS.'
+core_version_requirement: ^11
+package: 'AI Site Builder'
+dependencies:
+  - drupal:node
+  - drupal:taxonomy
+  - drupal:user
+  - drupal:file

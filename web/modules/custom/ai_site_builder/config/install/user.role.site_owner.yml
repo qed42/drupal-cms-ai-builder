@@ -1,0 +1,16 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - ai_site_builder
+id: site_owner
+label: 'Site Owner'
+weight: 2
+is_admin: false
+permissions:
+  - 'access onboarding wizard'
+  - 'generate site'
+  - 'edit own site content'
+  - 'publish own site'
+  - 'regenerate site section'
