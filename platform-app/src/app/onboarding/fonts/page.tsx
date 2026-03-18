@@ -52,7 +52,8 @@ export default function FontsPage() {
       ? [{ name: customFontFile, file_url: customFontUrl }]
       : [];
 
-    const res = await fetch("/api/onboarding/save", {
+    // Save fonts data
+    const saveRes = await fetch("/api/onboarding/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -64,9 +65,14 @@ export default function FontsPage() {
         },
       }),
     });
-    if (res.ok) {
-      // Mark onboarding complete — for now redirect to a confirmation
-      router.push("/onboarding/start");
+    if (!saveRes.ok) return false;
+
+    // Trigger blueprint generation
+    const genRes = await fetch("/api/provision/generate-blueprint", {
+      method: "POST",
+    });
+    if (genRes.ok) {
+      router.push("/onboarding/progress");
       return true;
     }
     return false;

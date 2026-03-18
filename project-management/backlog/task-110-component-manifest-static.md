@@ -6,12 +6,12 @@
 **Milestone:** M3 — Blueprint & Provisioning
 
 ## Description
-Create a static JSON manifest of all Space theme SDC components. This manifest is used by the Next.js blueprint generator to constrain AI page layouts to valid components. It's derived from Space's `*.component.yml` files.
+Create a static JSON manifest of all Space theme SDC components. This manifest is used by the Next.js blueprint generator to constrain AI page layouts to valid components. It's derived from Space's `*.component.yml` files. Space DS theme is available at https://git.drupalcode.org/project/space_ds.
 
 ## Technical Approach
-- Create a Drush command or script that scans Space theme's SDC directory
+- Create a Drush command or script that scans Space theme's SDC directory cloned from https://git.drupalcode.org/project/space_ds. Components available under `components` directory. 
 - Reads each `*.component.yml` file
-- Extracts: component ID, label, category, props (name, type, required), slots, usage hint
+- Extracts: component ID, label, category, props (name, type, required), slots, usage hint. Create usage hint (if unavailable) based on how a Marketing manager would use this component.
 - Outputs as JSON file
 - This file is committed to the platform-app repo and included in AI prompts during blueprint generation
 - When Space theme updates, re-run the export to update the manifest

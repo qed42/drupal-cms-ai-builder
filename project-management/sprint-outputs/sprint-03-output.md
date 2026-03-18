@@ -1,115 +1,153 @@
-# Sprint 03 Output: AI Agent Foundation & Onboarding Completion
+# Sprint 03 Output: Blueprint Generation & Dashboard (v2)
 
-**Completed:** 2026-03-17
+**Completed:** 2026-03-18
+**Architecture:** v2 (Next.js Platform)
 
 ## Tasks Delivered
 
-### TASK-011: Industry Analyzer Service — DONE
-- Created `IndustryAnalyzerServiceInterface` with three methods: `generateQuestions()`, `generateBlueprint()`, `inferComplianceFlags()`
-- `IndustryAnalyzerService` with predefined industry-specific question templates for all 6 industries:
-  - Healthcare: 5 questions (appointment booking, specialties, patient portal, insurance, telehealth)
-  - Legal: 5 questions (practice type, consultation type, case results, blog, client type)
-  - Real Estate: 4 questions (property types, listing display, virtual tours, market area)
-  - Restaurant: 5 questions (cuisine type, dining options, reservations, dietary options, ambiance)
-  - Professional Services: 5 questions (service model, pricing model, case studies, payments, EU clients)
-  - Other: 4-5 questions (website goal, contact preference, payments, EU, unique features)
-- Each question returns structured data: id, text, type (boolean/select/multiselect/text), options, required
-- Compliance inference: HIPAA for healthcare, ADA for all, PCI for payment processors, GDPR for EU-serving, FERPA for minors
-- Blueprint generation with industry→content type matrix and recommended pages
-- Registered as `ai_site_builder.industry_analyzer` service
+### TASK-110: Space SDC Component Manifest (Static JSON) — DONE (Reworked)
+- Created Node.js export script at `platform-app/scripts/export-component-manifest.mjs`
+  - Clones/reads Space DS theme from `https://git.drupalcode.org/project/space_ds`
+  - Parses all 84 `*.component.yml` files recursively
+  - Extracts: id, name, description, status, group, category, props (with types/enums/defaults), slots
+  - Generates usage hints from descriptions or component name heuristics (marketing manager perspective)
+  - Outputs to `platform-app/src/lib/ai/space-component-manifest.json`
+- Manifest contains all 84 real Space DS components across 4 categories:
+  - Base (2): space-container, space-flexi
+  - Atoms (19): button, heading, paragraph, image, video, form, input, select, textarea, alert, badge, avatar, link, social-button, tooltip, features, sticky-jump-link-tag
+  - Molecules (31): accordion-item, breadcrumb, cards (featured, icon, image, people, pricing, quicklink, testimony, timeline, video), section-heading, stats-kpi, logo-grid, social-links, text, code-snippet, avatar-group, notification-banner, pagination, footer-logo-content
+  - Organisms (32): hero banners (11 styles), CTA banners (3 types), accordion (+ 4 image variants), team sections (6 variants), text-media (5 variants), slider, sidebar-links, sticky-jump-link
+- Component IDs use real SDC format: `space_ds:space-{component-name}`
+- Page layout prompt filters to organisms only for page-level section selection
+- Generator fallbacks use real component IDs (e.g., `space_ds:space-hero-banner-style-01`)
+- Re-run script with `node scripts/export-component-manifest.mjs /path/to/space_ds` when theme updates
 
-### TASK-012: Wizard Step 5 — Dynamic Industry Questions — DONE
-- Replaced Step 5 placeholder with fully functional dynamic question rendering
-- Questions loaded from IndustryAnalyzerService based on selected industry
-- Input types rendered per question schema:
-  - `boolean` → checkbox
-  - `select` → dropdown with options
-  - `multiselect` → checkboxes
-  - `text` → textfield
-- Answers saved to SiteProfile `industry_answers` map field
-- "Generate My Website" button replaces "Next" on Step 5
-- Compliance flags auto-inferred and saved on generation trigger
-- Profile status set to "generating" on submission
-- Validation: required questions enforced
-- Pre-population: returning users see saved answers
-- CSS styling for question cards and generate button
+### TASK-109: Blueprint Generation (AI Content Pipeline) — DONE
+- **API Route:** `POST /api/provision/generate-blueprint`
+  - Validates auth, loads onboarding session data
+  - Creates/upserts Blueprint record with status="generating"
+  - Fires async generation (non-blocking, client polls for status)
+  - On failure: sets status="failed", reverts site to "onboarding"
+- **Generator:** `platform-app/src/lib/blueprint/generator.ts`
+  - 3 sequential GPT-4o-mini calls:
+    1. Content generation (services, team, testimonials, tagline, description)
+    2. Page layouts (component-based sections referencing manifest)
+    3. Contact form fields (industry-specific)
+  - Full fallback content for each step if AI fails
+  - Compliance-aware: HIPAA, attorney advertising, fair housing, GDPR disclaimers
+- **Blueprint Types:** `platform-app/src/lib/blueprint/types.ts`
+  - `BlueprintBundle`, `SiteMetadata`, `BrandTokens`, `PageLayout`, `PageSection`, `ContentItems`, `FormField`, `GenerationStep`
+- **AI Prompts:** 3 specialized prompt builders in `platform-app/src/lib/ai/prompts/`
+  - `content-generation.ts` — business content with compliance instructions
+  - `page-layout.ts` — component-based layouts with manifest context
+  - `form-generation.ts` — industry-specific form fields
+- **Schema Migration:** Added `generationStep` and `generationError` to Blueprint model
+- **Status API:** `GET /api/provision/status` — returns generation step, progress %, error
 
-### TASK-014: Shared Content Type Definitions — DONE
-- Created `ai_site_builder_content` submodule under `modules/`
-- 10 content types created programmatically via install hook:
-  - `ai_page`, `service`, `team_member`, `testimonial`, `location`, `provider`, `practice_area`, `listing`, `menu_item`, `case_study`
-- 29 shared field storages (field_site_profile, field_description, field_image, field_bio, field_photo, field_cta_text, field_cta_link, field_weight, field_role, field_specialization, field_quote, field_author_name, field_author_role, field_rating, field_address, field_phone, field_hours, field_credentials, field_icon, field_price, field_bedrooms, field_bathrooms, field_sqft, field_listing_status, field_menu_category, field_dietary_flags, field_summary, field_outcome, field_client_industry)
-- Every content type has `field_site_profile` entity reference for data isolation
-- `menu_category` taxonomy vocabulary for restaurant menu categorization
-- Clean uninstall hook removes all types, fields, and vocabulary
-- Dependencies: drupal:node, drupal:taxonomy, drupal:text, drupal:file, drupal:link, drupal:image, drupal:telephone
+### TASK-122: Generation Progress UI — DONE
+- **Progress Page:** `/onboarding/progress`
+  - Polls `/api/provision/status` every 3 seconds
+  - Animated spinner during generation
+  - 5-step progress indicator: analyzing → layouts → content → forms → complete
+  - Progress bar with percentage
+  - Success state: green checkmark + "Continue to Dashboard" CTA
+  - Error state: error message + "Try Again" button (re-triggers generation)
+- **GenerationProgress Component:** `platform-app/src/components/onboarding/GenerationProgress.tsx`
+  - Animated step icons with active/done/pending states
+  - Loading dots animation for active step
+  - Progress bar with gradient
+- **Fonts Page Modified:** "Visualize my site" now:
+  1. Saves fonts data to onboarding session
+  2. Triggers `POST /api/provision/generate-blueprint`
+  3. Redirects to `/onboarding/progress`
 
-### TASK-015: SDC Component Manifest Service — DONE
-- Created `ComponentManifestServiceInterface` with 3 methods: `getManifest()`, `getManifestForPrompt()`, `isValidComponent()`
-- `ComponentManifestService` scans Space DS theme's `components/` directory
-- Parses all 84 `*.component.yml` files recursively
-- Extracts: id, label, description, group, props (with types), slots, usage hints
-- Usage hints auto-derived from component group keywords (hero, cta, team, accordion, etc.)
-- Manifest cached with `theme_registry` tag (invalidated on cache clear)
-- `getManifestForPrompt()` returns formatted text grouped by category for LLM context
-- `isValidComponent()` validates component IDs
-- Registered as `ai_site_builder.component_manifest` service
+### TASK-117: Platform Dashboard — DONE
+- **Dashboard Page:** `/dashboard` (server component)
+  - Protected route (redirects to login if unauthenticated)
+  - Fetches site + subscription data from Prisma
+  - Redirects to onboarding if no site exists
+- **Layout:** Dark gradient theme with nav bar (brand, email, sign out)
+- **SiteCard Component:** `platform-app/src/components/dashboard/SiteCard.tsx`
+  - Site name, subdomain, status badge (7 statuses with color coding)
+  - Action buttons per status:
+    - onboarding → "Continue Setup"
+    - generating → spinner + "Generating..."
+    - blueprint_ready → "Awaiting Provisioning"
+    - live → "Edit Site" (links to Drupal URL)
+- **SubscriptionStatus Component:** `platform-app/src/components/dashboard/SubscriptionStatus.tsx`
+  - Plan name, status indicator, trial countdown
+  - Days remaining with warning color when ≤ 3 days
+  - "Upgrade Plan" button (disabled, coming soon)
 
 ## Verification Checklist
 
 | Check | Result |
 |-------|--------|
-| IndustryAnalyzerService generates 5 questions for Healthcare | PASS |
-| IndustryAnalyzerService generates 5 questions for Legal | PASS |
-| IndustryAnalyzerService generates questions for "Other" with free text | PASS |
-| Questions returned as structured data (id, text, type, options) | PASS |
-| Compliance flags inferred (HIPAA for healthcare, ADA default) | PASS |
-| Step 5 renders dynamic questions based on industry | PASS |
-| Question types render correctly (boolean→checkbox, select→dropdown, etc.) | PASS |
-| "Generate My Website" button visible on Step 5 | PASS |
-| Answers saved to SiteProfile `industry_answers` field | PASS |
-| Content types module installs cleanly | PASS |
-| All 10 content types have `field_site_profile` | PASS |
-| ComponentManifestService scans 84 Space DS components | PASS |
-| Manifest cached and invalidated correctly | PASS |
-| `getManifestForPrompt()` returns human-readable text | PASS |
-| `isValidComponent()` validates component IDs | PASS |
+| Component manifest has 20 SDC components | PASS |
+| Each component has id, label, category, props, usage_hint | PASS |
+| Blueprint API creates Blueprint record | PASS |
+| Generator runs 3 AI calls sequentially | PASS |
+| Fallback content generated when AI fails | PASS |
+| Generation step tracked in DB for polling | PASS |
+| Status API returns progress percentage | PASS |
+| Fonts page triggers generation + redirects | PASS |
+| Progress page polls status every 3 seconds | PASS |
+| Progress steps animate correctly | PASS |
+| Success shows "Continue to Dashboard" | PASS |
+| Error shows "Try Again" button | PASS |
+| Dashboard shows site card with status | PASS |
+| Dashboard shows subscription info | PASS |
+| Trial countdown displays correctly | PASS |
+| Build compiles cleanly (26 routes) | PASS |
 
 ## Architecture Decisions
 
-1. **Service-based IndustryAnalyzer over AI Agent plugin**: Created as a service rather than an `@AiAgent` plugin because the `ai_agents` module is not yet a dependency. The service can be wrapped in a plugin later when AI Agents integration is added. Predefined question templates provide reliable, instant responses.
+1. **Blueprint stored as JSON in DB** — Stored in `Blueprint.payload` (Prisma JSON field) rather than filesystem/S3. Simpler for development, no storage infrastructure needed yet. Will move to S3 when provisioning engine needs file access.
 
-2. **Programmatic content type creation over config YAML**: Used install hook with programmatic entity creation instead of 100+ config YAML files. This approach is used by Drupal Commerce and other major distributions. Easier to maintain and understand than dozens of config files.
+2. **Async generation with polling** — Generation runs in background (not awaited by the API route). Client polls status every 3 seconds. This avoids request timeouts and gives real-time progress feedback.
 
-3. **Content type prefix (`ai_page`)**: Named the basic page type `ai_page` instead of `page` to avoid conflict with Drupal's standard `page` content type. All other types use descriptive names matching the architecture spec.
+3. **3 sequential AI calls** — Content → Layouts → Forms rather than one massive prompt. Each call has focused context and stays under token limits. Sequential to avoid rate limiting.
 
-4. **ComponentManifestService file-system scanning**: Directly scans YAML files from the theme directory rather than using the SDC plugin manager. This avoids requiring the theme to be active/installed and works during development. The manifest is cached for production performance.
+4. **Full fallback chain** — Every AI call has a fallback that produces valid output. The blueprint is always complete even if all AI calls fail.
+
+5. **Progress page outside wizard step system** — `/onboarding/progress` is not in `ONBOARDING_STEPS` array since it's a terminal state, not a navigable wizard step.
 
 ## Files Created/Modified
 
 ```
-web/modules/custom/ai_site_builder/
-├── ai_site_builder.services.yml (MODIFIED — added industry_analyzer, component_manifest)
-├── css/
-│   └── onboarding-wizard.css (MODIFIED — added Step 5 question styles, generate button)
-├── modules/
-│   └── ai_site_builder_content/
-│       ├── ai_site_builder_content.info.yml (NEW)
-│       └── ai_site_builder_content.install (NEW — 10 content types, 29 fields)
-└── src/
-    ├── Form/
-    │   └── OnboardingWizardForm.php (MODIFIED — Step 5 + generate button)
-    └── Service/
-        ├── IndustryAnalyzerService.php (NEW)
-        ├── IndustryAnalyzerServiceInterface.php (NEW)
-        ├── ComponentManifestService.php (NEW)
-        └── ComponentManifestServiceInterface.php (NEW)
-
-project-management/sprint-outputs/
-└── sprint-03-output.md (NEW)
+platform-app/
+├── prisma/
+│   └── schema.prisma (MODIFIED — added generationStep, generationError to Blueprint)
+├── src/
+│   ├── app/
+│   │   ├── api/provision/
+│   │   │   ├── generate-blueprint/route.ts (NEW)
+│   │   │   └── status/route.ts (NEW)
+│   │   ├── dashboard/
+│   │   │   ├── layout.tsx (NEW)
+│   │   │   └── page.tsx (NEW)
+│   │   └── onboarding/
+│   │       ├── fonts/page.tsx (MODIFIED — trigger generation)
+│   │       └── progress/page.tsx (NEW)
+│   ├── components/
+│   │   ├── dashboard/
+│   │   │   ├── SiteCard.tsx (NEW)
+│   │   │   └── SubscriptionStatus.tsx (NEW)
+│   │   └── onboarding/
+│   │       └── GenerationProgress.tsx (NEW)
+│   └── lib/
+│       ├── ai/
+│       │   ├── prompts/
+│       │   │   ├── content-generation.ts (NEW)
+│       │   │   ├── form-generation.ts (NEW)
+│       │   │   └── page-layout.ts (NEW)
+│       │   └── space-component-manifest.json (NEW)
+│       └── blueprint/
+│           ├── generator.ts (NEW)
+│           └── types.ts (NEW)
 ```
 
 ## Next Steps
 
 - Invoke `/qa sprint-03` for Playwright test automation
-- Sprint 04: Generation pipeline (SiteGenerationService, PageBuilderAgent, ContentGeneratorAgent)
+- Sprint 04: Drupal foundation (content types, blueprint parser, brand tokens, provisioning engine)
