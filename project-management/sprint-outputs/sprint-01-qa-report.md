@@ -1,100 +1,91 @@
-# Sprint 01 QA Report
+# Sprint 01 QA Report (v2)
 
-**Date:** 2026-03-17
-**Status:** Pass — 1 bug found and fixed during QA
+**Date:** 2026-03-18
+**Status:** Pass — 28/28 tests passed, 2 bugs found and fixed during QA
 
 ## Test Results
 
 | Task | Tests Written | Passed | Failed |
 |------|--------------|--------|--------|
-| TASK-001: Module Scaffold | 4 | 4 | 0 |
-| TASK-002: SiteProfile Entity | 6 | 6 | 0 |
-| TASK-003: Industry Taxonomy | 3 | 3 | 0 |
-| TASK-004: User Registration | 8 | 8 | 0 |
-| TASK-034: Access Control | 4 | 4 | 0 |
-| **Total** | **25** | **25** | **0** |
+| TASK-100: App Scaffold + DB | 2 | 2 | 0 |
+| TASK-101: Authentication | 7 | 7 | 0 |
+| TASK-102: Wizard Framework | 6 | 6 | 0 |
+| TASK-103: Wizard Screens 1–3 | 13 | 13 | 0 |
+| **Total** | **28** | **28** | **0** |
 
-## Bugs Found During QA
+## Test Coverage
 
-### BUG-001: OnboardingController missing cache context — FIXED
+### TASK-100
+- App boots and serves at localhost:3000
+- Health check API returns `{"status":"ok","db":"connected"}`
 
-**Task:** TASK-004
-**Severity:** Major
+### TASK-101
+- User can register with email + password via UI (auto-login to onboarding)
+- Duplicate email shows error message
+- Registration creates user + site + subscription records via API
+- User can log in with credentials
+- Invalid credentials show error
+- Onboarding route redirects unauthenticated users to login
+- Dashboard route redirects to login
+- Session persists across page navigation
+
+### TASK-102
+- Start page shows welcome message and Start Building button
+- Progress dots are visible (4 dots for 4 steps)
+- Clicking Start Building navigates to name step
+- Back navigation works without data loss
+- Data saves to DB on each step forward (verified via resume API)
+- Refreshing page restores saved data
+
+### TASK-103
+- Screen 1: correct title, subtitle, placeholder, button label ("Continue")
+- Screen 1: Continue button disabled when name < 2 chars
+- Screen 1: captures and saves project name
+- Screen 2: correct title, subtitle, placeholder, button label ("Your Audience")
+- Screen 2: Your Audience button disabled when idea empty
+- Screen 2: captures and saves project description
+- Screen 2: Back button navigates to name step
+- Screen 3: correct title, subtitle, placeholder, button label ("Plan the Structure")
+- Screen 3: audience field optional — button enabled when empty
+- Screen 3: captures and saves target audience
+- Screen 3: Back button navigates to idea step
+- Full flow: user completes all 3 screens end-to-end
+
+## Bugs Found & Fixed During QA
+
+### BUG-101: Onboarding routes returned 404
+
+**Task:** TASK-102
+**Severity:** Critical
 **Status:** Fixed
 
-#### Description
-The `/onboarding` page rendered empty content for authenticated users due to missing `#cache` metadata on the render array. Drupal's Dynamic Page Cache served a cached empty version to all users because the controller output lacked `'contexts' => ['user']`.
+**Root Cause:** Pages were placed in `src/app/(onboarding)/` using Next.js route groups (parenthesized path), which does NOT add a URL segment. Routes were served at `/start`, `/name`, etc. instead of `/onboarding/start`, `/onboarding/name`.
 
-#### Steps to Reproduce
-1. Register a new user via `/start`
-2. User is redirected to `/onboarding`
-3. Page shows only the title "Build Your Website" — the Onboarding Status details (email, step, status) are missing
+**Fix:** Renamed `src/app/(onboarding)/` to `src/app/onboarding/` to use an actual path segment.
 
-#### Root Cause
-`OnboardingController::page()` returned a render array without `#cache` metadata. The Dynamic Page Cache module cached the first render (which happened to be empty) and served it to subsequent users.
+### BUG-102: Middleware used Node.js crypto in edge runtime
 
-#### Fix Applied
-Added `#cache` context and tags to the render array in `web/modules/custom/ai_site_builder/src/Controller/OnboardingController.php`:
-```php
-$build['#cache'] = [
-  'contexts' => ['user'],
-  'tags' => ['site_profile:' . $profile->id()],
-];
-```
+**Task:** TASK-101
+**Severity:** Critical
+**Status:** Fixed
+
+**Root Cause:** The middleware imported `auth` from `@/lib/auth` which pulled in `bcryptjs` and `@prisma/client` — both require Node.js `crypto` module. Next.js middleware runs in edge runtime which doesn't support `crypto`.
+
+**Fix:** Created `auth.config.ts` (edge-compatible config without bcryptjs/Prisma) and updated middleware to import from that instead.
 
 ## Test Files
 
 ```
-tests/
-├── playwright.config.ts
-├── e2e/
-│   ├── helpers.ts
-│   ├── sprint-01-module-scaffold.spec.ts      (4 tests)
-│   ├── sprint-01-site-profile-entity.spec.ts  (6 tests)
-│   ├── sprint-01-industry-taxonomy.spec.ts    (3 tests)
-│   ├── sprint-01-registration.spec.ts         (8 tests)
-│   └── sprint-01-access-control.spec.ts       (4 tests)
+platform-app/tests/
+├── helpers.ts
+├── task-100-scaffold.spec.ts     (2 tests)
+├── task-101-auth.spec.ts         (7 tests)
+├── task-102-wizard-framework.spec.ts (6 tests)
+└── task-103-wizard-screens.spec.ts   (13 tests)
 ```
 
-## Test Coverage by Acceptance Criteria
-
-### TASK-001: Module Scaffold
-- [x] Drupal site accessible
-- [x] Module enabled and listed
-- [x] Custom permissions registered
-- [x] Admin status report loads
-
-### TASK-002: SiteProfile Entity
-- [x] Admin listing page accessible with table headers
-- [x] Add form accessible
-- [x] Entity create via form works
-- [x] Entity edit via form works
-- [x] Entity delete via modal works
-- [x] Anonymous users blocked from admin
-
-### TASK-003: Industry Taxonomy
-- [x] Vocabulary exists in admin
-- [x] All 6 terms present
-- [x] Terms in correct order (Healthcare → Other)
-
-### TASK-004: User Registration
-- [x] Registration page accessible to anonymous
-- [x] Login link for existing users present
-- [x] Registration creates user + redirects to /onboarding
-- [x] Email visible on onboarding page
-- [x] User automatically logged in
-- [x] site_owner role assigned
-- [x] SiteProfile entity created and linked
-- [x] Duplicate email shows error
-- [x] Logged-in users blocked from /start (403)
-
-### TASK-034: Access Control
-- [x] User sees own SiteProfile on /onboarding
-- [x] Site owner cannot access admin listing (403)
-- [x] Admin can list all profiles
-- [x] Admin can view individual profile
-
 ## Notes
-- Drupal's BigPipe lazy rendering requires increased timeouts (10-15s) for assertions checking dynamically-loaded content
-- The admin entity listing uses an AJAX modal for delete confirmation — tests must handle this
-- The Claro admin theme's operations column uses dropdown buttons — Edit is visible, Delete requires clicking the dropdown toggle
+
+- The `CredentialsSignin` error logged in server console during "invalid credentials" test is expected NextAuth behavior
+- The middleware deprecation warning ("middleware" → "proxy") is a Next.js 16 change — functional but should be migrated in a future sprint
+- All 28 tests run in ~1 minute on a single Chromium worker

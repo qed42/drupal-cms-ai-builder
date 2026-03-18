@@ -1,44 +1,33 @@
-# Sprint 01: Platform Foundation
+# Sprint 01: Next.js Platform Foundation
 
-**Milestone:** M1 — Platform Foundation & Onboarding
+**Milestone:** M1 — Platform Foundation
 **Duration:** 2 weeks (~10 dev days)
+**Architecture:** v2 (Split Platform)
 
 ## Sprint Goal
-Stand up the Drupal 11 project with the core module, SiteProfile entity, user registration, and data isolation — the foundation everything else builds on.
+Stand up the Next.js platform app with authentication, database, and the onboarding wizard framework — the foundation for the entire user-facing experience.
 
 ## Tasks
-| ID | Task | Story | Assignee Persona | Effort | Status |
-|----|------|-------|-------------------|--------|--------|
-| TASK-001 | Scaffold ai_site_builder core module | Foundation | /dev | M | Done |
-| TASK-002 | Create SiteProfile custom entity | US-005–011 | /dev | L | Done |
-| TASK-003 | Create industry taxonomy vocabulary | US-006 | /dev | S | Done |
-| TASK-004 | Simplified user registration form | US-001 | /dev | M | Done |
-| TASK-034 | Node access & data isolation | Security | /dev | M | Done |
-
-## Task Sequence
-```
-TASK-001 (no deps)
-├── TASK-002 (depends on 001)
-│   ├── TASK-004 (depends on 001, 002)
-│   └── TASK-034 (depends on 002) — can start once content types partially exist
-└── TASK-003 (depends on 001, parallel with 002)
-```
-
-**Parallelization:** TASK-002 and TASK-003 can be developed in parallel after TASK-001.
+| ID | Task | Story | Workstream | Status |
+|----|------|-------|------------|--------|
+| TASK-100 | Next.js App Scaffold + DB Schema | Foundation | Next.js | Done |
+| TASK-101 | Authentication System (NextAuth) | US-001 | Next.js | Done |
+| TASK-102 | Onboarding Wizard Framework | US-005–009 | Next.js | Done |
+| TASK-103 | Wizard Screens 1–3 (Name, Idea, Audience) | US-005, US-008 | Next.js | Done |
 
 ## Dependencies & Risks
-- **Risk:** Contrib module compatibility with Drupal 11 (ai, ai_agents, canvas, webform) — test during TASK-001
-- **Risk:** Space theme availability and SDC component completeness — validate during TASK-001
-- **Blocker if:** Canvas or AI Agents modules don't install on Drupal 11 — escalate to stakeholder immediately
+- **Sequential dependency chain:** 100 → 101 → 102 → 103
+- **Risk:** Next.js 15 App Router + NextAuth v5 may have integration quirks — allocate time for debugging
+- **Risk:** PostgreSQL setup — ensure Docker Compose or local Postgres available
+
+## Deliverable
+User can register, log in, and complete the first 3 onboarding screens (project name, big idea, audience) with data persisting to the platform database.
 
 ## Definition of Done
-- [x] Drupal 11 project installs cleanly with all contrib dependencies
-- [x] SiteProfile entity CRUD works via entity API and admin UI
-- [x] User can register, gets site_owner role, SiteProfile created
-- [x] Node access isolation tested: user A cannot see user B's content
-- [x] Industry taxonomy with 6 terms installed
-- [x] Playwright: 25 E2E tests written and passing (registration, entity CRUD, taxonomy, access control)
-- [ ] All code committed (pending)
-
-## Sprint Deliverable
-A functional Drupal 11 instance where a user can register, which creates their SiteProfile and sets up data isolation. Not yet visible to end users — this is plumbing.
+- [x] Next.js app runs locally with PostgreSQL
+- [x] User registration and login working
+- [x] Onboarding wizard navigates through screens 1–3
+- [x] Data persists across page refreshes (save/resume)
+- [x] Dark gradient UI matches Figma designs
+- [ ] Playwright tests for auth flow and wizard navigation
+- [ ] Code committed

@@ -1,46 +1,36 @@
-# Sprint 06: Site Editing & Form Notifications
+# Sprint 06: AI Regeneration & Subscription
 
-**Milestone:** M3 — Site Editing & Refinement + M4 (completion)
-**Duration:** 2 weeks (~9 dev days)
+**Milestone:** M4 + M5 — Site Editing & Subscription
+**Duration:** 2 weeks (~10 dev days)
+**Architecture:** v2 (Split Platform)
 
 ## Sprint Goal
-Enable site owners to edit their generated site via Canvas, regenerate sections with AI, manage pages, and receive form submission notifications.
+Add section-level AI regeneration within Canvas editor and integrate Stripe for subscription management (trial-to-paid conversion, expiry handling).
 
 ## Tasks
-| ID | Task | Story | Assignee Persona | Effort | Status |
-|----|------|-------|-------------------|--------|--------|
-| TASK-021 | Canvas editor config for site owners | US-020 | /dev | M | Not Started |
-| TASK-022 | Section-level AI regeneration | US-021 | /dev | L | Not Started |
-| TASK-023 | Page add & remove | US-023 | /dev | M | Not Started |
-| TASK-027 | Form submission storage & notifications | US-027 | /dev | M | Not Started |
-
-## Task Sequence
-```
-TASK-021 (deps: 017, 004 from prior sprints)
-├── TASK-022 (deps: 021, 018)
-└── TASK-023 (deps: 021)
-
-TASK-027 (deps: 026 from Sprint 05) — parallel with 021/022/023
-```
-
-**Parallelization:** TASK-027 is independent of Canvas tasks and can be developed in parallel.
+| ID | Task | Story | Workstream | Status |
+|----|------|-------|------------|--------|
+| TASK-119 | Section-Level AI Regeneration | US-021 | Drupal | Not Started |
+| TASK-120 | Stripe Subscription Integration | US-003, US-004 | Next.js | Not Started |
 
 ## Dependencies & Risks
-- **Depends on:** Sprint 05 (content generation, form generation)
-- **Risk:** Canvas editor may need customization to show simplified toolbar for site owners
-- **Risk:** Section regeneration requires JS integration with Canvas editor — may need Canvas hooks/API that aren't documented
-- **Mitigation:** Focus on TASK-021 first to understand Canvas customization surface
+- **TASK-119 depends on TASK-118:** Canvas editor must be configured
+- **TASK-120 depends on TASK-117:** Dashboard must exist for subscription UI
+- **Parallel:** Both tasks are independent of each other — can be developed simultaneously
+- **Risk:** Canvas section toolbar extensibility — need to verify Canvas supports custom toolbar actions
+- **Risk:** Stripe webhook reliability — use webhook signature validation, handle idempotency
+
+## Deliverable
+Site owners can regenerate page sections with AI guidance in Canvas. Users can convert from trial to paid subscription via Stripe. Trial expiry handling with notifications.
 
 ## Definition of Done
-- [ ] Site owner can open any page in Canvas and edit inline
-- [ ] Canvas component palette shows Space SDC components
-- [ ] "Regenerate with AI" button works on any section
-- [ ] Regeneration accepts user guidance and updates only the selected section
-- [ ] Site owner can add new pages (with menu link) and delete pages (except Home)
-- [ ] Form submissions trigger email to site owner
-- [ ] Submissions dashboard shows all submissions for the user's site
-- [ ] Playwright: edit a section, regenerate it, add a page, submit a form
-- [ ] All code committed
-
-## Sprint Deliverable
-Site owners can edit, regenerate, and manage pages on their generated site. Form submissions notify the owner. **Full edit workflow demo-able.**
+- [ ] "Regenerate with AI" button appears on Canvas section toolbar
+- [ ] AI regeneration updates section content while preserving layout
+- [ ] User guidance text influences regeneration output
+- [ ] Stripe Checkout flow for trial-to-paid conversion
+- [ ] Stripe Customer Portal for subscription management
+- [ ] Trial expiry warnings at 3 days and 1 day before
+- [ ] Expired trials suspend site access
+- [ ] Webhook handles all subscription lifecycle events
+- [ ] Playwright tests for regeneration flow
+- [ ] Code committed

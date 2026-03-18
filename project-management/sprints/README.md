@@ -1,61 +1,68 @@
-# Sprint Roadmap
+# Sprint Roadmap (v2 Architecture)
 
-**Total Sprints:** 8
+**Total Sprints:** 6
 **Sprint Duration:** 2 weeks each
-**Total Timeline:** 16 weeks (~4 months)
+**Total Timeline:** 12 weeks (~3 months)
+**Architecture:** Next.js Platform + Drupal Multisite + Provisioning Engine
 
 ## Sprint Overview
 
 | Sprint | Goal | Milestone | Tasks | Key Deliverable |
 |--------|------|-----------|-------|-----------------|
-| **01** | Platform Foundation | M1 | 001, 002, 003, 004, 034 | Drupal project + SiteProfile + registration + data isolation |
-| **02** | Onboarding Wizard | M1 | 005, 006, 007, 008, 009, 010 | Steps 1–4 of wizard + trial activation |
-| **03** | AI Agent Foundation | M1 + M2 | 011, 012, 014, 015 | Industry Analyzer Agent + Step 5 + content types + component manifest |
-| **04** | AI Generation Engine | M2 | 016, 017, 019 | Generation pipeline + Page Builder Agent + brand tokens |
-| **05** | Content & Forms | M2 + M4 | 018, 020, 026 | Content Generator + Form Generator + progress UI |
-| **06** | Editing & Notifications | M3 + M4 | 021, 022, 023, 027 | Canvas editing + regeneration + page mgmt + form notifications |
-| **07** | Publishing & Trial | M5 | 028, 029, 032, 030, 013 | Draft mode + publish + SSL + trial expiry + save/resume |
-| **08** | Subscription & Polish | M5 | 031, 024, 025, 033 | Stripe billing + component swap + media + custom domains |
+| **01** | Platform Foundation | M1 | 100, 101, 102, 103 | Next.js app + auth + wizard screens 1–3 |
+| **02** | Onboarding Journey | M2 | 104, 105, 106, 107, 108 | Full wizard with AI inference + brand + fonts |
+| **03** | Blueprint & Drupal Prep | M3 | 109, 110, 113, 114, 115 | AI blueprint generation + Drupal services |
+| **04** | Provisioning Engine | M3 | 111, 112, 122 | End-to-end: onboard → provision → live site |
+| **05** | Site Editing & Dashboard | M4 | 116, 117, 118, 121 | Dashboard + auto-login + Canvas editing + forms |
+| **06** | AI Regen & Subscription | M4 + M5 | 119, 120 | Section AI regeneration + Stripe billing |
+
+## Workstream View
+
+```
+Sprint:     01          02          03          04          05          06
+           ─────────  ─────────  ─────────  ─────────  ─────────  ─────────
+Next.js:   [100,101]  [104,105]  [  109  ]  [  122  ]  [116,117]  [  120  ]
+           [102,103]  [106,107]
+                      [  108  ]
+Drupal:                          [110,113]  [  112  ]  [  118  ]  [  119  ]
+                                 [114,115]              [  121  ]
+Provision:                                  [  111  ]
+```
 
 ## Demo Milestones
 
 ```
-Sprint 02 ──► DEMO 1: Onboarding wizard walkthrough (Steps 1-4)
-Sprint 03 ──► DEMO 2: Full onboarding with AI-generated questions
-Sprint 05 ──► DEMO 3: "Magic moment" — full site generation with content ⭐ INVESTOR DEMO CANDIDATE
-Sprint 07 ──► DEMO 4: Complete end-to-end flow (register → publish) ⭐ FULL MVP DEMO
-Sprint 08 ──► DEMO 5: MVP with billing — product-ready
+Sprint 02 ──► DEMO 1: Full onboarding journey with AI (all 7 screens)
+Sprint 04 ──► DEMO 2: "Magic moment" — onboard → AI blueprint → live site ⭐ INVESTOR DEMO
+Sprint 05 ──► DEMO 3: Dashboard → Edit in Canvas → form submissions
+Sprint 06 ──► DEMO 4: Full MVP with AI regen + billing ⭐ PRODUCTION-READY
 ```
 
 ## Investor Demo Strategy
 
-**Earliest viable demo: End of Sprint 05** (~10 weeks)
-- User registers → completes onboarding → AI generates a full branded website with content, CTAs, forms
-- Editing and publishing not yet functional, but the "wow moment" is demo-able
+**Earliest viable demo: End of Sprint 04** (~8 weeks)
+- User registers → completes onboarding → AI generates blueprint → site provisioned and live
+- The "wow moment": go from zero to a branded, content-rich website in minutes
 
-**Full MVP demo: End of Sprint 07** (~14 weeks)
-- Complete flow: register → onboard → generate → edit → publish → live site
-- Trial management functional
-
-**Production-ready: End of Sprint 08** (~16 weeks)
-- Stripe billing, P2 polish
+**Full MVP demo: End of Sprint 06** (~12 weeks)
+- Complete flow: register → onboard → provision → edit via Canvas → subscription management
+- AI section regeneration, Stripe billing, trial management
 
 ## Capacity Notes
 
-- Sprint estimates assume a single senior Drupal developer (the `/dev` agent)
-- XL tasks (TASK-017, 018, 026, 031) are sprint-filling and should not be paired with other complex work
-- P2 tasks in Sprint 08 can be deferred if timeline pressure requires earlier launch
-- If demo timeline is critical, consider: Sprint 04 is the highest-risk sprint (Page Builder Agent + Canvas integration) — allocate buffer time
+- Sprint estimates assume a single senior full-stack developer
+- **Sprint 03 has parallel workstreams:** Next.js blueprint gen + Drupal services can be developed simultaneously
+- **Sprint 04 is the highest-risk sprint:** End-to-end integration of all three layers (Next.js, Provisioning, Drupal)
+- XL tasks (TASK-109, TASK-112) are sprint-filling — don't pair with other complex work
+- Sprint 06 tasks are independent — can be parallelized or deferred if timeline pressure
 
 ## Risk Summary by Sprint
 
 | Sprint | Risk Level | Key Risk |
 |--------|-----------|----------|
-| 01 | Low | Contrib module compatibility |
-| 02 | Low | JS library integration (color picker, Alpine.js) |
-| 03 | Medium | First AI Agent — LLM quality, ai_agents API learning curve |
-| 04 | **High** | Page Builder Agent + Canvas skills — most complex integration |
-| 05 | Medium | Content quality, prompt engineering iteration |
-| 06 | Medium | Canvas editor customization, regeneration JS integration |
-| 07 | Low–Medium | SSL/hosting infrastructure dependency |
-| 08 | Medium | Stripe webhook edge cases |
+| 01 | Low | Standard Next.js + NextAuth setup |
+| 02 | Medium | AI API integration (OpenAI), color extraction reliability |
+| 03 | **High** | Blueprint generation prompt engineering — must produce valid component layouts |
+| 04 | **High** | End-to-end integration — multisite provisioning, Canvas CLI usage, Drush commands |
+| 05 | Medium | JWT auth handoff, Canvas permission configuration |
+| 06 | Medium | Canvas toolbar extensibility, Stripe webhook edge cases |

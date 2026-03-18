@@ -1,0 +1,36 @@
+import NextAuth from "next-auth";
+import authConfig from "@/lib/auth.config";
+import { NextResponse } from "next/server";
+
+const { auth } = NextAuth(authConfig);
+
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
+  const isLoggedIn = !!req.auth;
+
+  const protectedPaths = ["/onboarding", "/dashboard"];
+  const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
+
+  if (isProtected && !isLoggedIn) {
+    const loginUrl = new URL("/login", req.nextUrl.origin);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Redirect logged-in users away from auth pages
+  const authPaths = ["/login", "/register"];
+  if (authPaths.includes(pathname) && isLoggedIn) {
+    return NextResponse.redirect(new URL("/onboarding/start", req.nextUrl.origin));
+  }
+
+  return NextResponse.next();
+});
+
+export const config = {
+  matcher: [
+    "/onboarding/:path*",
+    "/dashboard/:path*",
+    "/login",
+    "/register",
+  ],
+};

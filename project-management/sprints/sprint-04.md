@@ -1,47 +1,39 @@
-# Sprint 04: AI Generation Engine
+# Sprint 04: Provisioning Engine & End-to-End Flow
 
-**Milestone:** M2 — AI Site Generation Engine
+**Milestone:** M3 — Blueprint & Provisioning
 **Duration:** 2 weeks (~10 dev days)
+**Architecture:** v2 (Split Platform)
 
 ## Sprint Goal
-Build the core generation pipeline: queue-based orchestration, Page Builder Agent (creates pages with SDC components via Canvas), and brand token application. This is the "magic moment" sprint.
+Build the provisioning engine and Drupal Drush commands. Achieve the end-to-end flow: user completes onboarding → blueprint generated → Drupal site provisioned and accessible.
 
 ## Tasks
-| ID | Task | Story | Assignee Persona | Effort | Status |
-|----|------|-------|-------------------|--------|--------|
-| TASK-016 | Generation pipeline service & queue | US-012, 019 | /dev | L | Not Started |
-| TASK-017 | Page Builder AI Agent | US-013 | /dev | XL | Not Started |
-| TASK-019 | Brand Token Service | US-016 | /dev | M | Not Started |
-
-## Task Sequence
-```
-TASK-016 (deps: 002, 011 from prior sprints)
-└── TASK-017 (deps: 015, 016, 014 from Sprint 03 + this sprint)
-
-TASK-019 (deps: 002 from Sprint 01) — parallel with 016/017
-```
-
-**Parallelization:** TASK-019 (Brand Tokens) is independent and can be developed in parallel with TASK-016/017.
+| ID | Task | Story | Workstream | Status |
+|----|------|-------|------------|--------|
+| TASK-112 | Drupal Drush Commands | US-012, US-013, US-016 | Drupal | Not Started |
+| TASK-111 | Provisioning Engine (Core Orchestrator) | Foundation | Provisioning | Not Started |
+| TASK-122 | Provisioning Status UI | US-019 | Next.js | Not Started |
 
 ## Dependencies & Risks
-- **Depends on:** Sprint 03 (content types, component manifest, Industry Analyzer Agent)
-- **HIGHEST RISK SPRINT** — Page Builder Agent (TASK-017) is the most complex task in the project:
-  - First integration between AI Agents and Canvas skills
-  - Agent must correctly select and place SDC components
-  - Output must be valid Canvas layout data
-- **Risk:** Canvas skill tools may not exist yet — may need to implement custom tool plugins that wrap Canvas PHP API
-- **Risk:** Generation may exceed 5-minute target — optimize prompt chains
-- **Mitigation:** Start TASK-017 early in sprint; allocate extra time for prompt engineering and debugging
+- **TASK-112 before TASK-111:** Provisioning engine calls Drush commands — they must exist first
+- **TASK-112 depends on Sprint 03:** Parser (114), brand service (115), content types (113) all used by Drush commands
+- **TASK-111 depends on TASK-112:** Engine shells out to Drush
+- **TASK-122 depends on TASK-111:** Status UI polls provisioning progress
+- **Risk:** Drupal multisite setup — sites.php management, per-site settings.php generation. Test thoroughly.
+- **Risk:** Canvas programmatic layout creation via Drush — Canvas may not expose full PHP API for CLI usage. May need workarounds.
+- **Risk:** End-to-end is the integration test of the entire architecture. Budget time for debugging.
+
+## Deliverable
+Complete end-to-end flow works: register → onboard → blueprint → provision → live Drupal site. Progress UI shows real-time status during provisioning.
 
 ## Definition of Done
-- [ ] Generation pipeline dispatches and processes queue items sequentially
-- [ ] Page Builder Agent creates pages with SDC components via Canvas skills
-- [ ] Generated pages render correctly with Space theme components
-- [ ] Brand colors and fonts applied via CSS custom properties
-- [ ] Logo appears in site header
-- [ ] Status endpoint returns generation progress
-- [ ] Playwright: trigger generation and verify pages exist with components
-- [ ] All code committed
-
-## Sprint Deliverable
-Click "Generate My Website" → AI creates pages with real SDC components and applies branding. Pages are skeletons ({{generate}} markers) but visually structured. **The "magic moment" is partially demo-able** — you can see page layouts with the right components in place.
+- [ ] `drush ai-site-builder:import-config` installs content types per industry
+- [ ] `drush ai-site-builder:import-blueprint` creates pages with Canvas layouts
+- [ ] `drush ai-site-builder:apply-brand` generates and applies CSS tokens
+- [ ] `drush ai-site-builder:configure-site` sets up menus and pathauto
+- [ ] Provisioning engine creates DB, installs Drupal, runs all Drush commands
+- [ ] Provisioning engine callbacks update site status in platform DB
+- [ ] Progress UI shows step-by-step status during provisioning
+- [ ] Rollback works on provisioning failure
+- [ ] End-to-end test: onboard → provision → site accessible at domain
+- [ ] Code committed

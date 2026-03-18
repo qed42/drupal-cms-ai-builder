@@ -1,44 +1,38 @@
-# Sprint 03: AI Agent Foundation & Onboarding Completion
+# Sprint 03: Blueprint Generation & Drupal Foundation
 
-**Milestone:** M1 (completion) + M2 (start)
+**Milestone:** M3 — Blueprint & Provisioning
 **Duration:** 2 weeks (~10 dev days)
+**Architecture:** v2 (Split Platform)
 
 ## Sprint Goal
-Build the Industry Analyzer AI Agent, complete the onboarding wizard (Step 5 with dynamic questions), and lay groundwork for generation (content types + component manifest).
+Build the AI blueprint generation pipeline and prepare Drupal for provisioning — content type configs, component manifest export, blueprint parser, and brand token service.
 
 ## Tasks
-| ID | Task | Story | Assignee Persona | Effort | Status |
-|----|------|-------|-------------------|--------|--------|
-| TASK-011 | Industry Analyzer AI Agent | US-009, 010 | /dev | L | Not Started |
-| TASK-012 | Wizard Step 5 — Dynamic questions | US-009 | /dev | M | Not Started |
-| TASK-014 | Shared content type definitions | US-012 | /dev | L | Not Started |
-| TASK-015 | SDC component manifest service | US-013 | /dev | M | Not Started |
-
-## Task Sequence
-```
-TASK-011 (deps: 001, 002, 003 from Sprint 01)
-└── TASK-012 (deps: 006 from Sprint 02, 011)
-
-TASK-014 (deps: 001, 002 from Sprint 01) — parallel with 011
-TASK-015 (deps: 001 from Sprint 01) — parallel with 011, 014
-```
-
-**Parallelization:** TASK-011, TASK-014, and TASK-015 have no dependencies on each other — all three can be developed in parallel. TASK-012 depends on TASK-011 completion.
+| ID | Task | Story | Workstream | Status |
+|----|------|-------|------------|--------|
+| TASK-110 | Space Component Manifest (Static Export) | US-013 | Drupal | Not Started |
+| TASK-109 | Blueprint Generation (AI Content Pipeline) | US-012–018 | Next.js | Not Started |
+| TASK-113 | Content Type Configs (v2) | US-012 | Drupal | Not Started |
+| TASK-114 | Blueprint Parser Service | US-013 | Drupal | Not Started |
+| TASK-115 | Brand Token Service (v2) | US-016 | Drupal | Not Started |
 
 ## Dependencies & Risks
-- **Depends on:** Sprint 01 + 02 completion (SiteProfile with data, wizard framework)
-- **Risk:** First real AI Agent integration — may uncover API gaps in ai_agents module. Budget extra time for debugging.
-- **Risk:** Space theme SDC component analysis for manifest — components may have inconsistent YAML schemas
-- **Risk:** LLM response quality for industry questions — prompt engineering iteration needed
+- **TASK-110 before TASK-109:** Manifest must exist before blueprint generator can reference valid components
+- **TASK-113 before TASK-114:** Parser creates entities of configured types
+- **TASK-115 independent:** Can be built in parallel
+- **Parallel workstreams:** Next.js (109) and Drupal (110, 113, 114, 115) can progress simultaneously
+- **Risk:** Blueprint generation is the heaviest AI task (XL) — needs careful prompt engineering to produce valid component layouts
+- **Risk:** Canvas PHP API — need to validate how to programmatically create layouts via code (not UI)
+
+## Deliverable
+"Visualize my site" produces a complete blueprint (markdown files + assets). Drupal is ready to receive and parse blueprints with content types, brand tokens, and the parser service all functional.
 
 ## Definition of Done
-- [ ] Industry Analyzer Agent generates 3–5 relevant questions for Healthcare, Legal, and Real Estate industries
-- [ ] Step 5 renders AI-generated questions with appropriate input types
-- [ ] "Generate My Website" button visible after completing Step 5
-- [ ] All 10 content types install with correct fields and field_site_profile reference
-- [ ] Component manifest service returns structured catalog of Space SDC components
-- [ ] Playwright: full onboarding flow (Steps 1–5) end-to-end test
-- [ ] All code committed
-
-## Sprint Deliverable
-Complete onboarding flow — user registers, answers all 5 steps including AI-generated questions, and clicks "Generate My Website." Content types and component manifest ready for generation pipeline. **First AI interaction demo-able.**
+- [ ] Component manifest exported as JSON from Space theme
+- [ ] Blueprint generator produces valid site.md, pages/*.md, content/*.md, forms/*.md, brand/tokens.json
+- [ ] Blueprint content uses only valid Space SDC component IDs
+- [ ] Content type configs install cleanly per industry
+- [ ] Blueprint parser correctly reads all markdown formats
+- [ ] Brand token service generates valid CSS from tokens.json
+- [ ] Integration tests: generate blueprint → parse → validate structure
+- [ ] Code committed
