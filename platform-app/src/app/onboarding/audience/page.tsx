@@ -26,8 +26,7 @@ export default function AudiencePage() {
       body: JSON.stringify({ step: "audience", data: { audience } }),
     });
     if (res.ok) {
-      // For now, redirect to start since screens 4+ aren't built yet
-      router.push("/onboarding/start");
+      router.push("/onboarding/pages");
       return true;
     }
     return false;

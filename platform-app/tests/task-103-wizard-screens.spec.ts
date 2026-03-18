@@ -166,7 +166,7 @@ test.describe("TASK-103: Wizard Screens 1–3", () => {
         audience
       );
       await page.getByRole("button", { name: /Plan the Structure/i }).click();
-      await page.waitForURL("**/onboarding/start", { timeout: 10000 });
+      await page.waitForURL("**/onboarding/pages", { timeout: 15000 });
 
       // Navigate back to audience and verify
       await page.goto("/onboarding/audience");
@@ -205,7 +205,7 @@ test.describe("TASK-103: Wizard Screens 1–3", () => {
         "Developers"
       );
       await page.getByRole("button", { name: /Plan the Structure/i }).click();
-      await page.waitForURL("**/onboarding/start", { timeout: 10000 });
+      await page.waitForURL("**/onboarding/pages", { timeout: 15000 });
     });
   });
 });

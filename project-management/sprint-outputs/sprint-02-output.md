@@ -1,107 +1,127 @@
-# Sprint 02 Output: Onboarding Wizard
+# Sprint 02 Output: Onboarding Journey — AI & Brand (v2)
 
-**Completed:** 2026-03-17
+**Completed:** 2026-03-18
+**Architecture:** v2 (Split Platform — Next.js)
 
 ## Tasks Delivered
 
-### TASK-005: Trial Activation Service — DONE
-- Created `ai_site_builder_trial` submodule under `modules/`
-- `TrialManagerInterface` with `startTrial()`, `isActive()`, `getRemainingDays()`
-- `TrialManager` service using DI (entity_type.manager, datetime.time)
-- Integrated with `RegistrationForm` — uses TrialManager when available, fallback for when module not enabled
-- Trial activates automatically on registration (14-day period)
-- Active subscription check bypasses trial expiry
+### TASK-104: AI Industry Inference & Page Suggestion — DONE
+- OpenAI SDK installed and configured via `src/lib/ai/client.ts`
+- AI prompts for analysis and page suggestion in `src/lib/ai/prompts.ts`
+- **`POST /api/ai/analyze`**: Analyzes business idea + audience, returns industry, keywords, compliance_flags, tone
+  - Structured JSON output via OpenAI gpt-4o-mini
+  - Keyword-based fallback when AI call fails (regex matching for healthcare, legal, real_estate, etc.)
+  - Results auto-saved to onboarding_sessions.data
+- **`POST /api/ai/suggest-pages`**: Returns 5-8 industry-appropriate page suggestions
+  - Industry-specific default page sets (healthcare: providers, legal: practice-areas, etc.)
+  - Fallback to defaults on AI failure
+  - Results saved as suggested_pages to onboarding_sessions.data
 
-### TASK-006: Onboarding Wizard Framework — DONE
-- `OnboardingWizardForm` extending `FormBase` with step management (1-5)
-- AJAX-powered step navigation via `#ajax` callbacks (Next/Back buttons)
-- Progress indicator showing "Step X of 5" with completed/current/upcoming states
-- `OnboardingController` updated to render wizard form instead of placeholder
-- CSS library (`ai_site_builder/onboarding_wizard`) with styles for progress bar, cards, buttons
-- `OnboardingRedirectSubscriber` redirects site_owner users with incomplete onboarding
-- Each step saves data to SiteProfile entity on "Next" click
-- Returning users resume at their current step
+### TASK-105: Wizard Screen 4 — Page Map — DONE
+- Screen at `/onboarding/pages` with title "Let's map your site."
+- Auto-triggers AI analysis on first visit (analyze → suggest-pages chain)
+- Shows loading spinner during AI processing
+- AI-suggested pages render as removable blue pill/chip components
+- "Add page +" button with inline text input for custom pages
+- Minimum 3 pages / maximum 12 pages enforced
+- Button: "Shape the Experience →"
+- Saves final page list to onboarding_sessions.data.pages
 
-### TASK-007: Wizard Step 1 — Site Basics — DONE
-- Fields: site_name (required, 2-100 chars), tagline (optional, 255 chars), logo (managed_file, PNG/JPG/SVG, 5MB max), admin_email (required, pre-filled from user email)
-- Validation: site_name min 2 chars, file type/size via managed_file validators
-- Saves to SiteProfile on "Next", makes uploaded files permanent
+### TASK-106: Wizard Screen 5 — Design Source Selection — DONE
+- Screen at `/onboarding/design` with title "How should it feel?"
+- Two side-by-side selectable cards:
+  - "Provide Figma details" — disabled with "Coming soon" badge
+  - "Let Space AI choose" — default selected, selectable
+- Checkmark indicator on selected card
+- Saves design_source to onboarding_sessions.data
+- Button: "Shape the Experience →"
 
-### TASK-008: Wizard Step 2 — Industry Selection — DONE
-- Loads industry taxonomy terms and renders as radio buttons with card-style CSS
-- Single selection with visual feedback
-- "Other" selection reveals textarea via Drupal `#states` (conditional visibility)
-- Validation: industry required; if "Other", description text required
-- Saves industry term reference + industry_other text to SiteProfile
+### TASK-107: Wizard Screen 6 — Brand Assets + Color Extraction — DONE
+- Screen at `/onboarding/brand` with title "Give it a face."
+- Two dashed-border upload zones (logo + palette reference)
+- **File upload API** (`POST /api/upload`):
+  - Supports logo (PNG/JPG/SVG, 5MB), palette (PNG/JPG/PDF, 10MB), font (WOFF/WOFF2/TTF/OTF) types
+  - Files saved to `public/uploads/{userId}/` with timestamp prefix
+  - Type and extension validation
+- **Color extraction API** (`POST /api/ai/extract-colors`):
+  - node-vibrant for PNG/JPG logo extraction (6 palette roles: vibrant, dark/light vibrant, muted, dark/light muted)
+  - OpenAI Vision API for palette PDFs/complex images
+  - Fallback defaults on failure
+- Extracted colors display as editable circle swatches with hex codes and role labels
+- Click swatch to open native color picker
+- "+" button to add manual colors
+- Remove button (hover) on swatches
+- "Remove" link on uploaded files
+- All data saved: logo_url, palette_url, colors map
 
-### TASK-009: Wizard Step 3 — Brand Input — DONE
-- Color picker: 3 native HTML5 color inputs (primary, secondary, accent)
-- Industry-aware default palettes (6 palettes mapped to industry terms)
-- Font selector: 8 curated Google Font pairings as radio buttons
-- Reference URLs: 3 URL inputs with URL validation
-- Brand guidelines: managed_file upload (PDF/PNG/JPG, 10MB max)
-- All fields optional — defaults applied from industry palette
+### TASK-108: Wizard Screen 7 — Font Selection — DONE
+- Screen at `/onboarding/fonts` with title "Select a font"
+- 4 preview tiles (2×2 grid) showing "Aa" with user's brand colors and selected fonts
+- Dynamic Google Fonts loading for real-time preview
+- Heading + body font dropdowns (8 Google Fonts: Nunito Sans, Montserrat, Playfair Display, Inter, Roboto, Lato, Poppins, Raleway)
+- Font preview tiles update in real-time when selection changes
+- Custom font upload zone (WOFF/WOFF2/TTF/OTF)
+- Button: "Visualize my site →" (marks onboarding complete)
+- Saves fonts.heading, fonts.body, custom_fonts to onboarding_sessions.data
 
-### TASK-010: Wizard Step 4 — Business Context — DONE
-- Services: textarea (required, one per line)
-- Target audience: textarea with 500-char max
-- Competitors: 3 text inputs (optional)
-- CTAs: 5 text inputs with placeholder examples (Book Now, Get a Quote, etc.)
-- Validation: at least one service required, target_audience length check
-- Saves to multi-value SiteProfile fields (competitors, ctas)
+## Updated Files
+
+- `src/lib/onboarding-steps.ts` — Added pages, design, brand, fonts steps
+- `src/app/onboarding/audience/page.tsx` — Updated redirect to /onboarding/pages
 
 ## Verification Results
 
 | Check | Result |
 |-------|--------|
-| TrialManager service loads | PASS |
-| `isActive()` / `getRemainingDays()` work | PASS |
-| Trial submodule enables cleanly | PASS |
-| Wizard form loads at `/onboarding` | PASS |
-| Step 1 fields render (site_name, tagline, logo, admin_email) | PASS |
-| Step 2 loads 6 industry terms | PASS |
-| Step 3 has industry-aware palettes (6) and font pairings (8) | PASS |
-| Step 4 fields render with placeholders | PASS |
-| AJAX navigation buttons present | PASS |
-| Progress indicator renders | PASS |
-| CSS library attached | PASS |
-| Onboarding redirect subscriber registered | PASS |
-| Cache clear succeeds | PASS |
+| TypeScript compiles without errors | PASS |
+| Build completes (`next build`) | PASS |
+| All 7 wizard routes registered | PASS |
+| AI analyze API route available | PASS |
+| AI suggest-pages API route available | PASS |
+| AI extract-colors API route available | PASS |
+| Upload API route available | PASS |
+| Step navigation flows correctly | PASS |
+| ProgressDots shows 8 steps | PASS |
 
-## Architecture Decisions Made During Implementation
+## New Dependencies
 
-1. **Drupal Form API AJAX over Alpine.js**: Used native Drupal `#ajax` for step navigation instead of Alpine.js. Simpler integration, no additional JS library dependency. Alpine.js can be layered on later for animations.
-2. **HTML5 native color picker**: Used `#type => 'color'` instead of a third-party JS color picker library. Works in all modern browsers, zero additional dependencies.
-3. **Drupal #states for conditional fields**: Used `#states` API for "Other" industry visibility instead of custom JS. Standard Drupal pattern.
-4. **Trial submodule pattern**: Created `ai_site_builder_trial` as a submodule under `modules/` to keep trial logic decoupled. RegistrationForm gracefully degrades if module not enabled.
-5. **Font pairing selection**: Stored as label → [heading, body] mapping. The form shows the pairing label, saves the individual font names to SiteProfile.
+| Package | Version | Purpose |
+|---------|---------|---------|
+| openai | latest | OpenAI API client for AI inference |
+| node-vibrant | latest | Color extraction from images |
 
-## Files Created/Modified
+## Files Created
 
 ```
-web/modules/custom/ai_site_builder/
-├── ai_site_builder.libraries.yml (NEW)
-├── ai_site_builder.services.yml (MODIFIED — added event subscriber)
-├── css/
-│   └── onboarding-wizard.css (NEW)
-├── modules/
-│   └── ai_site_builder_trial/
-│       ├── ai_site_builder_trial.info.yml (NEW)
-│       ├── ai_site_builder_trial.services.yml (NEW)
-│       └── src/Service/
-│           ├── TrialManager.php (NEW)
-│           └── TrialManagerInterface.php (NEW)
-└── src/
-    ├── Controller/
-    │   └── OnboardingController.php (MODIFIED — renders wizard form)
-    ├── EventSubscriber/
-    │   └── OnboardingRedirectSubscriber.php (NEW)
-    └── Form/
-        ├── OnboardingWizardForm.php (NEW)
-        └── RegistrationForm.php (MODIFIED — TrialManager integration)
+platform-app/src/
+├── lib/
+│   ├── ai/
+│   │   ├── client.ts           (OpenAI client singleton)
+│   │   ├── prompts.ts          (AI prompts + industry defaults)
+│   │   └── color-extraction.ts (node-vibrant + Vision API extraction)
+│   └── fonts.ts                (Google Fonts config)
+├── app/
+│   ├── api/
+│   │   ├── ai/
+│   │   │   ├── analyze/route.ts
+│   │   │   ├── suggest-pages/route.ts
+│   │   │   └── extract-colors/route.ts
+│   │   └── upload/route.ts
+│   └── onboarding/
+│       ├── pages/page.tsx
+│       ├── design/page.tsx
+│       ├── brand/page.tsx
+│       └── fonts/page.tsx
+└── components/onboarding/
+    ├── PageChip.tsx
+    ├── DesignOptionCard.tsx
+    ├── FileUploadZone.tsx
+    ├── ColorSwatch.tsx
+    ├── FontPreviewTile.tsx
+    └── FontSelector.tsx
 ```
 
 ## Next Steps
-
 - Invoke `/qa sprint-02` for Playwright test automation
-- Sprint 03: Wizard Step 5 (AI-generated industry questions)
+- Sprint 03: Blueprint generation triggered by "Visualize my site"
+- Set `OPENAI_API_KEY` in `.env.local` for AI features to work

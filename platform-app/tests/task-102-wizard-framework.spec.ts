@@ -23,7 +23,7 @@ test.describe("TASK-102: Onboarding Wizard Framework", () => {
     const dots = page.locator('[class*="rounded-full"][class*="h-2"]');
     await expect(dots.first()).toBeVisible({ timeout: 5000 });
     const count = await dots.count();
-    expect(count).toBe(4);
+    expect(count).toBe(8);
   });
 
   test("clicking Start Building navigates to name step", async ({ page }) => {

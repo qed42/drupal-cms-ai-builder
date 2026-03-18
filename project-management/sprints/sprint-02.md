@@ -10,11 +10,11 @@ Complete the full onboarding wizard with AI-powered industry inference, page sug
 ## Tasks
 | ID | Task | Story | Workstream | Status |
 |----|------|-------|------------|--------|
-| TASK-104 | AI Industry Inference & Page Suggestion | US-006, US-009 | Next.js | Not Started |
-| TASK-105 | Screen 4 — Page Map (AI-suggested) | US-009 | Next.js | Not Started |
-| TASK-106 | Screen 5 — Design Source Selection | US-007 | Next.js | Not Started |
-| TASK-107 | Screen 6 — Brand Assets + Color Extraction | US-007 | Next.js | Not Started |
-| TASK-108 | Screen 7 — Font Selection | US-007 | Next.js | Not Started |
+| TASK-104 | AI Industry Inference & Page Suggestion | US-006, US-009 | Next.js | Done |
+| TASK-105 | Screen 4 — Page Map (AI-suggested) | US-009 | Next.js | Done |
+| TASK-106 | Screen 5 — Design Source Selection | US-007 | Next.js | Done |
+| TASK-107 | Screen 6 — Brand Assets + Color Extraction | US-007 | Next.js | Done |
+| TASK-108 | Screen 7 — Font Selection | US-007 | Next.js | Done |
 
 ## Dependencies & Risks
 - **Dependency:** TASK-103 (Sprint 01) must be complete — provides idea + audience data for AI

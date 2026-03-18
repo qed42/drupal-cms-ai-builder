@@ -3,6 +3,10 @@ export const ONBOARDING_STEPS = [
   { slug: "name", label: "Project Name" },
   { slug: "idea", label: "Big Idea" },
   { slug: "audience", label: "Audience" },
+  { slug: "pages", label: "Page Map" },
+  { slug: "design", label: "Design Source" },
+  { slug: "brand", label: "Brand" },
+  { slug: "fonts", label: "Fonts" },
 ] as const;
 
 export type StepSlug = (typeof ONBOARDING_STEPS)[number]["slug"];
