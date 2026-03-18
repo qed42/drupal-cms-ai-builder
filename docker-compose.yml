@@ -11,6 +11,38 @@ services:
       POSTGRES_DB: space_platform
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U space -d space_platform"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  platform:
+    build:
+      context: ./platform-app
+      dockerfile: Dockerfile.dev
+    container_name: space-ai-platform
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./platform-app:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - DATABASE_URL=postgresql://space:space_dev_password@postgres:5432/space_platform
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=dev-secret-change-in-production-32chars!
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - JWT_SHARED_SECRET=dev-jwt-secret-change-in-production
+      - PROVISION_CALLBACK_KEY=dev-callback-key-change-in-production
+      - DB_HOST=host.docker.internal
+      - DB_PORT=3306
+      - DB_USER=db
+      - DB_PASSWORD=db
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   pgdata:

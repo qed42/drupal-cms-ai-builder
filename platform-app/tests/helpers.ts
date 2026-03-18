@@ -32,8 +32,9 @@ export async function registerAndLogin(page: Page, email?: string, password = "p
   await page.fill("#password", password);
   await page.getByRole("button", { name: "Sign In" }).click();
 
-  // Wait for redirect to onboarding
-  await page.waitForURL("**/onboarding/**", { timeout: 15000 });
+  // Wait for redirect — dashboard-first flow sends to /dashboard,
+  // but new users may redirect to /onboarding.
+  await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 15000 });
   await page.waitForLoadState("domcontentloaded");
 
   return e;

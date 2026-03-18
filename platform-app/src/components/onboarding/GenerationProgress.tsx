@@ -5,7 +5,8 @@ const GENERATION_STEPS = [
   { key: "page_layouts", label: "Designing page layouts...", icon: "layout" },
   { key: "content", label: "Writing content...", icon: "pen" },
   { key: "forms", label: "Setting up forms...", icon: "form" },
-  { key: "ready", label: "Blueprint complete!", icon: "check" },
+  { key: "provisioning", label: "Setting up your Drupal site...", icon: "rocket" },
+  { key: "live", label: "Your website is live!", icon: "check" },
 ];
 
 function StepIcon({ icon, active, done }: { icon: string; active: boolean; done: boolean }) {
@@ -14,6 +15,7 @@ function StepIcon({ icon, active, done }: { icon: string; active: boolean; done:
     layout: "\ud83c\udfdb\ufe0f",
     pen: "\u270f\ufe0f",
     form: "\ud83d\udccb",
+    rocket: "\ud83d\ude80",
     check: "\u2705",
   };
 
@@ -70,8 +72,8 @@ export default function GenerationProgress({
       {/* Steps */}
       <div className="space-y-3">
         {GENERATION_STEPS.map((step, i) => {
-          const isDone = i < currentIndex || currentStep === "ready";
-          const isActive = i === currentIndex && currentStep !== "ready";
+          const isDone = i < currentIndex || currentStep === "live";
+          const isActive = i === currentIndex && currentStep !== "live";
 
           return (
             <div

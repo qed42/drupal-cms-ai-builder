@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   onboarding: { label: "Setting Up", color: "text-amber-400", bg: "bg-amber-400/10" },
@@ -8,6 +9,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }
   blueprint_ready: { label: "Blueprint Ready", color: "text-emerald-400", bg: "bg-emerald-400/10" },
   provisioning: { label: "Provisioning", color: "text-blue-400", bg: "bg-blue-400/10" },
   live: { label: "Live", color: "text-emerald-400", bg: "bg-emerald-400/10" },
+  provisioning_failed: { label: "Setup Failed", color: "text-red-400", bg: "bg-red-400/10" },
   suspended: { label: "Suspended", color: "text-red-400", bg: "bg-red-400/10" },
   expired: { label: "Expired", color: "text-gray-400", bg: "bg-gray-400/10" },
 };
@@ -24,7 +26,54 @@ interface SiteCardProps {
 
 export default function SiteCard({ site }: SiteCardProps) {
   const router = useRouter();
+  const [editLoading, setEditLoading] = useState(false);
+  const [retryLoading, setRetryLoading] = useState(false);
   const config = STATUS_CONFIG[site.status] || STATUS_CONFIG.onboarding;
+
+  async function handleEditSite() {
+    setEditLoading(true);
+    try {
+      const res = await fetch("/api/auth/create-login-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ siteId: site.id }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        console.error("Failed to create login token:", data.error);
+        setEditLoading(false);
+        return;
+      }
+
+      // Open Drupal Canvas editor in new tab via auto-login URL.
+      window.open(data.url, "_blank");
+      setEditLoading(false);
+    } catch (error) {
+      console.error("Error launching editor:", error);
+      setEditLoading(false);
+    }
+  }
+
+  async function handleRetryProvisioning() {
+    setRetryLoading(true);
+    try {
+      const res = await fetch("/api/provision/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (res.ok) {
+        router.push(`/onboarding/progress?siteId=${site.id}`);
+      } else {
+        console.error("Failed to retry provisioning");
+        setRetryLoading(false);
+      }
+    } catch (error) {
+      console.error("Error retrying provisioning:", error);
+      setRetryLoading(false);
+    }
+  }
 
   function getActionButton() {
     switch (site.status) {
@@ -40,7 +89,7 @@ export default function SiteCard({ site }: SiteCardProps) {
       case "generating":
         return (
           <button
-            onClick={() => router.push("/onboarding/progress")}
+            onClick={() => router.push(`/onboarding/progress?siteId=${site.id}`)}
             className="rounded-lg bg-indigo-600/50 px-4 py-2 text-sm font-medium text-white/70 cursor-default flex items-center gap-2"
           >
             <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -58,14 +107,47 @@ export default function SiteCard({ site }: SiteCardProps) {
         );
       case "live":
         return (
-          <a
-            href={site.drupalUrl || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors inline-block"
+          <button
+            onClick={handleEditSite}
+            disabled={editLoading}
+            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            Edit Site
-          </a>
+            {editLoading ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Opening...
+              </>
+            ) : (
+              "Edit Site"
+            )}
+          </button>
+        );
+      case "provisioning":
+        return (
+          <button
+            onClick={() => router.push(`/onboarding/progress?siteId=${site.id}`)}
+            className="rounded-lg bg-blue-600/50 px-4 py-2 text-sm font-medium text-white/70 cursor-default flex items-center gap-2"
+          >
+            <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            Provisioning...
+          </button>
+        );
+      case "provisioning_failed":
+        return (
+          <button
+            onClick={handleRetryProvisioning}
+            disabled={retryLoading}
+            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {retryLoading ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Retrying...
+              </>
+            ) : (
+              "Retry Setup"
+            )}
+          </button>
         );
       default:
         return null;

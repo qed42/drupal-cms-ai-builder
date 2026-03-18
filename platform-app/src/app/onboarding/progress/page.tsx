@@ -1,34 +1,49 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import GenerationProgress from "@/components/onboarding/GenerationProgress";
 
 export default function ProgressPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const siteId = searchParams.get("siteId");
+
   const [step, setStep] = useState("pending");
+  const [siteStatus, setSiteStatus] = useState("generating");
+  const [siteName, setSiteName] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
   const pollStatus = useCallback(async () => {
     try {
-      const res = await fetch("/api/provision/status");
+      const url = siteId
+        ? `/api/provision/status?siteId=${siteId}`
+        : "/api/provision/status";
+      const res = await fetch(url);
       if (!res.ok) return;
       const data = await res.json();
 
       setStep(data.generationStep);
+      setSiteStatus(data.siteStatus);
       setProgress(data.progress);
+      if (data.siteName) setSiteName(data.siteName);
 
-      if (data.generationStep === "ready") {
+      if (data.siteStatus === "live") {
         setDone(true);
-      } else if (data.generationStep === "failed") {
-        setError(data.error || "Blueprint generation failed. Please try again.");
+      } else if (
+        data.generationStep === "failed" ||
+        data.siteStatus === "provisioning_failed"
+      ) {
+        setError(
+          data.error || "Something went wrong. Please try again."
+        );
       }
     } catch {
       // Silently retry on network errors
     }
-  }, []);
+  }, [siteId]);
 
   useEffect(() => {
     // Initial poll
@@ -45,17 +60,45 @@ export default function ProgressPage() {
   }, [pollStatus, done, error]);
 
   async function handleRetry() {
+    const wasProvisioningFailure = siteStatus === "provisioning_failed";
     setError(null);
-    setStep("pending");
-    setProgress(0);
+    setProgress(wasProvisioningFailure ? 55 : 0);
     setDone(false);
 
-    const res = await fetch("/api/provision/generate-blueprint", {
-      method: "POST",
-    });
-    if (!res.ok) {
-      setError("Failed to restart generation. Please try again.");
+    if (wasProvisioningFailure) {
+      // Retry provisioning only — blueprint is already ready.
+      setSiteStatus("provisioning");
+      setStep("provisioning");
+      const res = await fetch("/api/provision/start", { method: "POST" });
+      if (!res.ok) {
+        setError("Failed to restart provisioning. Please try again.");
+      }
+    } else {
+      // Retry full blueprint generation.
+      setStep("pending");
+      setSiteStatus("generating");
+      const res = await fetch("/api/provision/generate-blueprint", {
+        method: "POST",
+      });
+      if (!res.ok) {
+        setError("Failed to restart generation. Please try again.");
+      }
     }
+  }
+
+  function getHeading(): string {
+    const name = siteName || "your site";
+    if (done) return `${siteName || "Your website"} is live!`;
+    if (error) return "Something went wrong";
+    if (siteStatus === "provisioning") return `Setting up ${name}...`;
+    return `Building ${name} blueprint...`;
+  }
+
+  function getSubheading(): string {
+    if (done) return "Your Drupal CMS website is ready. Head to your dashboard to manage and edit it.";
+    if (error) return "Don't worry, you can try again.";
+    if (siteStatus === "provisioning") return "Installing Drupal CMS, applying your design, and importing content. Almost there!";
+    return "Our AI is crafting your perfect website. This usually takes about 30 seconds.";
   }
 
   return (
@@ -73,24 +116,16 @@ export default function ProgressPage() {
       </div>
 
       <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-        {done
-          ? "Your blueprint is ready!"
-          : error
-            ? "Something went wrong"
-            : "Building your site blueprint..."}
+        {getHeading()}
       </h1>
 
       <p className="text-white/60 text-lg mb-8 max-w-md">
-        {done
-          ? "We've designed your complete website. Head to your dashboard to see the details."
-          : error
-            ? "Don't worry, you can try again."
-            : "Our AI is crafting your perfect website. This usually takes about 30 seconds."}
+        {getSubheading()}
       </p>
 
       <div className="w-full mb-8">
         <GenerationProgress
-          currentStep={step}
+          currentStep={siteStatus === "provisioning" ? "provisioning" : step}
           progress={progress}
           error={error}
         />

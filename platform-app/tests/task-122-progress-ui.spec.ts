@@ -10,7 +10,7 @@ test.describe("TASK-122: Generation Progress UI", () => {
 
     // Should show the building message
     await expect(
-      page.getByRole("heading", { name: /Building your site blueprint/i })
+      page.getByRole("heading", { name: /Building .* blueprint/i })
     ).toBeVisible();
 
     // Should show the helper text
@@ -32,7 +32,8 @@ test.describe("TASK-122: Generation Progress UI", () => {
     await expect(page.getByText("Designing page layouts...")).toBeVisible();
     await expect(page.getByText("Writing content...")).toBeVisible();
     await expect(page.getByText("Setting up forms...")).toBeVisible();
-    await expect(page.getByText("Blueprint complete!")).toBeVisible();
+    await expect(page.getByText("Setting up your Drupal site...")).toBeVisible();
+    await expect(page.getByText("Your website is live!")).toBeVisible();
   });
 
   test("progress page shows percentage", async ({ page }) => {
@@ -75,17 +76,19 @@ test.describe("TASK-122: Generation Progress UI", () => {
     await page.getByRole("button", { name: /Visualize my site/i }).click();
 
     // Should redirect to progress page
-    await page.waitForURL("**/onboarding/progress", { timeout: 30000 });
+    await page.waitForURL("**/onboarding/progress**", { timeout: 30000 });
 
     // Progress page should be showing
     await expect(
-      page.getByRole("heading", { name: /Building your site blueprint/i })
+      page.getByRole("heading", { name: /Building .* blueprint/i })
     ).toBeVisible({ timeout: 10000 });
   });
 
   test("progress page shows success state when generation completes", async ({
     page,
   }) => {
+    // Requires DDEV+Drupal for provisioning to complete and site to go "live".
+    test.skip(!process.env.DDEV_RUNNING, "Requires DDEV environment for full provisioning");
     test.setTimeout(120000);
 
     await registerAndLogin(page);
@@ -113,7 +116,7 @@ test.describe("TASK-122: Generation Progress UI", () => {
 
     // Wait for completion — the page polls every 3s
     await expect(
-      page.getByRole("heading", { name: /Your blueprint is ready/i })
+      page.getByRole("heading", { name: /Your website is live/i })
     ).toBeVisible({ timeout: 120000 });
 
     // "Continue to Dashboard" button should appear
@@ -126,6 +129,8 @@ test.describe("TASK-122: Generation Progress UI", () => {
   });
 
   test("'Continue to Dashboard' navigates to dashboard", async ({ page }) => {
+    // Requires DDEV+Drupal for provisioning to complete and site to go "live".
+    test.skip(!process.env.DDEV_RUNNING, "Requires DDEV environment for full provisioning");
     test.setTimeout(120000);
 
     await registerAndLogin(page);

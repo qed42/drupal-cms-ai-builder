@@ -72,7 +72,8 @@ export default function FontsPage() {
       method: "POST",
     });
     if (genRes.ok) {
-      router.push("/onboarding/progress");
+      const genData = await genRes.json();
+      router.push(`/onboarding/progress?siteId=${genData.siteId}`);
       return true;
     }
     return false;
