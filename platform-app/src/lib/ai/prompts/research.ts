@@ -58,6 +58,12 @@ export function buildResearchPrompt(data: OnboardingData): string {
     );
   }
 
+  if (data.keywords && data.keywords.length > 0) {
+    sections.push(
+      `- **Pre-analyzed Keywords:** ${data.keywords.join(", ")}`
+    );
+  }
+
   if (data.compliance_flags && data.compliance_flags.length > 0) {
     sections.push(
       ``,

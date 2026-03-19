@@ -61,6 +61,7 @@ export function buildPlanPrompt(
     `    - "heading": Section heading text`,
     `    - "type": Section type (hero, features, testimonials, cta, text, gallery, faq, team, pricing, stats)`,
     `    - "contentBrief": 2-3 sentences describing what content to generate for this section`,
+    `    - "estimatedWordCount": Target word count for this section (e.g., hero: 30-50, text: 150-300, features: 100-200)`,
     `    - "componentSuggestion": Optional Space DS component suggestion`,
     `- "globalContent": Shared content used across pages:`,
     `  - "services": Array of { "title": string, "briefDescription": string } — 3-5 services`,

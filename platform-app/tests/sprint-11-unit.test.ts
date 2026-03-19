@@ -53,6 +53,22 @@ describe("TASK-215: Research Prompt Builder", () => {
     expect(prompt).toContain("complianceNotes");
   });
 
+  it("includes pre-analyzed keywords in prompt (BUG-311 fix)", async () => {
+    const { buildResearchPrompt } = await import(
+      "../src/lib/ai/prompts/research"
+    );
+
+    const prompt = buildResearchPrompt({
+      name: "Test",
+      idea: "Test biz",
+      keywords: ["dental care", "family dentist", "cosmetic dentistry"],
+    });
+
+    expect(prompt).toContain("Pre-analyzed Keywords");
+    expect(prompt).toContain("dental care");
+    expect(prompt).toContain("family dentist");
+  });
+
   it("handles minimal onboarding data gracefully", async () => {
     const { buildResearchPrompt } = await import(
       "../src/lib/ai/prompts/research"
@@ -231,6 +247,7 @@ describe("Pipeline Schemas", () => {
               heading: "Welcome",
               type: "hero",
               contentBrief: "Hero banner with tagline",
+              estimatedWordCount: 50,
               componentSuggestion: "space-hero-banner-style-01",
             },
           ],
@@ -259,6 +276,61 @@ describe("Pipeline Schemas", () => {
     };
 
     expect(() => ContentPlanSchema.parse(minimal)).not.toThrow();
+  });
+
+  it("ContentPlanPageSchema accepts estimatedWordCount per section (BUG-310 fix)", async () => {
+    const { ContentPlanPageSchema } = await import("../src/lib/pipeline/schemas");
+
+    const page = {
+      slug: "home",
+      title: "Home",
+      purpose: "Landing page",
+      targetKeywords: ["test"],
+      sections: [
+        {
+          heading: "Hero",
+          type: "hero",
+          contentBrief: "Main hero banner",
+          estimatedWordCount: 50,
+        },
+        {
+          heading: "Services",
+          type: "features",
+          contentBrief: "Service cards",
+          estimatedWordCount: 200,
+        },
+        {
+          heading: "CTA",
+          type: "cta",
+          contentBrief: "Call to action",
+          // estimatedWordCount is optional — should pass without it
+        },
+      ],
+    };
+
+    const parsed = ContentPlanPageSchema.parse(page);
+    expect(parsed.sections[0].estimatedWordCount).toBe(50);
+    expect(parsed.sections[1].estimatedWordCount).toBe(200);
+    expect(parsed.sections[2].estimatedWordCount).toBeUndefined();
+  });
+
+  it("plan prompt includes estimatedWordCount instruction (BUG-310 fix)", async () => {
+    const { buildPlanPrompt } = await import("../src/lib/ai/prompts/plan");
+
+    const prompt = buildPlanPrompt(
+      { name: "Test" },
+      {
+        industry: "other",
+        targetAudience: { primary: "General", demographics: [], painPoints: [] },
+        competitors: [],
+        keyMessages: ["Quality"],
+        toneGuidance: { primary: "Friendly", avoid: [], examples: [] },
+        seoKeywords: ["test"],
+      }
+    );
+
+    expect(prompt).toContain("estimatedWordCount");
+    expect(prompt).toContain("hero: 30-50");
   });
 });
 

@@ -40,6 +40,7 @@ export const ContentPlanPageSchema = z.object({
       heading: z.string(),
       type: z.string().describe("Section type: hero, features, testimonials, cta, text, gallery, etc."),
       contentBrief: z.string().describe("What content should be generated for this section"),
+      estimatedWordCount: z.number().optional().describe("Target word count for this section"),
       componentSuggestion: z.string().optional().describe("Suggested Space DS component"),
     })
   ),
