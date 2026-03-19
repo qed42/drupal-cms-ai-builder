@@ -14,15 +14,17 @@ interface PipelineProgressProps {
     research: PhaseStatus;
     plan: PhaseStatus;
     generate: PhaseStatus;
+    enhance?: PhaseStatus;
   };
   progress: number;
   error: string | null;
 }
 
 const PHASES = [
-  { key: "research" as const, label: "Research", description: "Analyzing your business and industry" },
-  { key: "plan" as const, label: "Plan", description: "Creating content strategy and page outlines" },
-  { key: "generate" as const, label: "Generate", description: "Writing content for each page" },
+  { key: "research" as const, label: "Analyzing your business", description: "Learning about your industry, audience, and competitors" },
+  { key: "plan" as const, label: "Designing your pages", description: "Creating layouts and content strategy for each page" },
+  { key: "generate" as const, label: "Writing your content", description: "Generating text, headings, and calls to action" },
+  { key: "enhance" as const, label: "Adding images", description: "Finding and placing relevant photos for your site" },
 ];
 
 function formatDuration(ms: number): string {
@@ -45,7 +47,7 @@ function StatusIcon({ status }: { status: PhaseStatus["status"] }) {
       );
     case "in_progress":
       return (
-        <div className="w-8 h-8 rounded-full border-2 border-indigo-500/40 border-t-indigo-500 animate-spin shrink-0" />
+        <div className="w-8 h-8 rounded-full border-2 border-brand-500/40 border-t-brand-500 animate-spin shrink-0" />
       );
     case "failed":
       return (
@@ -70,7 +72,7 @@ function PhaseCard({ phase, status }: { phase: typeof PHASES[number]; status: Ph
     <div
       className={`rounded-xl border p-4 transition-all ${
         status.status === "in_progress"
-          ? "border-indigo-500/50 bg-indigo-500/5"
+          ? "border-brand-500/50 bg-brand-500/5"
           : status.status === "complete"
             ? "border-emerald-500/30 bg-emerald-500/5"
             : status.status === "failed"
@@ -125,16 +127,18 @@ export default function PipelineProgress({ pipeline, progress, error }: Pipeline
       {/* Overall progress bar */}
       <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
         <div
-          className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+          className="h-full bg-brand-500 rounded-full transition-all duration-500"
           style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
         />
       </div>
 
       {/* Phase cards */}
       <div className="space-y-2">
-        {PHASES.map((phase) => (
-          <PhaseCard key={phase.key} phase={phase} status={pipeline[phase.key]} />
-        ))}
+        {PHASES.map((phase) => {
+          const status = pipeline[phase.key];
+          if (!status) return null;
+          return <PhaseCard key={phase.key} phase={phase} status={status} />;
+        })}
       </div>
 
       {/* Screen reader announcement */}

@@ -2,7 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { runResearchPhase } from "./phases/research";
 import { runPlanPhase } from "./phases/plan";
 import { runGeneratePhase } from "./phases/generate";
-import type { OnboardingData } from "@/lib/blueprint/types";
+import { runEnhancePhase } from "./phases/enhance";
+import type { OnboardingData, BlueprintBundle } from "@/lib/blueprint/types";
 import type { ResearchBrief, ContentPlan } from "./schemas";
 
 export type PipelinePhase =
@@ -12,9 +13,12 @@ export type PipelinePhase =
   | "plan_complete"
   | "generate"
   | "generate_complete"
+  | "enhance"
+  | "enhance_complete"
   | "research_failed"
   | "plan_failed"
-  | "generate_failed";
+  | "generate_failed"
+  | "enhance_failed";
 
 export interface PipelineResult {
   researchBriefId: string;
@@ -114,6 +118,30 @@ export async function runPipeline(
   }
 
   await updatePipelinePhase(siteId, "generate_complete");
+
+  // --- Phase 4: Enhance (stock images) ---
+  await updatePipelinePhase(siteId, "enhance");
+
+  try {
+    // Load the saved blueprint for image enhancement
+    const blueprintRecord = await prisma.blueprint.findUnique({
+      where: { siteId },
+      select: { payload: true },
+    });
+
+    if (blueprintRecord?.payload) {
+      const blueprint = blueprintRecord.payload as unknown as BlueprintBundle;
+      await runEnhancePhase(siteId, blueprint);
+    }
+  } catch (err) {
+    // Enhance failures are non-fatal — site works without images
+    const message = err instanceof Error ? err.message : "Enhance phase failed";
+    console.warn(`[pipeline] Enhance phase failed (non-fatal): ${message}`);
+    await updatePipelinePhase(siteId, "enhance_failed");
+    // Continue to review — don't throw
+  }
+
+  await updatePipelinePhase(siteId, "enhance_complete");
 
   // Transition site to "review" status
   await prisma.site.update({

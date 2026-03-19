@@ -32,9 +32,12 @@ const PIPELINE_PHASE_PROGRESS: Record<string, number> = {
   plan_complete: 30,
   generate: 35,
   generate_complete: 50,
+  enhance: 52,
+  enhance_complete: 55,
   research_failed: -1,
   plan_failed: -1,
   generate_failed: -1,
+  enhance_failed: -1,
 };
 
 interface PipelinePhaseStatus {
@@ -74,7 +77,7 @@ export async function GET(req: NextRequest) {
   let progress: number;
   if (site.status === "review" || site.status === "provisioning" || site.status === "live" || site.status === "provisioning_failed") {
     progress = SITE_STATUS_PROGRESS[site.status] ?? 70;
-  } else if (pipelinePhase && (pipelinePhase in PIPELINE_PHASE_PROGRESS || pipelinePhase.startsWith("generate:"))) {
+  } else if (pipelinePhase && (pipelinePhase in PIPELINE_PHASE_PROGRESS || pipelinePhase.startsWith("generate:") || pipelinePhase.startsWith("enhance"))) {
     if (pipelinePhase.startsWith("generate:")) {
       // Per-page progress: "generate:2/6:Services" → interpolate between 35-50
       const match = pipelinePhase.match(/^generate:(\d+)\/(\d+):/);
@@ -161,7 +164,10 @@ async function buildPipelineStatus(
     researchBrief !== null && contentPlan !== null
   );
 
-  return { research, plan, generate };
+  // Enhance phase status (stock images)
+  const enhance: PipelinePhaseStatus = buildEnhancePhaseStatus(currentPhase, pipelineError);
+
+  return { research, plan, generate, enhance };
 }
 
 function buildPhaseStatus(
@@ -244,6 +250,31 @@ function buildGeneratePhaseStatus(
 
   // If prerequisites are done but generate hasn't started, it's pending
   if (prerequisitesComplete && currentPhase === "plan_complete") {
+    return { status: "pending" };
+  }
+
+  return { status: "pending" };
+}
+
+function buildEnhancePhaseStatus(
+  currentPhase: string | null,
+  pipelineError: string | null
+): PipelinePhaseStatus {
+  if (currentPhase === "enhance_complete") {
+    return { status: "complete", summary: "Images added to pages" };
+  }
+
+  if (currentPhase === "enhance_failed") {
+    // Enhance failures are non-fatal, show as complete with note
+    return { status: "complete", summary: "Completed (some images skipped)" };
+  }
+
+  if (currentPhase === "enhance") {
+    return { status: "in_progress", summary: "Adding images to your pages..." };
+  }
+
+  // Enhance starts after generate_complete
+  if (currentPhase === "generate_complete") {
     return { status: "pending" };
   }
 

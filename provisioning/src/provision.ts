@@ -13,6 +13,7 @@ import { installThemeStep } from "./steps/05-install-theme.js";
 import { enableModulesStep } from "./steps/06-enable-modules.js";
 import { importConfigStep } from "./steps/07-import-config.js";
 import { importBlueprintStep } from "./steps/08-import-blueprint.js";
+import { copyStockImagesStep } from "./steps/08.5-copy-stock-images.js";
 import { applyBrandStep } from "./steps/09-apply-brand.js";
 import { configureSiteStep } from "./steps/10-configure-site.js";
 import { callbackStep, sendFailureCallback } from "./steps/11-callback.js";
@@ -93,6 +94,7 @@ async function provision(): Promise<void> {
     { name: "Enable modules", fn: enableModulesStep },
     { name: "Import industry config", fn: importConfigStep },
     { name: "Import blueprint", fn: importBlueprintStep },
+    { name: "Copy stock images", fn: copyStockImagesStep },
     { name: "Apply brand tokens", fn: applyBrandStep },
     { name: "Configure site", fn: configureSiteStep },
     { name: "Platform callback", fn: callbackStep },

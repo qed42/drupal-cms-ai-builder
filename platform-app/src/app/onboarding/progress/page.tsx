@@ -16,12 +16,14 @@ interface PipelineData {
   research: PhaseStatus;
   plan: PhaseStatus;
   generate: PhaseStatus;
+  enhance?: PhaseStatus;
 }
 
 const DEFAULT_PIPELINE: PipelineData = {
   research: { status: "pending" },
   plan: { status: "pending" },
   generate: { status: "pending" },
+  enhance: { status: "pending" },
 };
 
 export default function ProgressPage() {
@@ -113,17 +115,25 @@ export default function ProgressPage() {
     }
   }
 
+  // Extract page names from the generate phase summary if available
+  const pageNames: string[] = [];
+  if (done && pipeline.generate?.summary) {
+    const match = pipeline.generate.summary.match(/pages?:\s*(.+)/i);
+    if (match) {
+      pageNames.push(...match[1].split(",").map((s) => s.trim()).filter(Boolean));
+    }
+  }
+
   function getHeading(): string {
-    const name = siteName || "your site";
     if (done) return `${siteName || "Your website"} is ready!`;
     if (error) return "Something went wrong";
-    return `Building ${name}...`;
+    return `Building ${siteName || "your site"}...`;
   }
 
   function getSubheading(): string {
-    if (done) return "Your content has been generated. Review and approve it, then we'll set up your Drupal CMS site.";
-    if (error) return "Don't worry, you can try again.";
-    return "Our AI is researching, planning, and writing content for your website.";
+    if (done) return "Review your generated content, make any edits, then approve to launch your site.";
+    if (error) return "Your data is safe. You can try again.";
+    return "This usually takes 2-3 minutes. You can stay on this page or come back later.";
   }
 
   return (
@@ -131,7 +141,7 @@ export default function ProgressPage() {
       {/* Animated icon */}
       <div className="mb-8">
         {!done && !error && (
-          <div className="w-16 h-16 rounded-full border-4 border-indigo-500/30 border-t-indigo-500 animate-spin mx-auto" />
+          <div className="w-16 h-16 rounded-full border-4 border-brand-500/30 border-t-brand-500 animate-spin mx-auto" />
         )}
         {done && (
           <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
@@ -166,13 +176,29 @@ export default function ProgressPage() {
         />
       </div>
 
+      {/* Completion summary — what was generated */}
+      {done && pageNames.length > 0 && (
+        <div className="w-full rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 mb-6">
+          <p className="text-sm text-emerald-400 font-medium mb-2">
+            {pageNames.length} page{pageNames.length !== 1 ? "s" : ""} generated
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {pageNames.map((name, i) => (
+              <span key={i} className="px-2 py-0.5 rounded-md bg-white/10 text-xs text-white/60">
+                {name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-4">
         {done && siteStatus === "review" && siteId && (
           <button
             onClick={() => router.push(`/onboarding/review?siteId=${siteId}`)}
-            className="rounded-full bg-white px-8 py-3 font-medium text-[#0a0a2e] transition-all hover:bg-white/90 flex items-center gap-2"
+            className="rounded-full bg-brand-500 px-8 py-3 font-medium text-white transition-all hover:bg-brand-400 flex items-center gap-2 shadow-lg shadow-brand-500/25"
           >
-            Review Your Content
+            Review Your Website
             <span className="text-lg">&rarr;</span>
           </button>
         )}
@@ -180,7 +206,7 @@ export default function ProgressPage() {
         {done && siteStatus !== "review" && (
           <button
             onClick={() => router.push("/dashboard")}
-            className="rounded-full bg-white px-8 py-3 font-medium text-[#0a0a2e] transition-all hover:bg-white/90 flex items-center gap-2"
+            className="rounded-full bg-brand-500 px-8 py-3 font-medium text-white transition-all hover:bg-brand-400 flex items-center gap-2"
           >
             Continue to Dashboard
             <span className="text-lg">&rarr;</span>
@@ -190,31 +216,9 @@ export default function ProgressPage() {
         {error && (
           <button
             onClick={handleRetry}
-            className="rounded-full bg-white px-8 py-3 font-medium text-[#0a0a2e] transition-all hover:bg-white/90 flex items-center gap-2"
+            className="rounded-full bg-white px-8 py-3 font-medium text-slate-900 transition-all hover:bg-white/90 flex items-center gap-2"
           >
             Try Again
-          </button>
-        )}
-
-        {blueprintReady && siteId && (
-          <button
-            onClick={handleDownload}
-            disabled={downloadLoading}
-            className="rounded-full border border-white/20 px-6 py-3 font-medium text-white/70 hover:bg-white/5 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {downloadLoading ? (
-              <>
-                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Downloading...
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a2 2 0 002 2h14a2 2 0 002-2v-3" />
-                </svg>
-                Blueprint JSON
-              </>
-            )}
           </button>
         )}
       </div>

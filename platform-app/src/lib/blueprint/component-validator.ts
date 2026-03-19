@@ -142,6 +142,18 @@ export function validateSections(sections: PageSection[]): ValidationResult {
         continue;
       }
 
+      // 4b. Image object validation (type: "object" with image $ref)
+      if (propDef.type === "object" && value !== null && typeof value === "object") {
+        const imgObj = value as Record<string, unknown>;
+        if (imgObj.src && typeof imgObj.src === "string") {
+          // Valid image object — pass through
+          cleanProps[key] = value;
+          continue;
+        }
+        // Object without src — skip silently (image not yet populated)
+        continue;
+      }
+
       cleanProps[key] = value;
     }
 

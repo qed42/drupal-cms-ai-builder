@@ -71,7 +71,7 @@ describe("Sprint 14 QA: Blueprint Validation & AI Regeneration", () => {
         path.join(SRC, "lib/pipeline/phases/generate.ts"), "utf8"
       );
       // Verify both parsing and validation exist in the generate function
-      expect(content).toContain("JSON.parse(sanitized)");
+      expect(content).toContain("safeParsePropsJson");
       expect(content).toContain("validateSections(sections)");
       // Validation result is used to sanitize sections
       expect(content).toContain("validation.sanitizedSections");

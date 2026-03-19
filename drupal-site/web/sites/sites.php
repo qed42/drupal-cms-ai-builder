@@ -18,3 +18,7 @@ $sites['basic-setup-mlko.ai-site-builder.ddev.site'] = 'basic-setup-mlko.ai-site
 $sites['healthcare-product-website-ugxe.ai-site-builder.ddev.site'] = 'healthcare-product-website-ugxe.ai-site-builder.ddev.site';
 $sites['nicotinell-f0nv.ai-site-builder.ddev.site'] = 'nicotinell-f0nv.ai-site-builder.ddev.site';
 $sites['project-x-bwbp.ai-site-builder.ddev.site'] = 'project-x-bwbp.ai-site-builder.ddev.site';
+$sites['plugs-rnmq.ai-site-builder.ddev.site'] = 'plugs-rnmq.ai-site-builder.ddev.site';
+$sites['saas-startup-phtp.ai-site-builder.ddev.site'] = 'saas-startup-phtp.ai-site-builder.ddev.site';
+$sites['yoga-studio-ldsa.ai-site-builder.ddev.site'] = 'yoga-studio-ldsa.ai-site-builder.ddev.site';
+$sites['therapist-x65q.ai-site-builder.ddev.site'] = 'therapist-x65q.ai-site-builder.ddev.site';
