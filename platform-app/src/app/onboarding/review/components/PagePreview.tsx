@@ -1,14 +1,19 @@
 "use client";
 
-import type { PageLayout } from "@/lib/blueprint/types";
+import { useState, useCallback } from "react";
+import type { PageLayout, PageSection } from "@/lib/blueprint/types";
 import { getComponentLabel } from "@/lib/blueprint/markdown-renderer";
+import RegenerateButton from "./RegenerateButton";
 
 interface PagePreviewProps {
+  siteId: string;
   page: PageLayout;
   pageIndex: number;
   editingSection: number | null;
   onEditSection: (sectionIndex: number | null) => void;
   onSectionChange: (sectionIndex: number, field: string, value: string) => void;
+  onSectionRegenerated: (sectionIndex: number, newSection: PageSection) => void;
+  onPageRegenerated?: (newPage: PageLayout) => void;
 }
 
 /**
@@ -46,6 +51,9 @@ function SectionView({
   onEdit,
   onDone,
   onChange,
+  siteId,
+  pageIndex,
+  onRegenerated,
 }: {
   section: PageLayout["sections"][number];
   sectionIndex: number;
@@ -53,9 +61,25 @@ function SectionView({
   onEdit: () => void;
   onDone: () => void;
   onChange: (field: string, value: string) => void;
+  siteId: string;
+  pageIndex: number;
+  onRegenerated: (newSection: PageSection, previousSection: PageSection) => void;
 }) {
+  const [undoSection, setUndoSection] = useState<PageSection | null>(null);
   const label = getComponentLabel(section.component_id);
   const fields = getEditableFields(section.props);
+
+  function handleRegenerated(newSection: PageSection, previousSection: PageSection) {
+    setUndoSection(previousSection);
+    onRegenerated(newSection, previousSection);
+  }
+
+  function handleUndo() {
+    if (undoSection) {
+      onRegenerated(undoSection, { component_id: section.component_id, props: section.props });
+      setUndoSection(null);
+    }
+  }
 
   return (
     <div className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
@@ -65,17 +89,34 @@ function SectionView({
           <span className="text-xs text-indigo-400 font-medium">{label}</span>
           <span className="text-xs text-white/20">Section {sectionIndex + 1}</span>
         </div>
-        <button
-          type="button"
-          onClick={isEditing ? onDone : onEdit}
-          className={`text-xs px-3 py-1 rounded-md transition-colors ${
-            isEditing
-              ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
-              : "bg-white/5 text-white/50 hover:text-white/80 hover:bg-white/10"
-          }`}
-        >
-          {isEditing ? "Done" : "Edit"}
-        </button>
+        <div className="flex items-center gap-2">
+          {undoSection && (
+            <button
+              type="button"
+              onClick={handleUndo}
+              className="text-xs px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-colors"
+            >
+              ↶ Undo
+            </button>
+          )}
+          <RegenerateButton
+            siteId={siteId}
+            pageIndex={pageIndex}
+            sectionIndex={sectionIndex}
+            onRegenerated={handleRegenerated}
+          />
+          <button
+            type="button"
+            onClick={isEditing ? onDone : onEdit}
+            className={`text-xs px-3 py-1 rounded-md transition-colors ${
+              isEditing
+                ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                : "bg-white/5 text-white/50 hover:text-white/80 hover:bg-white/10"
+            }`}
+          >
+            {isEditing ? "Done" : "Edit"}
+          </button>
+        </div>
       </div>
 
       {/* Section content */}
@@ -166,19 +207,62 @@ function renderFormFields(props: Record<string, unknown>): React.ReactNode {
 }
 
 export default function PagePreview({
+  siteId,
   page,
   pageIndex,
   editingSection,
   onEditSection,
   onSectionChange,
+  onSectionRegenerated,
+  onPageRegenerated,
 }: PagePreviewProps) {
+  const [regeneratingPage, setRegeneratingPage] = useState(false);
+  const [regenPageError, setRegenPageError] = useState<string | null>(null);
+
+  const handleRegeneratePage = useCallback(async () => {
+    setRegeneratingPage(true);
+    setRegenPageError(null);
+    try {
+      const res = await fetch(`/api/blueprint/${siteId}/regenerate-page`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pageIndex }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Page regeneration failed");
+      }
+      const data = await res.json();
+      onPageRegenerated?.(data.page);
+    } catch (err) {
+      setRegenPageError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setRegeneratingPage(false);
+    }
+  }, [siteId, pageIndex, onPageRegenerated]);
+
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-3xl mx-auto px-6 py-8">
         {/* Page header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">{page.title}</h1>
-          <p className="text-sm text-white/40 mt-1">/{page.slug}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-white">{page.title}</h1>
+              <p className="text-sm text-white/40 mt-1">/{page.slug}</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleRegeneratePage}
+              disabled={regeneratingPage}
+              className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white/50 hover:text-white/80 hover:bg-white/10 transition-colors disabled:opacity-50"
+            >
+              {regeneratingPage ? "Regenerating..." : "↻ Regenerate Page"}
+            </button>
+          </div>
+          {regenPageError && (
+            <p className="text-xs text-red-400 mt-2">{regenPageError}</p>
+          )}
           {page.seo && (
             <div className="mt-3 p-3 rounded-lg bg-white/[0.03] border border-white/5">
               <p className="text-xs text-white/30 mb-1">SEO Title</p>
@@ -200,6 +284,11 @@ export default function PagePreview({
               onEdit={() => onEditSection(sectionIndex)}
               onDone={() => onEditSection(null)}
               onChange={(field, value) => onSectionChange(sectionIndex, field, value)}
+              siteId={siteId}
+              pageIndex={pageIndex}
+              onRegenerated={(newSection) => {
+                onSectionRegenerated(sectionIndex, newSection);
+              }}
             />
           ))}
         </div>

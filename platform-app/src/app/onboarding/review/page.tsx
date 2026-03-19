@@ -6,7 +6,7 @@ import PageSidebar from "./components/PageSidebar";
 import PagePreview from "./components/PagePreview";
 import ApproveButton from "./components/ApproveButton";
 import { useAutoSave } from "./hooks/useAutoSave";
-import type { PageLayout } from "@/lib/blueprint/types";
+import type { PageLayout, PageSection } from "@/lib/blueprint/types";
 
 interface BlueprintData {
   id: string;
@@ -84,6 +84,84 @@ export default function ReviewPage() {
       return next;
     });
   }, []);
+
+  // Handle section regeneration
+  const handleSectionRegenerated = useCallback(
+    (sectionIndex: number, newSection: PageSection) => {
+      setBlueprint((prev) => {
+        if (!prev) return prev;
+        const pages = [...prev.pages];
+        const page = { ...pages[activePageIndex] };
+        const sections = [...page.sections];
+        sections[sectionIndex] = newSection;
+        page.sections = sections;
+        pages[activePageIndex] = page;
+        return { ...prev, pages };
+      });
+    },
+    [activePageIndex]
+  );
+
+  // Handle page regeneration
+  const handlePageRegenerated = useCallback(
+    (newPage: PageLayout) => {
+      setBlueprint((prev) => {
+        if (!prev) return prev;
+        const pages = [...prev.pages];
+        pages[activePageIndex] = newPage;
+        return { ...prev, pages };
+      });
+    },
+    [activePageIndex]
+  );
+
+  // Handle adding a new page
+  const handleAddPage = useCallback(
+    async (title: string, description: string) => {
+      if (!siteId) return;
+      const res = await fetch(`/api/blueprint/${siteId}/add-page`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, description }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to add page");
+      }
+      const data = await res.json();
+      setBlueprint((prev) => {
+        if (!prev) return prev;
+        return { ...prev, pages: [...prev.pages, data.page] };
+      });
+    },
+    [siteId]
+  );
+
+  // Handle removing a page
+  const handleRemovePage = useCallback(
+    async (pageIndex: number) => {
+      if (!siteId) return;
+      const res = await fetch(`/api/blueprint/${siteId}/remove-page`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pageIndex }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to remove page");
+      }
+      setBlueprint((prev) => {
+        if (!prev) return prev;
+        const pages = prev.pages.filter((_, i) => i !== pageIndex);
+        return { ...prev, pages };
+      });
+      // Adjust active page if needed
+      if (activePageIndex >= (blueprint?.pages.length ?? 1) - 1) {
+        setActivePageIndex(Math.max(0, activePageIndex - 1));
+      }
+    },
+    [siteId, activePageIndex, blueprint?.pages.length]
+  );
 
   // Handle section edits
   const handleSectionChange = useCallback(
@@ -187,15 +265,20 @@ export default function ReviewPage() {
           activePageIndex={activePageIndex}
           viewedPages={viewedPages}
           onPageSelect={handlePageSelect}
+          onAddPage={handleAddPage}
+          onRemovePage={handleRemovePage}
         />
 
         {activePage && (
           <PagePreview
+            siteId={blueprint.siteId}
             page={activePage}
             pageIndex={activePageIndex}
             editingSection={editingSection}
             onEditSection={setEditingSection}
             onSectionChange={handleSectionChange}
+            onSectionRegenerated={handleSectionRegenerated}
+            onPageRegenerated={handlePageRegenerated}
           />
         )}
       </div>

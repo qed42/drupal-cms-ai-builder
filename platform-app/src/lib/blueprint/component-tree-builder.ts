@@ -2,20 +2,9 @@ import { randomUUID } from "crypto";
 import type { PageSection, ComponentTreeItem } from "./types";
 import { toCanvasComponentId, getComponentVersion } from "./canvas-component-versions";
 
-/**
- * Required prop defaults for Space DS components.
- *
- * Canvas validates required props on save. The AI generator only produces
- * content props (title, description, etc.) and omits layout/display props
- * that have sensible defaults in the component schema. This map supplies
- * those defaults so validation passes.
- */
-const REQUIRED_PROP_DEFAULTS: Record<string, Record<string, string>> = {
-  "space_ds:space-cta-banner-type-1": { width: "boxed-width", alignment: "left-align" },
-  "space_ds:space-cta-banner-type-2": { width: "boxed-width", image_type: "large-image" },
-  "space_ds:space-cta-banner-type-3": { width: "boxed-width" },
-  "space_ds:space-container": { width: "boxed-width" },
-};
+// Required prop defaults are now handled by the component-validator.ts
+// which reads defaults from the Space DS manifest dynamically.
+// See TASK-268 for details.
 
 /**
  * Build a Canvas-ready flat component tree from a page's sections array.
@@ -40,10 +29,9 @@ export function buildComponentTree(
       .replace(/\b\w/g, (c) => c.toUpperCase()) // "Hero Banner Style 01"
       ?? canvasId;
 
-    // Merge required prop defaults (schema defaults the AI omits) with
-    // AI-generated props. AI props take precedence if provided.
-    const defaults = REQUIRED_PROP_DEFAULTS[section.component_id] ?? {};
-    const inputs = { ...defaults, ...section.props } as Record<string, unknown>;
+    // Props are now pre-validated by component-validator.ts which fills
+    // required defaults from the manifest. Just pass through as-is.
+    const inputs = { ...section.props } as Record<string, unknown>;
 
     return {
       uuid: randomUUID(),
