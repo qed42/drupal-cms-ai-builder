@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         data: {
           status: "live",
           drupalUrl: url || null,
-          subdomain: domain?.replace(".drupalcms.app", "") || undefined,
+          subdomain: domain?.replace(`.${process.env.SITE_DOMAIN_SUFFIX || "drupalcms.app"}`, "") || undefined,
         },
       });
 
