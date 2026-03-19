@@ -395,7 +395,6 @@ describe("TASK-219a: Pipeline Status API", () => {
     const content = fs.readFileSync(routePath, "utf-8");
     expect(content).toContain("USE_V2_PIPELINE");
     expect(content).toContain("runPipeline");
-    expect(content).toContain("runV2Pipeline");
     expect(content).toContain("CONTENT_PIPELINE_V2");
   });
 });

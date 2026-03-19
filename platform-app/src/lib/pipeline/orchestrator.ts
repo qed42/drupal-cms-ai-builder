@@ -1,16 +1,20 @@
 import { prisma } from "@/lib/prisma";
 import { runResearchPhase } from "./phases/research";
 import { runPlanPhase } from "./phases/plan";
+import { runGeneratePhase } from "./phases/generate";
 import type { OnboardingData } from "@/lib/blueprint/types";
-import type { ResearchBrief } from "./schemas";
+import type { ResearchBrief, ContentPlan } from "./schemas";
 
 export type PipelinePhase =
   | "research"
   | "research_complete"
   | "plan"
   | "plan_complete"
+  | "generate"
+  | "generate_complete"
   | "research_failed"
-  | "plan_failed";
+  | "plan_failed"
+  | "generate_failed";
 
 export interface PipelineResult {
   researchBriefId: string;
@@ -36,15 +40,17 @@ async function updatePipelinePhase(
 }
 
 /**
- * Run the content pipeline: Research → Plan.
+ * Run the full content pipeline: Research → Plan → Generate.
  *
  * Updates Site.pipelinePhase at each transition. On error, sets the phase
  * to `{phase}_failed` and records the error message.
  *
- * Sprint 12 will extend this to add the Generate phase.
+ * After Generate completes, transitions site to "review" status and stores
+ * the blueprint in the database.
  */
 export async function runPipeline(
   siteId: string,
+  blueprintId: string,
   data: OnboardingData
 ): Promise<PipelineResult> {
   const pipelineStart = Date.now();
@@ -81,6 +87,39 @@ export async function runPipeline(
   }
 
   await updatePipelinePhase(siteId, "plan_complete");
+
+  // --- Phase 3: Generate ---
+  await updatePipelinePhase(siteId, "generate");
+
+  try {
+    await runGeneratePhase(
+      siteId,
+      data,
+      researchResult.brief as ResearchBrief,
+      planResult.plan as ContentPlan,
+      async (pageName, pageIndex, totalPages) => {
+        // Update pipeline phase with per-page progress detail
+        await prisma.site.update({
+          where: { id: siteId },
+          data: {
+            pipelinePhase: `generate:${pageIndex + 1}/${totalPages}:${pageName}`,
+          },
+        });
+      }
+    );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Generate phase failed";
+    await updatePipelinePhase(siteId, "generate_failed", message);
+    throw err;
+  }
+
+  await updatePipelinePhase(siteId, "generate_complete");
+
+  // Transition site to "review" status
+  await prisma.site.update({
+    where: { id: siteId },
+    data: { status: "review" },
+  });
 
   return {
     researchBriefId: researchResult.briefId,

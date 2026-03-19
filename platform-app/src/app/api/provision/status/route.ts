@@ -73,8 +73,20 @@ export async function GET(req: NextRequest) {
   let progress: number;
   if (site.status === "provisioning" || site.status === "live" || site.status === "provisioning_failed") {
     progress = SITE_STATUS_PROGRESS[site.status] ?? 70;
-  } else if (pipelinePhase && pipelinePhase in PIPELINE_PHASE_PROGRESS) {
-    progress = PIPELINE_PHASE_PROGRESS[pipelinePhase] ?? 0;
+  } else if (pipelinePhase && (pipelinePhase in PIPELINE_PHASE_PROGRESS || pipelinePhase.startsWith("generate:"))) {
+    if (pipelinePhase.startsWith("generate:")) {
+      // Per-page progress: "generate:2/6:Services" → interpolate between 35-50
+      const match = pipelinePhase.match(/^generate:(\d+)\/(\d+):/);
+      if (match) {
+        const current = parseInt(match[1], 10);
+        const total = parseInt(match[2], 10);
+        progress = 35 + Math.round((current / total) * 15);
+      } else {
+        progress = 35;
+      }
+    } else {
+      progress = PIPELINE_PHASE_PROGRESS[pipelinePhase] ?? 0;
+    }
   } else {
     progress = GENERATION_STEP_PROGRESS[generationStep] ?? 0;
   }
@@ -141,8 +153,12 @@ async function buildPipelineStatus(
       : undefined
   );
 
-  // Generate phase — placeholder for Sprint 12
-  const generate: PipelinePhaseStatus = { status: "pending" };
+  // Generate phase status — check blueprint for completion or parse per-page progress
+  const generate: PipelinePhaseStatus = buildGeneratePhaseStatus(
+    currentPhase,
+    pipelineError,
+    researchBrief !== null && contentPlan !== null
+  );
 
   return { research, plan, generate };
 }
@@ -191,6 +207,46 @@ function summarizeResearchBrief(content: unknown): string {
   } catch {
     return "Research brief generated";
   }
+}
+
+function buildGeneratePhaseStatus(
+  currentPhase: string | null,
+  pipelineError: string | null,
+  prerequisitesComplete: boolean
+): PipelinePhaseStatus {
+  if (currentPhase === "generate_complete") {
+    return { status: "complete", summary: "All pages generated" };
+  }
+
+  if (currentPhase === "generate_failed") {
+    return {
+      status: "failed",
+      error: pipelineError || "Generate phase failed",
+    };
+  }
+
+  // Per-page progress: "generate:2/6:Services"
+  if (currentPhase?.startsWith("generate:")) {
+    const match = currentPhase.match(/^generate:(\d+)\/(\d+):(.+)$/);
+    if (match) {
+      return {
+        status: "in_progress",
+        summary: `Generating ${match[3]} (${match[1]}/${match[2]})`,
+      };
+    }
+    return { status: "in_progress" };
+  }
+
+  if (currentPhase === "generate") {
+    return { status: "in_progress" };
+  }
+
+  // If prerequisites are done but generate hasn't started, it's pending
+  if (prerequisitesComplete && currentPhase === "plan_complete") {
+    return { status: "pending" };
+  }
+
+  return { status: "pending" };
 }
 
 function summarizeContentPlan(content: unknown): string {

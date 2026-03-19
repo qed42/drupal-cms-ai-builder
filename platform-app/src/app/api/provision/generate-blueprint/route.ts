@@ -57,10 +57,15 @@ export async function POST() {
       },
     });
 
-    // Update site status
+    // Update site status and reset pipeline state
     await prisma.site.update({
       where: { id: site.id },
-      data: { status: "generating", name: siteName },
+      data: {
+        status: "generating",
+        name: siteName,
+        pipelinePhase: null,
+        pipelineError: null,
+      },
     });
 
     // Mark onboarding as completed
@@ -71,7 +76,7 @@ export async function POST() {
 
     // Run generation in background (don't await — client will poll for status)
     const generationPromise = USE_V2_PIPELINE
-      ? runV2Pipeline(blueprint.id, site.id, sessionData as OnboardingData)
+      ? runPipeline(site.id, blueprint.id, sessionData as OnboardingData)
       : generateBlueprint(blueprint.id, site.id, sessionData);
 
     generationPromise.catch(async (err) => {
@@ -103,21 +108,4 @@ export async function POST() {
       { status: 500 }
     );
   }
-}
-
-/**
- * V2 pipeline: run Research → Plan, then fall through to v1 blueprint
- * generation for provisioning compatibility.
- */
-async function runV2Pipeline(
-  blueprintId: string,
-  siteId: string,
-  data: OnboardingData
-): Promise<void> {
-  // Phase 1-2: Research → Plan (v2 pipeline)
-  await runPipeline(siteId, data);
-
-  // Phase 3: Fall through to v1 blueprint generation for provisioning
-  // Sprint 12 will replace this with the Generate phase (TASK-217)
-  await generateBlueprint(blueprintId, siteId, data);
 }
