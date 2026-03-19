@@ -167,7 +167,17 @@ export default function ProgressPage() {
       </div>
 
       <div className="flex items-center gap-4">
-        {done && (
+        {done && siteStatus === "review" && siteId && (
+          <button
+            onClick={() => router.push(`/onboarding/review?siteId=${siteId}`)}
+            className="rounded-full bg-white px-8 py-3 font-medium text-[#0a0a2e] transition-all hover:bg-white/90 flex items-center gap-2"
+          >
+            Review Your Content
+            <span className="text-lg">&rarr;</span>
+          </button>
+        )}
+
+        {done && siteStatus !== "review" && (
           <button
             onClick={() => router.push("/dashboard")}
             className="rounded-full bg-white px-8 py-3 font-medium text-[#0a0a2e] transition-all hover:bg-white/90 flex items-center gap-2"

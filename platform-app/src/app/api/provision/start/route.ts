@@ -1,20 +1,26 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateSubdomain, spawnProvisioning } from "@/lib/provisioning";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id || !session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    // Find the user's latest site eligible for provisioning (ready or failed retry).
+    // Accept optional siteId from request body (used by review page approve flow).
+    const body = await req.json().catch(() => ({}));
+    const requestedSiteId = (body as { siteId?: string }).siteId;
+
+    // Find the user's latest site eligible for provisioning.
+    // "review" status is now valid — users approve from the review page.
     const site = await prisma.site.findFirst({
       where: {
         userId: session.user.id,
-        status: { in: ["blueprint_ready", "provisioning_failed"] },
+        status: { in: ["blueprint_ready", "review", "provisioning_failed"] },
+        ...(requestedSiteId ? { id: requestedSiteId } : {}),
       },
       orderBy: { createdAt: "desc" },
       include: { blueprint: true },

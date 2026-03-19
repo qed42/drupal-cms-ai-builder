@@ -53,6 +53,7 @@ export async function GET(
   }
 
   return NextResponse.json({
+    id: site.blueprint.id,
     siteId: site.id,
     siteName: site.name,
     status: site.blueprint.status,

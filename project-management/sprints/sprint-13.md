@@ -9,11 +9,11 @@ Build the content review page with markdown preview, inline text editing, and th
 ## Tasks
 | ID | Task | Story | Effort | Status |
 |----|------|-------|--------|--------|
-| TASK-230 | Blueprint-to-Markdown Renderer | US-046 | M | Not Started |
-| TASK-231 | Review Page Layout | US-046 | L | Not Started |
-| TASK-232 | Inline Section Editor | US-047 | L | Not Started |
-| TASK-236 | Original Version Preservation | US-051 | M | Not Started |
-| TASK-238 | Approve & Provision Flow | US-052 | M | Not Started |
+| TASK-230 | Blueprint-to-Markdown Renderer | US-046 | M | Done |
+| TASK-231 | Review Page Layout | US-046 | L | Done |
+| TASK-232 | Inline Section Editor | US-047 | L | Done |
+| TASK-236 | Original Version Preservation | US-051 | M | Done |
+| TASK-238 | Approve & Provision Flow | US-052 | M | Done |
 
 ## Dependencies & Risks
 - Requires Sprint 12 complete (pipeline generates blueprints with site status "review")
@@ -25,11 +25,11 @@ Build the content review page with markdown preview, inline text editing, and th
 - Risk: Auto-save with debounce must handle rapid edits without data loss
 
 ## Definition of Done
-- [ ] Review page renders all blueprint pages as formatted markdown with component labels
-- [ ] Sidebar navigation lists all pages with click-to-navigate
-- [ ] Inline editor switches sections between read-only and editable textarea
-- [ ] Auto-save works with 500ms debounce
-- [ ] Original blueprint preserved on first edit
-- [ ] "Approve & Build Site" button tracks page views and triggers provisioning
-- [ ] Review page loads within 2 seconds
-- [ ] All code committed
+- [x] Review page renders all blueprint pages as formatted markdown with component labels
+- [x] Sidebar navigation lists all pages with click-to-navigate
+- [x] Inline editor switches sections between read-only and editable textarea
+- [x] Auto-save works with 500ms debounce
+- [x] Original blueprint preserved on first edit
+- [x] "Approve & Build Site" button tracks page views and triggers provisioning
+- [x] Review page loads within 2 seconds
+- [x] All code committed
