@@ -42,3 +42,10 @@ tests/test-results.json
 # Claude Code
 skills-lock.json
 .claude/plans/
+
+# Local tooling
+.agents/
+
+# Runtime data
+platform-app/public/uploads/
+platform-app/test-results/
