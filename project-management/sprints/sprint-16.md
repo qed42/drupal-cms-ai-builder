@@ -1,40 +1,56 @@
-# Sprint 16: Quality Framework & Communication
+# Sprint 16: Provisioning Hardening & Deferred Review Features
 
-**Milestone:** M10 — Quality Framework
+**Milestone:** M9 — Provisioning Hardening
 **Duration:** 1 week
 
 ## Sprint Goal
-Create synthetic test cases, automated Playwright E2E tests, the evaluation rubric, and communication artifacts to validate and showcase v2 content quality.
+Harden the provisioning pipeline with step-level progress, per-site database isolation, and failure retry. Also deliver deferred review page features from Sprint 14.
 
 ## Tasks
+
+### Phase 1: Provisioning Hardening (Days 1-3)
 | ID | Task | Story | Effort | Status |
 |----|------|-------|--------|--------|
-| TASK-260 | Synthetic Test Case Definitions | US-057 | L | Not Started |
-| TASK-261 | Manual Test Scripts | US-057 | M | Not Started |
-| TASK-262 | Playwright E2E Test Framework | US-058 | L | Not Started |
-| TASK-263 | Content Evaluation Rubric | US-059 | M | Not Started |
-| TASK-264 | Content Uniqueness Validator | US-060 | M | Not Started |
-| TASK-265 | Before/After Comparison Artifacts | US-060 | M | Not Started |
-| TASK-266 | Vision Deck | US-061 | M | Not Started |
-| TASK-267 | Content Quality Dashboard | US-062 | L | Not Started |
+| TASK-250 | Provisioning Step Timing & Interim Callbacks | US-054 | L | Not Started |
+| TASK-251 | Step-Level Provisioning Progress UI | US-054 | M | Not Started |
+| TASK-252 | Per-Site MariaDB User Creation | US-055 | M | Not Started |
+| TASK-253 | Provisioning Failure Detail & Resume | US-056 | L | Not Started |
+
+### Phase 2: Deferred Review Features (Days 4-5)
+| ID | Task | Story | Effort | Status |
+|----|------|-------|--------|--------|
+| TASK-237 | Version Comparison Diff View | US-051 | M | Not Started |
+| TASK-239 | Download Menu (JSON + Markdown ZIP) | US-053 | M | Not Started |
+| TASK-221 | Phase Retry & Re-run | US-045 | M | Not Started |
 
 ## Dependencies & Risks
-- Requires Sprint 12+ complete (full pipeline must work for test execution)
-- TASK-260 → TASK-261 (definitions before scripts)
-- TASK-260 → TASK-262 (definitions before Playwright tests)
-- TASK-260 → TASK-263 (definitions before rubric application)
-- TASK-263 → TASK-264 and TASK-265 (rubric before quality validation)
-- TASK-265 → TASK-266 (comparison data before vision deck)
-- TASK-267 is P2 — implement only if time permits
-- Risk: Playwright tests depend on AI output which is non-deterministic — use threshold-based assertions, not exact matches
-- Risk: 10-minute timeout per test case means full suite takes 50+ minutes
+
+### Provisioning
+- TASK-252 (per-site DB users) is independent — can start immediately
+- TASK-250 → TASK-251 (backend before UI)
+- TASK-250 → TASK-253 (timing infrastructure before resume support)
+- Risk: Per-site MariaDB users must work in DDEV local dev — test thoroughly
+- Risk: Resume-from-step requires provisioning engine to skip completed steps reliably
+
+### Review Features
+- TASK-237 depends on TASK-236 (version preservation from Sprint 13 — already done)
+- TASK-239 depends on TASK-230 (markdown renderer from Sprint 13 — already done)
+- TASK-221 depends on pipeline orchestrator (Sprint 12 — already done)
 
 ## Definition of Done
-- [ ] 10+ synthetic test cases covering 10 industries
-- [ ] Manual test scripts for each test case
-- [ ] 5+ Playwright E2E tests passing (word count, keywords, no placeholders)
-- [ ] Evaluation rubric codified with automated scoring for 4+ dimensions
-- [ ] Content uniqueness validated (< 20% shared between any two sites)
-- [ ] Before/after comparison artifacts generated for 5+ test cases
-- [ ] Vision deck created (8-10 slides)
-- [ ] All code committed
+
+### Provisioning
+- [ ] All 11 provisioning steps show individual status with elapsed time
+- [ ] Interim callbacks update progress after each step
+- [ ] Each site has a unique MariaDB user with random 32-char password
+- [ ] settings.php uses site-specific credentials (not root)
+- [ ] Failed step shows user-friendly error + technical detail
+- [ ] "Retry" button re-runs from the failed step
+- [ ] ARIA live regions announce status changes
+- [ ] Works in DDEV local dev environment
+
+### Review Features
+- [ ] Version diff shows additions (green) and removals (red)
+- [ ] Download menu offers JSON and Markdown ZIP
+- [ ] Phase re-run available on completed pipeline phases
+- [ ] All code committed with passing tests
