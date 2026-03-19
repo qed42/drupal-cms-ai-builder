@@ -4,7 +4,9 @@ import { generateValidatedJSON } from "@/lib/ai/validation";
 import { PageLayoutSchema } from "@/lib/pipeline/schemas";
 import { buildPageGenerationPrompt } from "@/lib/ai/prompts/page-generation";
 import { buildComponentTree } from "@/lib/blueprint/component-tree-builder";
-import type { OnboardingData, BlueprintBundle, PageLayout, FormField } from "@/lib/blueprint/types";
+import { validateSections, formatValidationFeedback } from "@/lib/blueprint/component-validator";
+import { safeParsePropsJson } from "@/lib/ai/safe-parse-props";
+import type { OnboardingData, BlueprintBundle, PageLayout, PageSection, FormField } from "@/lib/blueprint/types";
 import type { ResearchBrief, ContentPlan } from "@/lib/pipeline/schemas";
 import type { z } from "zod";
 
@@ -44,37 +46,94 @@ export async function runGeneratePhase(
       await onProgress(planPage.title, i, plan.pages.length);
     }
 
-    const prompt = buildPageGenerationPrompt(planPage, data, research, plan);
+    const basePrompt = buildPageGenerationPrompt(planPage, data, research, plan);
 
-    const generated = await generateValidatedJSON<GeneratedPage>(
-      provider,
-      prompt,
-      PageLayoutSchema,
-      {
-        phase: "generate",
-        temperature: 0.4,
-        maxTokens: 4000,
+    // Generate with component prop validation and retry loop (max 2 retries)
+    const MAX_PROP_RETRIES = 2;
+    let sections: PageSection[] = [];
+    let pageSlug = planPage.slug;
+    let pageTitle = planPage.title;
+    let pageSeo = { meta_title: "", meta_description: "" };
+    let validationPassed = false;
+
+    for (let attempt = 0; attempt <= MAX_PROP_RETRIES; attempt++) {
+      const prompt = attempt === 0
+        ? basePrompt
+        : basePrompt; // Retry uses same base prompt — validation feedback is appended below
+
+      let currentPrompt = prompt;
+      if (attempt > 0 && sections.length > 0) {
+        // Append validation feedback from previous attempt
+        const prevResult = validateSections(sections);
+        const feedback = formatValidationFeedback(prevResult.issues);
+        if (feedback) {
+          currentPrompt = `${prompt}\n\n--- COMPONENT PROP VALIDATION ERROR (attempt ${attempt}) ---\n${feedback}\n\nPlease return corrected JSON with only valid props for each component.`;
+        }
       }
-    );
 
-    // Parse props_json strings into props objects.
-    // The AI may include unescaped control characters (newlines, tabs) inside
-    // the JSON string — strip them before parsing.
-    const sections = generated.sections.map((s) => {
-      const sanitized = s.props_json.replace(/[\x00-\x1F\x7F]/g, " ");
-      return {
+      const generated = await generateValidatedJSON<GeneratedPage>(
+        provider,
+        currentPrompt,
+        PageLayoutSchema,
+        {
+          phase: "generate",
+          temperature: 0.4,
+          maxTokens: 4000,
+        }
+      );
+
+      // Capture page metadata from generated output
+      pageSlug = generated.slug;
+      pageTitle = generated.title;
+      pageSeo = generated.seo;
+
+      // Parse props_json strings into props objects with robust error recovery.
+      sections = generated.sections.map((s) => ({
         component_id: s.component_id,
-        props: JSON.parse(sanitized) as Record<string, unknown>,
-      };
-    });
+        props: safeParsePropsJson(s.props_json, s.component_id),
+      }));
 
-    // Build Canvas component tree from sections
+      // Validate component props against manifest
+      const validation = validateSections(sections);
+
+      if (validation.issues.length > 0) {
+        console.warn(
+          `[generate] Page "${planPage.title}" prop validation (attempt ${attempt + 1}):`,
+          validation.issues.map((i) => `${i.type}: ${i.message}`).join("; ")
+        );
+      }
+
+      if (validation.valid) {
+        // Use sanitized sections (invalid props stripped, defaults filled)
+        sections = validation.sanitizedSections;
+        validationPassed = true;
+        break;
+      }
+
+      // If only warnings (no errors), use sanitized version
+      const hasErrors = validation.issues.some((i) => i.type === "error");
+      if (!hasErrors) {
+        sections = validation.sanitizedSections;
+        validationPassed = true;
+        break;
+      }
+
+      // On final retry failure, use sanitized version anyway (best effort)
+      if (attempt === MAX_PROP_RETRIES) {
+        console.error(
+          `[generate] Page "${planPage.title}" prop validation failed after ${MAX_PROP_RETRIES + 1} attempts. Using sanitized output.`
+        );
+        sections = validation.sanitizedSections;
+      }
+    }
+
+    // Build Canvas component tree from validated sections
     const componentTree = buildComponentTree(sections);
 
     pages.push({
-      slug: generated.slug,
-      title: generated.title,
-      seo: generated.seo,
+      slug: pageSlug,
+      title: pageTitle,
+      seo: pageSeo,
       sections,
       component_tree: componentTree,
     });
