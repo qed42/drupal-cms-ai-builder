@@ -1,6 +1,0 @@
-services:
-  ai_site_builder_trial.trial_manager:
-    class: Drupal\ai_site_builder_trial\Service\TrialManager
-    arguments:
-      - '@entity_type.manager'
-      - '@datetime.time'

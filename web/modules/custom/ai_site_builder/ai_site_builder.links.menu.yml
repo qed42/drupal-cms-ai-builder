@@ -1,6 +1,0 @@
-entity.site_profile.collection:
-  title: 'Site Profiles'
-  route_name: entity.site_profile.collection
-  description: 'List of all site profiles.'
-  parent: system.admin_content
-  weight: 10

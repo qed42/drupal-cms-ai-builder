@@ -1,8 +1,0 @@
-onboarding_wizard:
-  version: 1.x
-  css:
-    theme:
-      css/onboarding-wizard.css: {}
-  dependencies:
-    - core/drupal.ajax
-    - core/drupal.form
