@@ -904,4 +904,39 @@ component_manifest_cache_ttl: 86400  # 24 hours
 
 ---
 
+## Content Generation v2 — Drupal Impact Assessment
+
+### What Changes
+
+1. **Blueprint import handles richer content** — v2 blueprints have the same component tree structure but with significantly more content in component props (150-300 word descriptions instead of 2-3 sentences). No changes needed to `BlueprintImportService` — it already handles arbitrary prop values.
+2. **No new Drupal modules required** — All v2 features (AI provider abstraction, multi-phase pipeline, content review, inline editing) are implemented in the Next.js platform.
+3. **No Drupal content model changes** — The existing content types (service, team_member, testimonial, etc.) accommodate the richer content via their existing `text_long` fields.
+4. **Per-site database isolation** — The provisioning engine creates per-site MariaDB users. Drupal's `settings.php` template is updated to use site-specific credentials instead of shared root. This is a provisioning engine change, not a Drupal code change.
+
+### What Doesn't Change
+
+- BlueprintImportService (handles any valid component tree)
+- BrandTokenService (brand tokens unchanged)
+- ComponentManifestService (same Space DS components)
+- Canvas integration (same skills/tools)
+- AI Agent plugins (PageBuilderAgent, ContentGeneratorAgent) — still available as safety net
+- Content types and field definitions
+- Auto-login system
+- Multisite configuration approach
+
+### Potential Drupal Concerns to Monitor
+
+1. **Blueprint JSON size** — v2 blueprints will be 50-100KB vs current 5-15KB. The `drush ai-site-builder:import-blueprint` command reads from file, so memory impact is minimal. Monitor PHP memory if blueprints exceed 500KB.
+2. **More Canvas sections per page** — v2 pages may have 6-10 sections instead of 3-5. Canvas should handle this natively, but verify rendering performance with a 10-section page.
+3. **Longer text in component props** — Space DS components must render 150-300 word descriptions gracefully. Verify `space-text-media-default` and `space-card-grid` components handle multi-paragraph text without layout issues.
+4. **Per-site DB user permissions** — Verify that `GRANT ALL PRIVILEGES ON site_*.* TO 'site_*'@'%'` is sufficient for all Drupal operations (including `drush site:install` which needs CREATE TABLE, CREATE INDEX, etc.).
+
+### Recommendation
+
+No Drupal code changes are needed for Content Generation v2. The existing import pipeline is architecture-agnostic — it processes whatever blueprint JSON it receives. The v2 pipeline simply provides richer blueprints.
+
+**One action item:** During M7 implementation, run a manual smoke test with a v2-sized blueprint (50KB+, 6 pages, 8+ sections per page) through the existing import pipeline to verify no PHP memory or Canvas rendering issues.
+
+---
+
 *Next step: Invoke `/drupal-architect` to break the v2 architecture into technical backlog tasks, then `/tpm` to re-plan sprints.*

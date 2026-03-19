@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getOpenAIClient } from "@/lib/ai/client";
+import { getAIProvider } from "@/lib/ai/factory";
 import { ANALYZE_PROMPT } from "@/lib/ai/prompts";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -66,20 +66,14 @@ export async function POST(req: NextRequest) {
   let result: AnalyzeResult;
 
   try {
-    const client = getOpenAIClient();
+    const provider = await getAIProvider();
     const prompt = ANALYZE_PROMPT
       .replace("{idea}", idea)
       .replace("{audience}", audience || "general audience");
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
+    const content = await provider.generateText(prompt, {
       temperature: 0.3,
     });
-
-    const content = completion.choices[0]?.message?.content;
-    if (!content) throw new Error("Empty AI response");
 
     result = JSON.parse(content) as AnalyzeResult;
 

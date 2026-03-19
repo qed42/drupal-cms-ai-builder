@@ -80,3 +80,32 @@ export type GenerationStep =
   | "forms"
   | "ready"
   | "failed";
+
+// --- Onboarding data types (v2 includes enrichment fields) ---
+
+export interface OnboardingPageSelection {
+  slug: string;
+  title: string;
+  description?: string; // v2: AI-generated page description
+}
+
+export interface OnboardingData {
+  // v1 fields
+  name?: string;
+  idea?: string;
+  audience?: string;
+  industry?: string;
+  tone?: string;
+  pages?: OnboardingPageSelection[];
+  colors?: Record<string, string>;
+  fonts?: { heading: string; body: string };
+  logo_url?: string;
+  compliance_flags?: string[];
+  keywords?: string[];
+
+  // v2 enrichment fields (US-033, US-034, US-035, US-036)
+  followUpAnswers?: Record<string, string>;
+  differentiators?: string;
+  referenceUrls?: string[];
+  existingCopy?: string;
+}

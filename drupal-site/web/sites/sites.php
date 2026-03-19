@@ -17,3 +17,4 @@ $sites['without-token-cdm8.ai-site-builder.ddev.site'] = 'without-token-cdm8.ai-
 $sites['basic-setup-mlko.ai-site-builder.ddev.site'] = 'basic-setup-mlko.ai-site-builder.ddev.site';
 $sites['healthcare-product-website-ugxe.ai-site-builder.ddev.site'] = 'healthcare-product-website-ugxe.ai-site-builder.ddev.site';
 $sites['nicotinell-f0nv.ai-site-builder.ddev.site'] = 'nicotinell-f0nv.ai-site-builder.ddev.site';
+$sites['project-x-bwbp.ai-site-builder.ddev.site'] = 'project-x-bwbp.ai-site-builder.ddev.site';

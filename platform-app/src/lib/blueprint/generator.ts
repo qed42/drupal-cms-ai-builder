@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { generateSubdomain, spawnProvisioning } from "@/lib/provisioning";
-import { getOpenAIClient } from "@/lib/ai/client";
+import { getAIProvider } from "@/lib/ai/factory";
 import { buildContentPrompt } from "@/lib/ai/prompts/content-generation";
 import { buildPageLayoutPrompt } from "@/lib/ai/prompts/page-layout";
 import { buildFormPrompt } from "@/lib/ai/prompts/form-generation";
@@ -8,24 +8,11 @@ import { buildComponentTree } from "./component-tree-builder";
 import type {
   BlueprintBundle,
   ContentItems,
+  OnboardingData,
   PageLayout,
   FormField,
   GenerationStep,
 } from "./types";
-
-interface OnboardingData {
-  name?: string;
-  idea?: string;
-  audience?: string;
-  industry?: string;
-  tone?: string;
-  pages?: Array<{ slug: string; title: string }>;
-  colors?: Record<string, string>;
-  fonts?: { heading: string; body: string };
-  logo_url?: string;
-  compliance_flags?: string[];
-  keywords?: string[];
-}
 
 async function updateStep(
   blueprintId: string,
@@ -42,18 +29,12 @@ async function updateStep(
 }
 
 async function callAI(prompt: string): Promise<string> {
-  const client = getOpenAIClient();
-  const completion = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }],
-    response_format: { type: "json_object" },
+  const provider = await getAIProvider("generate");
+  return provider.generateText(prompt, {
     temperature: 0.3,
-    max_tokens: 4000,
+    maxTokens: 4000,
+    phase: "generate",
   });
-
-  const content = completion.choices[0]?.message?.content;
-  if (!content) throw new Error("Empty AI response");
-  return content;
 }
 
 function getFallbackContent(data: OnboardingData): ContentItems {
