@@ -1,0 +1,24 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - ai_site_builder_content
+  module:
+    - node
+id: service_content
+label: 'Service content'
+type: 'canonical_entities:node'
+pattern: '/services/[node:title]'
+selection_criteria:
+  a1b2c3d4-e5f6-7890-abcd-ef1234567890:
+    id: 'entity_bundle:node'
+    negate: false
+    uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+    context_mapping:
+      node: node
+    bundles:
+      service: service
+selection_logic: and
+weight: 0
+relationships: {  }

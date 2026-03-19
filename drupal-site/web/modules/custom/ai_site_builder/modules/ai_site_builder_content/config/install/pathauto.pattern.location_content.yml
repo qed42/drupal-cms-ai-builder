@@ -1,0 +1,24 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - ai_site_builder_content
+  module:
+    - node
+id: location_content
+label: 'Location content'
+type: 'canonical_entities:node'
+pattern: '/locations/[node:title]'
+selection_criteria:
+  e5f6a7b8-c9d0-1234-efab-345678901234:
+    id: 'entity_bundle:node'
+    negate: false
+    uuid: e5f6a7b8-c9d0-1234-efab-345678901234
+    context_mapping:
+      node: node
+    bundles:
+      location: location
+selection_logic: and
+weight: 0
+relationships: {  }

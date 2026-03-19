@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_sqft
+    - node.type.listing
+id: node.listing.field_sqft
+field_name: field_sqft
+entity_type: node
+bundle: listing
+label: 'Square Feet'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: 0
+  max: null
+  prefix: ''
+  suffix: ' sq ft'
+field_type: integer

@@ -1,0 +1,24 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - ai_site_builder_content
+  module:
+    - node
+id: team_member_content
+label: 'Team Member content'
+type: 'canonical_entities:node'
+pattern: '/team/[node:title]'
+selection_criteria:
+  b2c3d4e5-f6a7-8901-bcde-f12345678901:
+    id: 'entity_bundle:node'
+    negate: false
+    uuid: b2c3d4e5-f6a7-8901-bcde-f12345678901
+    context_mapping:
+      node: node
+    bundles:
+      team_member: team_member
+selection_logic: and
+weight: 0
+relationships: {  }

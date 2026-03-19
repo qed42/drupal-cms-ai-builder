@@ -1,0 +1,19 @@
+# Wildcard routing for provisioned Drupal subsites.
+# Routes *.ai-site-builder.ddev.site to the DDEV web container.
+# NOT ddev-generated — DDEV will not overwrite this file.
+http:
+  routers:
+    subsites-wildcard-http:
+      entrypoints:
+        - http-80
+      rule: HostRegexp(`^.+\.ai-site-builder\.ddev\.site$`)
+      service: "ai-site-builder-web-80"
+      tls: false
+      priority: 5
+    subsites-wildcard-https:
+      entrypoints:
+        - http-443
+      rule: HostRegexp(`^.+\.ai-site-builder\.ddev\.site$`)
+      service: "ai-site-builder-web-80"
+      tls: true
+      priority: 5

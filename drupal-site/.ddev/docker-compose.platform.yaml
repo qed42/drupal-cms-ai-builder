@@ -1,0 +1,14 @@
+services:
+  db:
+    networks:
+      - default
+      - platform
+  web:
+    networks:
+      - default
+      - platform
+
+networks:
+  platform:
+    name: drupal-cms-ai-builder_default
+    external: true

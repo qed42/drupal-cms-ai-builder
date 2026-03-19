@@ -1,0 +1,15 @@
+name: AI Site Builder Content
+type: module
+description: 'Content type definitions for AI Site Builder.'
+package: AI Site Builder
+core_version_requirement: ^10.3 || ^11
+dependencies:
+  - ai_site_builder:ai_site_builder
+  - drupal:node
+  - drupal:field
+  - drupal:text
+  - drupal:image
+  - drupal:options
+  - drupal:link
+  - drupal:telephone
+  - pathauto:pathauto

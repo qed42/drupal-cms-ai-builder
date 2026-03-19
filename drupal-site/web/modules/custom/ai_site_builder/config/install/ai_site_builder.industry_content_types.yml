@@ -1,0 +1,17 @@
+universal:
+  - service
+  - team_member
+  - testimonial
+healthcare:
+  - provider
+  - location
+legal:
+  - practice_area
+  - case_study
+real_estate:
+  - listing
+restaurant:
+  - menu_item
+  - location
+professional_services:
+  - case_study

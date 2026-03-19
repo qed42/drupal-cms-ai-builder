@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - ai_site_builder_content
+name: Listing
+type: listing
+description: 'A real estate property listing.'
+help: null
+new_revision: true
+preview_mode: 1
+display_submitted: false

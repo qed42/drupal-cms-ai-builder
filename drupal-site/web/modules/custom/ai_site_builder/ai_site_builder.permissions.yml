@@ -1,0 +1,7 @@
+edit site content:
+  title: 'Edit site content'
+  description: 'Allows site owners to edit content on their site.'
+
+regenerate section:
+  title: 'Regenerate section'
+  description: 'Allows site owners to regenerate page sections with AI.'

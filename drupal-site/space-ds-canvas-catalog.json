@@ -1,0 +1,2587 @@
+{
+    "sdc.space_ds.space-accordion": {
+        "label": "Space Accordion",
+        "version": "4501deae76544992",
+        "required": [],
+        "props": {
+            "icon_type": {
+                "type": "string",
+                "enum": [
+                    "PlusMinus",
+                    "chevronDown",
+                    "noIcon"
+                ],
+                "default": "PlusMinus"
+            },
+            "alignment": {
+                "type": "string",
+                "enum": [
+                    "right",
+                    "left"
+                ],
+                "default": "right"
+            },
+            "border": {
+                "type": "boolean",
+                "default": true
+            },
+            "container_width": {
+                "type": "string",
+                "enum": [
+                    "default",
+                    "half-width",
+                    "three-quarters-width"
+                ],
+                "default": "default"
+            }
+        },
+        "slots": {
+            "items": "Accordion Items"
+        }
+    },
+    "sdc.space_ds.space-accordion-item": {
+        "label": "Space Accordion Item",
+        "version": "12f59cbb30bbe9ac",
+        "required": [],
+        "props": {
+            "label": {
+                "type": "string"
+            },
+            "content": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-accordion-with-image-item": {
+        "label": "Space Accordion with image item",
+        "version": "0e44238fcf27d974",
+        "required": [],
+        "props": {
+            "label": {
+                "type": "string"
+            },
+            "content": {
+                "type": "string"
+            },
+            "image": {
+                "type": "object"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-accordion-with-image-variation-1": {
+        "label": "Space Accordion with image - Variation 1",
+        "version": "75c3635b48d74032",
+        "required": [],
+        "props": {
+            "alignment": {
+                "type": "string",
+                "enum": [
+                    "left",
+                    "right"
+                ],
+                "default": "left"
+            },
+            "border": {
+                "type": "boolean",
+                "default": true
+            },
+            "icon_type": {
+                "type": "string",
+                "enum": [
+                    "PlusMinus",
+                    "chevronDown",
+                    "noIcon"
+                ],
+                "default": "PlusMinus"
+            }
+        },
+        "slots": {
+            "items": "Accordion with image item"
+        }
+    },
+    "sdc.space_ds.space-accordion-with-image-variation-2": {
+        "label": "Space Accordion with image - Variation 2",
+        "version": "7dcd5d023ca6148e",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "pre_heading": {
+                "type": "string"
+            },
+            "alignment": {
+                "type": "string",
+                "enum": [
+                    "left",
+                    "right"
+                ],
+                "default": "left"
+            },
+            "border": {
+                "type": "boolean",
+                "default": true
+            },
+            "icon_type": {
+                "type": "string",
+                "enum": [
+                    "PlusMinus",
+                    "chevronDown",
+                    "noIcon"
+                ],
+                "default": "PlusMinus"
+            }
+        },
+        "slots": {
+            "items": "Accordion with image item"
+        }
+    },
+    "sdc.space_ds.space-accordion-with-image-variation-3": {
+        "label": "Space Accordion with image - Variation 3",
+        "version": "75c3635b48d74032",
+        "required": [],
+        "props": {
+            "alignment": {
+                "type": "string",
+                "enum": [
+                    "left",
+                    "right"
+                ],
+                "default": "left"
+            },
+            "border": {
+                "type": "boolean",
+                "default": true
+            },
+            "icon_type": {
+                "type": "string",
+                "enum": [
+                    "PlusMinus",
+                    "chevronDown",
+                    "noIcon"
+                ],
+                "default": "PlusMinus"
+            }
+        },
+        "slots": {
+            "items": "Accordion with image item"
+        }
+    },
+    "sdc.space_ds.space-accordion-with-image-variation-4-data": {
+        "label": "Space Accordion with image - Variation 4 Data",
+        "version": "12f59cbb30bbe9ac",
+        "required": [],
+        "props": {
+            "label": {
+                "type": "string"
+            },
+            "content": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-accordion-with-image-variation-4-image": {
+        "label": "Space Accordion with image - Variation 4 Image",
+        "version": "f107abf29ff406c1",
+        "required": [],
+        "props": {
+            "image": {
+                "type": "object"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-alert": {
+        "label": "Space Alert",
+        "version": "df17cffbe6548585",
+        "required": [],
+        "props": {
+            "icon": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "content": {
+                "type": "string"
+            },
+            "variations": {
+                "type": "string",
+                "enum": [
+                    "status",
+                    "error",
+                    "warning"
+                ],
+                "default": "status"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-avatar": {
+        "label": "Space Avatar",
+        "version": "1af897bb141ea90e",
+        "required": [],
+        "props": {
+            "image": {
+                "type": "object"
+            },
+            "full_name": {
+                "type": "string"
+            },
+            "image_style": {
+                "type": "string",
+                "enum": [
+                    "xs-24-x-24",
+                    "sm-32-x-32",
+                    "md-40-x-40",
+                    "lg-48-x-48",
+                    "xl-56-x-56",
+                    "xxl-64-x-64",
+                    "xxxl-80-x-80",
+                    "xxxxl-96-x-96",
+                    "xxxxxl-160-x-160"
+                ]
+            },
+            "corner_style": {
+                "type": "string",
+                "enum": [
+                    "rounded"
+                ]
+            },
+            "variations": {
+                "type": "string",
+                "enum": [
+                    "avatar_group",
+                    "avatar_label_group"
+                ],
+                "default": "avatar_group"
+            }
+        },
+        "slots": {
+            "link": "Link"
+        }
+    },
+    "sdc.space_ds.space-avatar-group": {
+        "label": "Space Avatar Group",
+        "version": "4fca425da8306823",
+        "required": [],
+        "props": {
+            "image_style": {
+                "type": "string",
+                "enum": [
+                    "xs-24-x-24",
+                    "sm-32-x-32",
+                    "md-40-x-40"
+                ]
+            },
+            "number_of_avatar": {
+                "type": "integer",
+                "enum": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10
+                ],
+                "default": 1
+            }
+        },
+        "slots": {
+            "items": "Items"
+        }
+    },
+    "sdc.space_ds.space-avatar-group-label": {
+        "label": "Space Avatar Label Group",
+        "version": "95702e45488525d1",
+        "required": [],
+        "props": [],
+        "slots": {
+            "items": "Items"
+        }
+    },
+    "sdc.space_ds.space-badge": {
+        "label": "Space Badge",
+        "version": "40bac255c7150843",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "size": {
+                "type": "string",
+                "enum": [
+                    "small",
+                    "medium",
+                    "large"
+                ]
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-button": {
+        "label": "Space Button",
+        "version": "36875d428cb5585e",
+        "required": [
+            "text",
+            "url",
+            "button_type",
+            "size"
+        ],
+        "props": {
+            "icon": {
+                "type": "object"
+            },
+            "text": {
+                "type": "string"
+            },
+            "url": {
+                "type": "string"
+            },
+            "variant": {
+                "type": "string",
+                "enum": [
+                    "primary",
+                    "secondary",
+                    "tertiary",
+                    "ghost",
+                    "link"
+                ],
+                "default": "primary"
+            },
+            "size": {
+                "type": "string",
+                "enum": [
+                    "small",
+                    "medium",
+                    "large",
+                    "xlarge",
+                    "xxlarge",
+                    "xxxlarge"
+                ],
+                "default": "small"
+            },
+            "button_corners": {
+                "type": "string",
+                "enum": [
+                    "rectangle_corner",
+                    "rounded_half_circle"
+                ],
+                "default": "rounded_half_circle"
+            },
+            "button_type": {
+                "type": "string",
+                "enum": [
+                    "only_icon",
+                    "text_with_icon",
+                    "only_text"
+                ],
+                "default": "only_text"
+            },
+            "icon_alignment": {
+                "type": "string",
+                "enum": [
+                    "only-icon",
+                    "left",
+                    "right"
+                ],
+                "default": "right"
+            },
+            "expanded": {
+                "type": "string",
+                "enum": [
+                    "yes",
+                    "no"
+                ],
+                "default": "no"
+            },
+            "button_state": {
+                "type": "string",
+                "enum": [
+                    "focused",
+                    "disabled"
+                ],
+                "default": "focused"
+            },
+            "classes": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-code-snippet": {
+        "label": "Space Code Snippet",
+        "version": "a468097a207b76d8",
+        "required": [],
+        "props": {
+            "text": {
+                "type": "string"
+            },
+            "background": {
+                "type": "string",
+                "enum": [
+                    "light",
+                    "medium",
+                    "dark"
+                ],
+                "default": "dark"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-container": {
+        "label": "Space Container",
+        "version": "fdd65a07b7f12175",
+        "required": [
+            "width"
+        ],
+        "props": {
+            "background_color": {
+                "type": "string",
+                "enum": [
+                    "transparent",
+                    "success",
+                    "danger",
+                    "white",
+                    "black",
+                    "neutralLight",
+                    "neutralMedium",
+                    "neutralDark",
+                    "neutralExtraDark",
+                    "primaryExtraLight",
+                    "primaryLight",
+                    "primaryMedium",
+                    "primaryDark",
+                    "primaryExtraDark",
+                    "facebookBlue"
+                ],
+                "default": "transparent"
+            },
+            "width": {
+                "type": "string",
+                "enum": [
+                    "boxed-width",
+                    "full-width"
+                ],
+                "default": "full-width"
+            },
+            "padding_left": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "small",
+                    "medium",
+                    "large",
+                    "x-large"
+                ],
+                "default": "none"
+            },
+            "padding_right": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "small",
+                    "medium",
+                    "large",
+                    "x-large"
+                ],
+                "default": "none"
+            },
+            "padding_top": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "small",
+                    "medium",
+                    "large",
+                    "x-large"
+                ],
+                "default": "none"
+            },
+            "padding_bottom": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "small",
+                    "medium",
+                    "large",
+                    "x-large"
+                ],
+                "default": "none"
+            },
+            "margin_top": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "small",
+                    "medium",
+                    "large",
+                    "x-large"
+                ],
+                "default": "none"
+            },
+            "margin_bottom": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "small",
+                    "medium",
+                    "large",
+                    "x-large"
+                ],
+                "default": "none"
+            },
+            "modifier_class": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content"
+        }
+    },
+    "sdc.space_ds.space-cta-banner-type-1": {
+        "label": "Space CTA Banner - Type 1",
+        "version": "0f63780153b860c3",
+        "required": [
+            "width",
+            "alignment"
+        ],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "width": {
+                "type": "string",
+                "enum": [
+                    "boxed-width",
+                    "full-width"
+                ],
+                "default": "boxed-width"
+            },
+            "alignment": {
+                "type": "string",
+                "enum": [
+                    "left-align",
+                    "center-align"
+                ],
+                "default": "left-align"
+            },
+            "modifier_class": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "cta_content": "Content"
+        }
+    },
+    "sdc.space_ds.space-cta-banner-type-2": {
+        "label": "Space CTA Banner - Type 2",
+        "version": "c60062f66c4e14f2",
+        "required": [
+            "width",
+            "image_type"
+        ],
+        "props": {
+            "image": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "width": {
+                "type": "string",
+                "enum": [
+                    "boxed-width",
+                    "full-width"
+                ],
+                "default": "boxed-width"
+            },
+            "image_type": {
+                "type": "string",
+                "enum": [
+                    "large-image",
+                    "small-image"
+                ],
+                "default": "large-image"
+            },
+            "modifier_class": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "cta_content": "Content"
+        }
+    },
+    "sdc.space_ds.space-cta-banner-type-3": {
+        "label": "Space CTA Banner - Type 3",
+        "version": "9f78e4b8686e80e8",
+        "required": [
+            "width"
+        ],
+        "props": {
+            "image": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "width": {
+                "type": "string",
+                "enum": [
+                    "boxed-width",
+                    "full-width"
+                ],
+                "default": "boxed-width"
+            },
+            "modifier_class": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "cta_content": "Content"
+        }
+    },
+    "sdc.space_ds.space-features": {
+        "label": "Space Features",
+        "version": "fce5f7efbd9f871b",
+        "required": [],
+        "props": {
+            "content": {
+                "type": "string"
+            },
+            "icon": {
+                "type": "object"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-flexi": {
+        "label": "Space Flexible Slot",
+        "version": "bf46256938860090",
+        "required": [],
+        "props": {
+            "no_of_columns": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "one",
+                    "two",
+                    "three",
+                    "four"
+                ],
+                "default": "none"
+            },
+            "vertical": {
+                "type": "string",
+                "enum": [
+                    "top",
+                    "center",
+                    "bottom"
+                ],
+                "default": "top"
+            },
+            "horizontal": {
+                "type": "string",
+                "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    "space-between"
+                ],
+                "default": "left"
+            },
+            "direction": {
+                "type": "string",
+                "enum": [
+                    "across",
+                    "down"
+                ],
+                "default": "across"
+            },
+            "gap": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "small",
+                    "medium",
+                    "large"
+                ],
+                "default": "medium"
+            },
+            "wrap": {
+                "type": "string",
+                "enum": [
+                    "wrap",
+                    "nowrap"
+                ]
+            },
+            "margin_top": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "small",
+                    "medium",
+                    "large",
+                    "x-large"
+                ],
+                "default": "none"
+            },
+            "margin_bottom": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "small",
+                    "medium",
+                    "large",
+                    "x-large"
+                ],
+                "default": "none"
+            },
+            "modifier_class": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content",
+            "column_one": "Column one",
+            "column_two": "Column two",
+            "column_three": "Column three",
+            "column_four": "Column four"
+        }
+    },
+    "sdc.space_ds.space-footer-logo-content": {
+        "label": "Space Footer logo content",
+        "version": "26933e26ca2db7e1",
+        "required": [],
+        "props": {
+            "image": {
+                "type": "object"
+            },
+            "text": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-heading": {
+        "label": "Space Heading",
+        "version": "fd97cdc7a57839cb",
+        "required": [
+            "font"
+        ],
+        "props": {
+            "content": {
+                "type": "string",
+                "default": "Add Heading"
+            },
+            "title_color": {
+                "type": "string",
+                "enum": [
+                    "text-heading",
+                    "text-body",
+                    "text-primaryLight",
+                    "text-primaryMedium",
+                    "text-primaryDark",
+                    "text-danger",
+                    "text-success",
+                    "text-warning",
+                    "text-neutralLight",
+                    "text-neutralMedium"
+                ],
+                "default": "text-heading"
+            },
+            "tag_name": {
+                "type": "string",
+                "enum": [
+                    "h1",
+                    "h2",
+                    "h3",
+                    "h4",
+                    "h5",
+                    "h6",
+                    "div"
+                ],
+                "default": "h1"
+            },
+            "font": {
+                "type": "string",
+                "enum": [
+                    "display3XL-regular",
+                    "display3XL-medium",
+                    "display3XL-semibold",
+                    "display3XL-bold",
+                    "display2XL-regular",
+                    "display2XL-medium",
+                    "display2XL-semibold",
+                    "display2XL-bold",
+                    "displayXL-regular",
+                    "displayXL-medium",
+                    "displayXL-semibold",
+                    "displayXL-bold",
+                    "displayLG-regular",
+                    "displayLG-medium",
+                    "displayLG-semibold",
+                    "displayLG-bold",
+                    "displayMd-regular",
+                    "displayMd-medium",
+                    "displayMd-semibold",
+                    "displayMd-bold",
+                    "displaySm-regular",
+                    "displaySm-medium",
+                    "displaySm-semibold",
+                    "displaySm-bold",
+                    "displayXs-regular",
+                    "displayXs-medium",
+                    "displayXs-semibold",
+                    "displayXs-bold",
+                    "textXL-regular",
+                    "textXL-medium",
+                    "textXL-semibold",
+                    "textXL-bold",
+                    "textLG-regular",
+                    "textLG-medium",
+                    "textLG-semibold",
+                    "textLG-bold",
+                    "textMd-regular",
+                    "textMd-medium",
+                    "textMd-semibold",
+                    "textMd-bold",
+                    "textSm-regular",
+                    "textSm-medium",
+                    "textSm-semibold",
+                    "textSm-bold",
+                    "textXs-regular",
+                    "textXs-medium",
+                    "textXs-semibold",
+                    "textXs-bold"
+                ],
+                "default": "display2XL-semibold"
+            },
+            "spacing_bottom": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "small",
+                    "medium",
+                    "large"
+                ],
+                "default": "none"
+            },
+            "align": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "left",
+                    "right",
+                    "center"
+                ],
+                "default": "left"
+            },
+            "url": {
+                "type": "string",
+                "default": "Add link"
+            },
+            "modifier_class": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-hero-banner-style-01": {
+        "label": "Space Hero Banner Style 01",
+        "version": "4b0bf2512604f31e",
+        "required": [],
+        "props": {
+            "background_image": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "sub_headline": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content",
+            "items": "Block Banner info items"
+        }
+    },
+    "sdc.space_ds.space-hero-banner-style-02": {
+        "label": "Space Hero Banner Style 02",
+        "version": "53d2a955ce191019",
+        "required": [],
+        "props": {
+            "background_image": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "sub_headline": {
+                "type": "string"
+            },
+            "modifier_class": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content",
+            "items": "Block Banner info items"
+        }
+    },
+    "sdc.space_ds.space-hero-banner-style-03": {
+        "label": "Space Hero Banner Style 03",
+        "version": "77c637f54fc9f706",
+        "required": [],
+        "props": {
+            "image_1": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "sub_headline": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "cta_content": "Content"
+        }
+    },
+    "sdc.space_ds.space-hero-banner-style-04": {
+        "label": "Space Hero Banner Style 04",
+        "version": "2e687a632ae19be4",
+        "required": [],
+        "props": {
+            "image_1": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "sub_headline": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content"
+        }
+    },
+    "sdc.space_ds.space-hero-banner-style-05": {
+        "label": "Space Hero Banner Style 05",
+        "version": "2e687a632ae19be4",
+        "required": [],
+        "props": {
+            "image_1": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "sub_headline": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content"
+        }
+    },
+    "sdc.space_ds.space-hero-banner-style-06": {
+        "label": "Space Hero Banner Style 06",
+        "version": "2e687a632ae19be4",
+        "required": [],
+        "props": {
+            "image_1": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "sub_headline": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content"
+        }
+    },
+    "sdc.space_ds.space-hero-banner-style-07": {
+        "label": "Space Hero Banner Style 07",
+        "version": "2e687a632ae19be4",
+        "required": [],
+        "props": {
+            "image_1": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "sub_headline": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content"
+        }
+    },
+    "sdc.space_ds.space-hero-banner-style-08": {
+        "label": "Space Hero Banner Style 08",
+        "version": "5bd09406e8dc287b",
+        "required": [],
+        "props": {
+            "image_1": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "sub_headline": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content"
+        }
+    },
+    "sdc.space_ds.space-hero-banner-style-09": {
+        "label": "Space Hero Banner Style 09",
+        "version": "3a437c35417c557f",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "sub_headline": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content"
+        }
+    },
+    "sdc.space_ds.space-hero-banner-style-10": {
+        "label": "Space Hero Banner Style 10",
+        "version": "0460b8c9a10094f7",
+        "required": [],
+        "props": {
+            "image_1": {
+                "type": "object"
+            },
+            "image_2": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "sub_headline": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content"
+        }
+    },
+    "sdc.space_ds.space-hero-banner-style-11": {
+        "label": "Space Hero Banner Style 11",
+        "version": "2e687a632ae19be4",
+        "required": [],
+        "props": {
+            "image_1": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "sub_headline": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content"
+        }
+    },
+    "sdc.space_ds.space-icon-card": {
+        "label": "Space Icon Card",
+        "version": "c42c0ccfef7ee81a",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "icon": {
+                "type": "object"
+            },
+            "text": {
+                "type": "string"
+            },
+            "alignment": {
+                "type": "string",
+                "enum": [
+                    "left",
+                    "center"
+                ],
+                "default": "left"
+            },
+            "card_layout": {
+                "type": "string",
+                "enum": [
+                    "withouticon",
+                    "withicon",
+                    "withbackground",
+                    "withiconbackground"
+                ],
+                "default": "withicon"
+            },
+            "full_box_link": {
+                "type": "boolean",
+                "default": false
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "link": "Link"
+        }
+    },
+    "sdc.space_ds.space-image": {
+        "label": "Space Image",
+        "version": "d5d227b163243e93",
+        "required": [],
+        "props": {
+            "image": {
+                "type": "object"
+            },
+            "corners": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "round",
+                    "round-md",
+                    "round-lg",
+                    "round-xl",
+                    "round-2xl",
+                    "round-3xl",
+                    "round-full"
+                ],
+                "default": "none"
+            },
+            "image_caption": {
+                "type": "string"
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-imagecard": {
+        "label": "Space Image Card",
+        "version": "4ba8db11f49caa7a",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "image": {
+                "type": "object"
+            },
+            "preheadline": {
+                "type": "string"
+            },
+            "text": {
+                "type": "string"
+            },
+            "alignment": {
+                "type": "string",
+                "enum": [
+                    "vertical",
+                    "horizontal"
+                ],
+                "default": "vertical"
+            },
+            "horizontal_column_alignment": {
+                "type": "string",
+                "enum": [
+                    "left-image",
+                    "right-image"
+                ],
+                "default": "left-image"
+            },
+            "vertical_column_alignment": {
+                "type": "string",
+                "enum": [
+                    "top-image",
+                    "bottom-image"
+                ],
+                "default": "top-image"
+            },
+            "card_layout": {
+                "type": "string",
+                "enum": [
+                    "withcontainer",
+                    "withoutcontainer"
+                ],
+                "default": "withcontainer"
+            },
+            "card_size": {
+                "type": "string",
+                "enum": [
+                    "large",
+                    "medium",
+                    "small"
+                ],
+                "default": "large"
+            },
+            "full_box_link": {
+                "type": "boolean",
+                "default": false
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "after_content": "After Content"
+        }
+    },
+    "sdc.space_ds.space-link": {
+        "label": "Space Link",
+        "version": "c1ae3516a0cd6b9b",
+        "required": [],
+        "props": {
+            "text": {
+                "type": "string"
+            },
+            "url": {
+                "type": "string"
+            },
+            "title_text": {
+                "type": "string"
+            },
+            "target": {
+                "type": "string",
+                "enum": [
+                    "self",
+                    "blank",
+                    "parent",
+                    "top"
+                ],
+                "default": "self"
+            },
+            "custom_style": {
+                "type": "boolean",
+                "default": false
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-logo-grid": {
+        "label": "Space Logo Grid",
+        "version": "05ce082fd3ba764b",
+        "required": [],
+        "props": {
+            "layout_type": {
+                "type": "string",
+                "enum": [
+                    "column-4",
+                    "column-5",
+                    "column-6"
+                ]
+            },
+            "background_color": {
+                "type": "string",
+                "enum": [
+                    "transparent",
+                    "primaryExtraLight"
+                ]
+            }
+        },
+        "slots": {
+            "items": "Items"
+        }
+    },
+    "sdc.space_ds.space-notification-banner": {
+        "label": "Space Notification",
+        "version": "6c722b57347c0b3e",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "icon": {
+                "type": "object"
+            },
+            "size": {
+                "type": "string",
+                "enum": [
+                    "small",
+                    "large"
+                ],
+                "default": "small"
+            },
+            "align": {
+                "type": "string",
+                "enum": [
+                    "center",
+                    "left"
+                ],
+                "default": "left"
+            },
+            "background": {
+                "type": "string",
+                "enum": [
+                    "dark",
+                    "light",
+                    "black"
+                ],
+                "default": "dark"
+            },
+            "layout": {
+                "type": "string",
+                "enum": [
+                    "oneline",
+                    "twoline"
+                ],
+                "default": "oneline"
+            }
+        },
+        "slots": {
+            "link": "Link"
+        }
+    },
+    "sdc.space_ds.space-paragraph": {
+        "label": "Space Paragraph",
+        "version": "51ba2feda4d11e86",
+        "required": [],
+        "props": {
+            "content": {
+                "type": "string",
+                "default": "Add paragraph"
+            },
+            "text_alignment": {
+                "type": "string",
+                "enum": [
+                    "left",
+                    "right",
+                    "center"
+                ],
+                "default": "left"
+            },
+            "modifier_class": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-people-card-people-with-avatar": {
+        "label": "Space People Card With Avatar",
+        "version": "92e0c50686f408c7",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "image": {
+                "type": "object"
+            },
+            "role": {
+                "type": "string"
+            },
+            "card_size": {
+                "type": "string",
+                "enum": [
+                    "large",
+                    "medium",
+                    "small"
+                ],
+                "default": "large"
+            },
+            "card_corner": {
+                "type": "string",
+                "enum": [
+                    "rounded-none",
+                    "rounded"
+                ],
+                "default": "rounded-none"
+            },
+            "full_box_link": {
+                "type": "boolean",
+                "default": false
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-people-card-people-with-avatar-bio": {
+        "label": "Space People With Avatar Bio",
+        "version": "279350ca58e2a75f",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "image": {
+                "type": "object"
+            },
+            "text": {
+                "type": "string"
+            },
+            "role": {
+                "type": "string"
+            },
+            "card_size": {
+                "type": "string",
+                "enum": [
+                    "large",
+                    "medium",
+                    "small"
+                ],
+                "default": "large"
+            },
+            "card_corner": {
+                "type": "string",
+                "enum": [
+                    "rounded-none",
+                    "rounded"
+                ],
+                "default": "rounded-none"
+            },
+            "full_box_link": {
+                "type": "boolean",
+                "default": false
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "social_media": "Social Media"
+        }
+    },
+    "sdc.space_ds.space-people-card-people-with-image": {
+        "label": "Space People With Image",
+        "version": "92e0c50686f408c7",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "image": {
+                "type": "object"
+            },
+            "role": {
+                "type": "string"
+            },
+            "card_size": {
+                "type": "string",
+                "enum": [
+                    "large",
+                    "medium",
+                    "small"
+                ],
+                "default": "large"
+            },
+            "card_corner": {
+                "type": "string",
+                "enum": [
+                    "rounded-none",
+                    "rounded"
+                ],
+                "default": "rounded-none"
+            },
+            "full_box_link": {
+                "type": "boolean",
+                "default": false
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-people-card-people-with-image-bio": {
+        "label": "Space People With Image Bio",
+        "version": "6afca292409da258",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "image": {
+                "type": "object"
+            },
+            "text": {
+                "type": "string"
+            },
+            "role": {
+                "type": "string"
+            },
+            "card_size": {
+                "type": "string",
+                "enum": [
+                    "large",
+                    "medium",
+                    "small"
+                ],
+                "default": "large"
+            },
+            "card_corner": {
+                "type": "string",
+                "enum": [
+                    "rounded-none",
+                    "rounded"
+                ],
+                "default": "rounded-none"
+            },
+            "full_box_link": {
+                "type": "boolean",
+                "default": false
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "social_media": "Social Media"
+        }
+    },
+    "sdc.space_ds.space-people-card-testimony-with-avatar": {
+        "label": "Space People Card Testimony With Avatar",
+        "version": "791eb8ba0ee9a063",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "image": {
+                "type": "object"
+            },
+            "rating": {
+                "type": "string"
+            },
+            "text": {
+                "type": "string"
+            },
+            "job_description": {
+                "type": "string"
+            },
+            "card_size": {
+                "type": "string",
+                "enum": [
+                    "large",
+                    "medium",
+                    "small"
+                ],
+                "default": "large"
+            },
+            "card_corner": {
+                "type": "string",
+                "enum": [
+                    "rounded-none",
+                    "rounded"
+                ],
+                "default": "rounded-none"
+            },
+            "full_box_link": {
+                "type": "boolean",
+                "default": false
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-people-card-testimony-with-image": {
+        "label": "Space People Card Testimony With Image",
+        "version": "f0ebec8f59263b3a",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "image": {
+                "type": "object"
+            },
+            "icon": {
+                "type": "object"
+            },
+            "text": {
+                "type": "string"
+            },
+            "job_description": {
+                "type": "string"
+            },
+            "card_size": {
+                "type": "string",
+                "enum": [
+                    "large",
+                    "medium",
+                    "small"
+                ],
+                "default": "large"
+            },
+            "card_corner": {
+                "type": "string",
+                "enum": [
+                    "rounded-none",
+                    "rounded"
+                ],
+                "default": "rounded-none"
+            },
+            "full_box_link": {
+                "type": "boolean",
+                "default": false
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-pricing-card": {
+        "label": "Space Pricing Card",
+        "version": "42d388134feb473c",
+        "required": [],
+        "props": {
+            "icon": {
+                "type": "object"
+            },
+            "plan": {
+                "type": "string"
+            },
+            "title": {
+                "type": "string"
+            },
+            "desc": {
+                "type": "string"
+            },
+            "background": {
+                "type": "string",
+                "enum": [
+                    "light",
+                    "primary"
+                ],
+                "default": "light"
+            },
+            "card_layout": {
+                "type": "string",
+                "enum": [
+                    "withicon",
+                    "withouticon"
+                ],
+                "default": "withicon"
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "badge": "Badge",
+            "featured_items": "Featured list",
+            "button": "Button"
+        }
+    },
+    "sdc.space_ds.space-pricing-featured-card": {
+        "label": "Space Pricing Featured Card",
+        "version": "e87cc8cffa5e0dff",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "price": {
+                "type": "string"
+            },
+            "plan_package": {
+                "type": "string"
+            },
+            "plan": {
+                "type": "string"
+            },
+            "desc": {
+                "type": "string"
+            },
+            "features_list_title": {
+                "type": "string"
+            },
+            "features_list_description": {
+                "type": "string"
+            },
+            "background": {
+                "type": "string",
+                "enum": [
+                    "light",
+                    "primary"
+                ],
+                "default": "light"
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "badge": "Badge",
+            "featured_items": "Featured list",
+            "button": "Button"
+        }
+    },
+    "sdc.space_ds.space-quicklink-card": {
+        "label": "Space Quicklink Card",
+        "version": "a841e5ad02906563",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "image": {
+                "type": "object"
+            },
+            "text": {
+                "type": "string"
+            },
+            "card_layout": {
+                "type": "string",
+                "enum": [
+                    "withbackground",
+                    "withoutbackground"
+                ],
+                "default": "withoutbackground"
+            },
+            "card_size": {
+                "type": "string",
+                "enum": [
+                    "large",
+                    "medium",
+                    "small"
+                ],
+                "default": "small"
+            },
+            "full_box_link": {
+                "type": "boolean",
+                "default": true
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "link": "Link"
+        }
+    },
+    "sdc.space_ds.space-section-heading": {
+        "label": "Space Section heading",
+        "version": "66d0566bf36744c1",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "label": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "alignment": {
+                "type": "string",
+                "enum": [
+                    "left",
+                    "center",
+                    "split"
+                ],
+                "default": "left"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-social-button": {
+        "label": "Space Social Button",
+        "version": "056e9e3fc3e2f93c",
+        "required": [],
+        "props": {
+            "icon": {
+                "type": "object"
+            },
+            "text": {
+                "type": "string"
+            },
+            "text_colors": {
+                "type": "string",
+                "enum": [
+                    "white",
+                    "black",
+                    "heading",
+                    "body",
+                    "primaryLight",
+                    "primaryMedium",
+                    "primaryDark",
+                    "danger",
+                    "warning",
+                    "success",
+                    "neutralLight",
+                    "neutralMedium"
+                ],
+                "default": "black"
+            },
+            "social_button_link": {
+                "type": "string"
+            },
+            "background_color": {
+                "type": "string",
+                "enum": [
+                    "transparent",
+                    "success",
+                    "danger",
+                    "white",
+                    "black",
+                    "neutralLight",
+                    "neutralMedium",
+                    "neutralDark",
+                    "neutralExtraDark",
+                    "primaryExtraLight",
+                    "primaryLight",
+                    "primaryMedium",
+                    "primaryDark",
+                    "primaryExtraDark",
+                    "facebookBlue"
+                ],
+                "default": "transparent"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-social-links": {
+        "label": "Space Social Link",
+        "version": "828d5d8e3019b4ec",
+        "required": [],
+        "props": {
+            "social_icon": {
+                "type": "object"
+            },
+            "social_icon_link": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-stats-kpi": {
+        "label": "Space Stats KPI",
+        "version": "736c20d426caa4fe",
+        "required": [],
+        "props": {
+            "icon": {
+                "type": "object"
+            },
+            "keynumber": {
+                "type": "integer",
+                "default": 400
+            },
+            "subheading": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "alignment": {
+                "type": "string",
+                "enum": [
+                    "left",
+                    "center"
+                ],
+                "default": "left"
+            },
+            "layout_type": {
+                "type": "string",
+                "enum": [
+                    "default",
+                    "accentlineleft",
+                    "accentlinetop",
+                    "withbackground",
+                    "withicon"
+                ],
+                "default": "default"
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "link": "Link"
+        }
+    },
+    "sdc.space_ds.space-sticky-jump-link-content": {
+        "label": "Space Sticky Jump link content",
+        "version": "ceee5e3754f4e9b3",
+        "required": [],
+        "props": {
+            "heading": {
+                "type": "string"
+            },
+            "image": {
+                "type": "object"
+            },
+            "sub_heading": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "feature_items": "Features"
+        }
+    },
+    "sdc.space_ds.space-sticky-jump-link-tag": {
+        "label": "Space Sticky Jump Link Tag",
+        "version": "b08102f2fe1279ca",
+        "required": [],
+        "props": {
+            "tag": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-team-section-image-card-1": {
+        "label": "Space Team Section Image Card 1",
+        "version": "82f16604b323ef85",
+        "required": [],
+        "props": {
+            "background_color": {
+                "type": "string",
+                "enum": [
+                    "bg-default",
+                    "bg-grey-light"
+                ],
+                "default": "bg-default"
+            }
+        },
+        "slots": {
+            "intro_section": "Intro section",
+            "team_member": "Team member",
+            "links": "Links"
+        }
+    },
+    "sdc.space_ds.space-team-section-image-card-2": {
+        "label": "Space Team Section Image Card 2",
+        "version": "82f16604b323ef85",
+        "required": [],
+        "props": {
+            "background_color": {
+                "type": "string",
+                "enum": [
+                    "bg-default",
+                    "bg-grey-light"
+                ],
+                "default": "bg-default"
+            }
+        },
+        "slots": {
+            "intro_section": "Intro section",
+            "team_member": "Team member",
+            "links": "Links"
+        }
+    },
+    "sdc.space_ds.space-team-section-image-card-3": {
+        "label": "Space Team Section Image Card 3",
+        "version": "82f16604b323ef85",
+        "required": [],
+        "props": {
+            "background_color": {
+                "type": "string",
+                "enum": [
+                    "bg-default",
+                    "bg-grey-light"
+                ],
+                "default": "bg-default"
+            }
+        },
+        "slots": {
+            "intro_section": "Intro section",
+            "team_member": "Team member",
+            "links": "Links"
+        }
+    },
+    "sdc.space_ds.space-team-section-simple-1": {
+        "label": "Space Team Section Simple 1",
+        "version": "faea0a38ab7b95e1",
+        "required": [],
+        "props": {
+            "background_color": {
+                "type": "string",
+                "enum": [
+                    "bg-default",
+                    "bg-grey-light"
+                ],
+                "default": "bg-default"
+            }
+        },
+        "slots": {
+            "intro_section": "Intro section",
+            "team_member": "Team member"
+        }
+    },
+    "sdc.space_ds.space-team-section-simple-2": {
+        "label": "Space Team Section Simple 2",
+        "version": "faea0a38ab7b95e1",
+        "required": [],
+        "props": {
+            "background_color": {
+                "type": "string",
+                "enum": [
+                    "bg-default",
+                    "bg-grey-light"
+                ],
+                "default": "bg-default"
+            }
+        },
+        "slots": {
+            "intro_section": "Intro section",
+            "team_member": "Team member"
+        }
+    },
+    "sdc.space_ds.space-team-section-simple-3": {
+        "label": "Space Team Section Simple 3",
+        "version": "82f16604b323ef85",
+        "required": [],
+        "props": {
+            "background_color": {
+                "type": "string",
+                "enum": [
+                    "bg-default",
+                    "bg-grey-light"
+                ],
+                "default": "bg-default"
+            }
+        },
+        "slots": {
+            "intro_section": "Intro section",
+            "team_member": "Team member",
+            "links": "Links"
+        }
+    },
+    "sdc.space_ds.space-testimony-card": {
+        "label": "Space Testimonial Card",
+        "version": "e111d4b4bc21c717",
+        "required": [],
+        "props": {
+            "image": {
+                "type": "object"
+            },
+            "person_name": {
+                "type": "string"
+            },
+            "text": {
+                "type": "string"
+            },
+            "designation": {
+                "type": "string"
+            },
+            "card_layout": {
+                "type": "string",
+                "enum": [
+                    "large-avatar",
+                    "avatar",
+                    "company-logo-and-avatar",
+                    "login-logo-and-avatar"
+                ],
+                "default": "avatar"
+            },
+            "alignment": {
+                "type": "string",
+                "enum": [
+                    "center",
+                    "simple"
+                ],
+                "default": "center"
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "company_logo": "Branding logo"
+        }
+    },
+    "sdc.space_ds.space-text": {
+        "label": "Space Text",
+        "version": "6584e95599f6c81e",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "title_font_size": {
+                "type": "string",
+                "enum": [
+                    "text-size-130",
+                    "text-size-96",
+                    "text-size-72",
+                    "text-size-60",
+                    "text-size-48",
+                    "text-size-36",
+                    "text-size-30",
+                    "text-size-24",
+                    "text-size-20",
+                    "text-size-18",
+                    "text-size-14",
+                    "text-size-12"
+                ],
+                "default": "text-size-96"
+            },
+            "title_color": {
+                "type": "string",
+                "enum": [
+                    "text-text-heading",
+                    "text-text-body",
+                    "text-text-primaryLight",
+                    "text-text-primaryMedium",
+                    "text-text-primaryDark",
+                    "text-text-danger",
+                    "text-text-success",
+                    "text-text-warning",
+                    "text-text-neutralLight",
+                    "text-text-neutralMedium"
+                ],
+                "default": "text-text-heading"
+            },
+            "content": {
+                "type": "string"
+            },
+            "content_font_size": {
+                "type": "string",
+                "enum": [
+                    "font-size-130",
+                    "font-size-96",
+                    "font-size-72",
+                    "font-size-60",
+                    "font-size-48",
+                    "font-size-36",
+                    "font-size-30",
+                    "font-size-24",
+                    "font-size-20",
+                    "font-size-18",
+                    "font-size-14",
+                    "font-size-12"
+                ],
+                "default": "font-size-30"
+            },
+            "content_color": {
+                "type": "string",
+                "enum": [
+                    "text-heading",
+                    "text-body",
+                    "text-primaryLight",
+                    "text-primaryMedium",
+                    "text-primaryDark",
+                    "text-danger",
+                    "text-success",
+                    "text-warning",
+                    "text-neutralLight",
+                    "text-neutralMedium"
+                ],
+                "default": "text-heading"
+            },
+            "content_alignment": {
+                "type": "string",
+                "enum": [
+                    "left-align",
+                    "center-align",
+                    "right-align",
+                    "stack-align"
+                ],
+                "default": "left-align"
+            },
+            "cta_alignment": {
+                "type": "string",
+                "enum": [
+                    "left-align",
+                    "center-align",
+                    "right-align"
+                ],
+                "default": "left-align"
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "cta": "CTA"
+        }
+    },
+    "sdc.space_ds.space-text-media-default": {
+        "label": "Space Text and Media - Default",
+        "version": "6d2971bd1243df5d",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "image_1": {
+                "type": "object"
+            },
+            "description": {
+                "type": "string"
+            },
+            "alignment_column": {
+                "type": "string",
+                "enum": [
+                    "default",
+                    "leftimage",
+                    "stack"
+                ],
+                "default": "default"
+            },
+            "out_of_box": {
+                "type": "string",
+                "enum": [
+                    "off",
+                    "on"
+                ],
+                "default": "off"
+            },
+            "column_width": {
+                "type": "string",
+                "enum": [
+                    "column_50-50",
+                    "column_34-66",
+                    "column_25-75",
+                    "column_66-34",
+                    "column_75-25"
+                ],
+                "default": "column_50-50"
+            },
+            "modifier_class": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-text-media-with-checklist": {
+        "label": "Space Text and Media - With Checklist",
+        "version": "67576bd367e90d18",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "image_1": {
+                "type": "object"
+            },
+            "description": {
+                "type": "string"
+            },
+            "alignment_column": {
+                "type": "string",
+                "enum": [
+                    "default",
+                    "leftimage",
+                    "stack"
+                ],
+                "default": "default"
+            },
+            "out_of_box": {
+                "type": "string",
+                "enum": [
+                    "off",
+                    "on"
+                ],
+                "default": "off"
+            },
+            "column_width": {
+                "type": "string",
+                "enum": [
+                    "column_50-50",
+                    "column_34-66",
+                    "column_25-75",
+                    "column_66-34",
+                    "column_75-25"
+                ],
+                "default": "column_50-50"
+            },
+            "modifier_class": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content"
+        }
+    },
+    "sdc.space_ds.space-text-media-with-images": {
+        "label": "Space Text and Media - With Images",
+        "version": "ca58ac4ea8a007f2",
+        "required": [],
+        "props": {
+            "image_1": {
+                "type": "object"
+            },
+            "image_2": {
+                "type": "object"
+            },
+            "alignment_column": {
+                "type": "string",
+                "enum": [
+                    "default",
+                    "leftimage",
+                    "stack"
+                ],
+                "default": "default"
+            },
+            "out_of_box": {
+                "type": "string",
+                "enum": [
+                    "off",
+                    "on"
+                ],
+                "default": "off"
+            },
+            "column_width": {
+                "type": "string",
+                "enum": [
+                    "column_50-50",
+                    "column_34-66",
+                    "column_25-75",
+                    "column_66-34",
+                    "column_75-25"
+                ],
+                "default": "column_50-50"
+            },
+            "modifier_class": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-text-media-with-link": {
+        "label": "Space Text and Media - With link",
+        "version": "204242a9fc6349eb",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "image_1": {
+                "type": "object"
+            },
+            "image_2": {
+                "type": "object"
+            },
+            "description": {
+                "type": "string"
+            },
+            "alignment_column": {
+                "type": "string",
+                "enum": [
+                    "default",
+                    "leftimage",
+                    "stack"
+                ],
+                "default": "default"
+            },
+            "out_of_box": {
+                "type": "string",
+                "enum": [
+                    "off",
+                    "on"
+                ],
+                "default": "off"
+            },
+            "column_width": {
+                "type": "string",
+                "enum": [
+                    "column_50-50",
+                    "column_34-66",
+                    "column_25-75",
+                    "column_66-34",
+                    "column_75-25"
+                ],
+                "default": "column_50-50"
+            },
+            "modifier_class": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "content": "Content"
+        }
+    },
+    "sdc.space_ds.space-text-media-with-stats": {
+        "label": "Space Text and Media - With Stats",
+        "version": "53656404ee8ab696",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "image_1": {
+                "type": "object"
+            },
+            "description": {
+                "type": "string"
+            },
+            "alignment_column": {
+                "type": "string",
+                "enum": [
+                    "default",
+                    "leftimage",
+                    "stack"
+                ],
+                "default": "default"
+            },
+            "out_of_box": {
+                "type": "string",
+                "enum": [
+                    "off",
+                    "on"
+                ],
+                "default": "off"
+            },
+            "column_width": {
+                "type": "string",
+                "enum": [
+                    "column_50-50",
+                    "column_34-66",
+                    "column_25-75",
+                    "column_66-34",
+                    "column_75-25"
+                ],
+                "default": "column_50-50"
+            },
+            "modifier_class": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "stats": "Stats/KPI"
+        }
+    },
+    "sdc.space_ds.space-tooltip": {
+        "label": "Space Tooltip",
+        "version": "2d2845d3938988ed",
+        "required": [],
+        "props": {
+            "icon": {
+                "type": "object"
+            },
+            "title": {
+                "type": "string"
+            },
+            "content": {
+                "type": "string"
+            },
+            "arrowposition": {
+                "type": "string",
+                "enum": [
+                    "bottomcenter",
+                    "bottomleft",
+                    "bottomright",
+                    "top",
+                    "left",
+                    "right"
+                ],
+                "default": "bottomcenter"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-video": {
+        "label": "Space Video",
+        "version": "fc6d05a0b0b77a21",
+        "required": [],
+        "props": {
+            "video": {
+                "type": "string"
+            },
+            "src": {
+                "type": "string"
+            }
+        },
+        "slots": []
+    },
+    "sdc.space_ds.space-video-card": {
+        "label": "Space Video Card",
+        "version": "9eb2841c6738cbbd",
+        "required": [],
+        "props": {
+            "title": {
+                "type": "string"
+            },
+            "video": {
+                "type": "string"
+            },
+            "preheadline": {
+                "type": "string"
+            },
+            "text": {
+                "type": "string"
+            },
+            "alignment": {
+                "type": "string",
+                "enum": [
+                    "vertical",
+                    "horizontal"
+                ],
+                "default": "vertical"
+            },
+            "card_layout": {
+                "type": "string",
+                "enum": [
+                    "withcontainer",
+                    "withoutcontainer"
+                ],
+                "default": "withcontainer"
+            },
+            "card_size": {
+                "type": "string",
+                "enum": [
+                    "large",
+                    "medium"
+                ],
+                "default": "large"
+            },
+            "full_box_link": {
+                "type": "boolean",
+                "default": true
+            },
+            "extra_classes": {
+                "type": "string"
+            }
+        },
+        "slots": {
+            "link": "Link"
+        }
+    }
+}

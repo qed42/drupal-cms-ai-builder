@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for AI Site Builder module.
+ */
+
+declare(strict_types=1);
+
+/**
+ * Implements hook_toolbar_alter().
+ *
+ * Hides admin toolbar items for site_owner role, keeping only content
+ * listing and Canvas editor access.
+ */
+function ai_site_builder_toolbar_alter(array &$items): void {
+  $current_user = \Drupal::currentUser();
+
+  if (!in_array('site_owner', $current_user->getRoles(), TRUE)) {
+    return;
+  }
+
+  // Hide admin-focused toolbar items for site owners.
+  $hidden_items = [
+    'administration',
+    'shortcuts',
+    'contextual',
+    'tour',
+  ];
+
+  foreach ($hidden_items as $item) {
+    if (isset($items[$item])) {
+      $items[$item]['#access'] = FALSE;
+    }
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * Attaches brand token CSS to every page if the generated file exists.
+ */
+function ai_site_builder_page_attachments(array &$attachments): void {
+  $css_uri = 'public://css/brand-tokens.css';
+  /** @var \Drupal\Core\File\FileSystemInterface $file_system */
+  $file_system = \Drupal::service('file_system');
+  $real_path = $file_system->realpath($css_uri);
+
+  if ($real_path && file_exists($real_path)) {
+    /** @var \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator */
+    $file_url_generator = \Drupal::service('file_url_generator');
+    $css_url = $file_url_generator->generateAbsoluteString($css_uri);
+
+    $attachments['#attached']['html_head'][] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'link',
+        '#attributes' => [
+          'rel' => 'stylesheet',
+          'href' => $css_url,
+        ],
+      ],
+      'ai_site_builder_brand_tokens',
+    ];
+  }
+}

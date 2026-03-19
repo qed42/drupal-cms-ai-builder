@@ -1,0 +1,24 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - ai_site_builder_content
+  module:
+    - node
+id: practice_area_content
+label: 'Practice Area content'
+type: 'canonical_entities:node'
+pattern: '/practice-areas/[node:title]'
+selection_criteria:
+  f6a7b8c9-d0e1-2345-fabc-456789012345:
+    id: 'entity_bundle:node'
+    negate: false
+    uuid: f6a7b8c9-d0e1-2345-fabc-456789012345
+    context_mapping:
+      node: node
+    bundles:
+      practice_area: practice_area
+selection_logic: and
+weight: 0
+relationships: {  }

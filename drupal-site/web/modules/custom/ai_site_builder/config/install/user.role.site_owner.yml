@@ -1,0 +1,44 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - ai_site_builder
+    - canvas
+    - node
+    - system
+    - toolbar
+    - webform
+id: site_owner
+label: Site Owner
+weight: 3
+is_admin: false
+permissions:
+  # Content access.
+  - 'access content'
+  - 'access content overview'
+  - 'view own unpublished content'
+  # Canvas editing.
+  - 'use canvas editor'
+  - 'edit any canvas_page content'
+  - 'create canvas_page content'
+  - 'delete own canvas_page content'
+  # Industry content types — edit any.
+  - 'edit any service content'
+  - 'edit any team_member content'
+  - 'edit any testimonial content'
+  - 'edit any provider content'
+  - 'edit any location content'
+  - 'edit any practice_area content'
+  - 'edit any case_study content'
+  - 'edit any listing content'
+  - 'edit any menu_item content'
+  # Toolbar.
+  - 'access toolbar'
+  # Webform submissions.
+  - 'view any webform submission'
+  - 'access webform overview'
+  # Media.
+  - 'access media overview'
+  - 'create media'
+  - 'update any media'
+  - 'view media'

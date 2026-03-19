@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - ai_site_builder_content
+name: Menu Item
+type: menu_item
+description: 'A restaurant menu item.'
+help: null
+new_revision: true
+preview_mode: 1
+display_submitted: false

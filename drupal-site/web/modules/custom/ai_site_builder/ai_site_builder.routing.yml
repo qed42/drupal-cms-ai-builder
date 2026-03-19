@@ -1,0 +1,6 @@
+ai_site_builder.auto_login:
+  path: '/auto-login'
+  defaults:
+    _controller: '\Drupal\ai_site_builder\Controller\AutoLoginController::login'
+  requirements:
+    _access: 'TRUE'
