@@ -175,6 +175,7 @@ describe("TASK-216: Plan Prompt Builder", () => {
         keyMessages: ["Quality service"],
         toneGuidance: { primary: "Friendly", avoid: [], examples: [] },
         seoKeywords: ["test"],
+        complianceNotes: [],
       }
     );
 
@@ -257,13 +258,15 @@ describe("Pipeline Schemas", () => {
         services: [
           { title: "Service A", briefDescription: "Description of A" },
         ],
+        teamMembers: [],
+        testimonials: [],
       },
     };
 
     expect(() => ContentPlanSchema.parse(valid)).not.toThrow();
   });
 
-  it("ContentPlanSchema allows optional teamMembers and testimonials", async () => {
+  it("ContentPlanSchema requires teamMembers and testimonials as arrays", async () => {
     const { ContentPlanSchema } = await import("../src/lib/pipeline/schemas");
 
     const minimal = {
@@ -272,6 +275,8 @@ describe("Pipeline Schemas", () => {
       pages: [],
       globalContent: {
         services: [],
+        teamMembers: [],
+        testimonials: [],
       },
     };
 
@@ -292,18 +297,21 @@ describe("Pipeline Schemas", () => {
           type: "hero",
           contentBrief: "Main hero banner",
           estimatedWordCount: 50,
+          componentSuggestion: "",
         },
         {
           heading: "Services",
           type: "features",
           contentBrief: "Service cards",
           estimatedWordCount: 200,
+          componentSuggestion: "space-text-media",
         },
         {
           heading: "CTA",
           type: "cta",
           contentBrief: "Call to action",
-          // estimatedWordCount is optional — should pass without it
+          estimatedWordCount: 30,
+          componentSuggestion: "",
         },
       ],
     };
@@ -311,7 +319,7 @@ describe("Pipeline Schemas", () => {
     const parsed = ContentPlanPageSchema.parse(page);
     expect(parsed.sections[0].estimatedWordCount).toBe(50);
     expect(parsed.sections[1].estimatedWordCount).toBe(200);
-    expect(parsed.sections[2].estimatedWordCount).toBeUndefined();
+    expect(parsed.sections[2].estimatedWordCount).toBe(30);
   });
 
   it("plan prompt includes estimatedWordCount instruction (BUG-310 fix)", async () => {
@@ -326,6 +334,7 @@ describe("Pipeline Schemas", () => {
         keyMessages: ["Quality"],
         toneGuidance: { primary: "Friendly", avoid: [], examples: [] },
         seoKeywords: ["test"],
+        complianceNotes: [],
       }
     );
 

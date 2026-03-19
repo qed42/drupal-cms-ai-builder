@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 // --- Research Phase Output ---
+// NOTE: OpenAI structured output requires ALL properties in `required`.
+// Do not use .optional() on schemas passed to generateValidatedJSON with OpenAI.
 
 export const ResearchBriefSchema = z.object({
   industry: z.string().describe("Industry classification"),
@@ -23,7 +25,7 @@ export const ResearchBriefSchema = z.object({
     examples: z.array(z.string()),
   }),
   seoKeywords: z.array(z.string()),
-  complianceNotes: z.array(z.string()).optional(),
+  complianceNotes: z.array(z.string()).describe("Compliance considerations, empty array if none"),
 });
 
 export type ResearchBrief = z.infer<typeof ResearchBriefSchema>;
@@ -40,8 +42,8 @@ export const ContentPlanPageSchema = z.object({
       heading: z.string(),
       type: z.string().describe("Section type: hero, features, testimonials, cta, text, gallery, etc."),
       contentBrief: z.string().describe("What content should be generated for this section"),
-      estimatedWordCount: z.number().optional().describe("Target word count for this section"),
-      componentSuggestion: z.string().optional().describe("Suggested Space DS component"),
+      estimatedWordCount: z.number().describe("Target word count for this section"),
+      componentSuggestion: z.string().describe("Suggested Space DS component or empty string if none"),
     })
   ),
 });
@@ -57,23 +59,19 @@ export const ContentPlanSchema = z.object({
         briefDescription: z.string(),
       })
     ),
-    teamMembers: z
-      .array(
-        z.object({
-          name: z.string(),
-          role: z.string(),
-        })
-      )
-      .optional(),
-    testimonials: z
-      .array(
-        z.object({
-          quote: z.string(),
-          authorName: z.string(),
-          authorRole: z.string().optional(),
-        })
-      )
-      .optional(),
+    teamMembers: z.array(
+      z.object({
+        name: z.string(),
+        role: z.string(),
+      })
+    ).describe("Team members, empty array if not applicable"),
+    testimonials: z.array(
+      z.object({
+        quote: z.string(),
+        authorName: z.string(),
+        authorRole: z.string(),
+      })
+    ).describe("Testimonials, empty array if not applicable"),
   }),
 });
 
@@ -111,13 +109,13 @@ export const BlueprintOutputSchema = z.object({
       heading: z.string(),
       body: z.string(),
     }),
-    logo_url: z.string().optional(),
+    logo_url: z.string().describe("Logo URL or empty string if none"),
   }),
   pages: z.array(PageLayoutSchema),
   content: z.object({
-    services: z.array(z.record(z.string(), z.unknown())).optional(),
-    team_members: z.array(z.record(z.string(), z.unknown())).optional(),
-    testimonials: z.array(z.record(z.string(), z.unknown())).optional(),
+    services: z.array(z.record(z.string(), z.unknown())),
+    team_members: z.array(z.record(z.string(), z.unknown())),
+    testimonials: z.array(z.record(z.string(), z.unknown())),
   }),
   forms: z.object({
     contact: z.object({
@@ -134,7 +132,7 @@ export const BlueprintOutputSchema = z.object({
           ]),
           label: z.string(),
           required: z.boolean(),
-          options: z.array(z.string()).optional(),
+          options: z.array(z.string()).describe("Options for select/checkbox, empty array otherwise"),
         })
       ),
     }),

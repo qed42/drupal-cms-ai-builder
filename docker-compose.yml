@@ -32,11 +32,12 @@ services:
       - ./provisioning:/provisioning
       - ./drupal-site:/drupal-site
       - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - ./platform-app/.env.local
     environment:
       - DATABASE_URL=postgresql://space:space_dev_password@postgres:5432/space_platform
       - NEXTAUTH_URL=http://localhost:3000
       - NEXTAUTH_SECRET=dev-secret-change-in-production-32chars!
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - JWT_SHARED_SECRET=dev-jwt-secret-change-in-production
       - PROVISION_CALLBACK_KEY=dev-callback-key-change-in-production
       - DB_HOST=ddev-ai-site-builder-db

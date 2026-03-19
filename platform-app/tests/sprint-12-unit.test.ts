@@ -21,6 +21,7 @@ describe("TASK-217: Page Generation Prompt Builder", () => {
             heading: "Welcome to Our Services",
             type: "hero",
             contentBrief: "Hero banner introducing the services page",
+            componentSuggestion: "",
             estimatedWordCount: 40,
           },
           {
@@ -62,6 +63,9 @@ describe("TASK-217: Page Generation Prompt Builder", () => {
           services: [
             { title: "General Dentistry", briefDescription: "Cleanings and checkups" },
             { title: "Cosmetic Dentistry", briefDescription: "Whitening and veneers" },
+        ],
+        teamMembers: [],
+        testimonials: [
           ],
         },
       }
@@ -113,6 +117,8 @@ describe("TASK-217: Page Generation Prompt Builder", () => {
             heading: "Get in Touch",
             type: "hero",
             contentBrief: "Contact hero",
+            estimatedWordCount: 40,
+            componentSuggestion: "",
           },
         ],
       },
@@ -123,13 +129,14 @@ describe("TASK-217: Page Generation Prompt Builder", () => {
         competitors: [],
         keyMessages: ["Quality"],
         toneGuidance: { primary: "Friendly", avoid: [], examples: [] },
-        seoKeywords: ["test"],
+         seoKeywords: ["test"],
+        complianceNotes: [],
       },
       {
         siteName: "Test",
         tagline: "Test tagline",
         pages: [],
-        globalContent: { services: [] },
+        globalContent: { services: [], teamMembers: [], testimonials: [] },
       }
     );
 
