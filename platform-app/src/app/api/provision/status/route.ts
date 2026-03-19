@@ -18,6 +18,7 @@ const SITE_STATUS_PROGRESS: Record<string, number> = {
   onboarding: 0,
   generating: 5,
   blueprint_ready: 55,
+  review: 60,
   provisioning: 70,
   live: 100,
   provisioning_failed: -1,
@@ -71,7 +72,7 @@ export async function GET(req: NextRequest) {
 
   // Calculate overall progress — prefer pipeline phase if active.
   let progress: number;
-  if (site.status === "provisioning" || site.status === "live" || site.status === "provisioning_failed") {
+  if (site.status === "review" || site.status === "provisioning" || site.status === "live" || site.status === "provisioning_failed") {
     progress = SITE_STATUS_PROGRESS[site.status] ?? 70;
   } else if (pipelinePhase && (pipelinePhase in PIPELINE_PHASE_PROGRESS || pipelinePhase.startsWith("generate:"))) {
     if (pipelinePhase.startsWith("generate:")) {

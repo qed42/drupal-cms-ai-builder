@@ -69,7 +69,7 @@ export default function ProgressPage() {
         setPipeline(data.pipeline);
       }
 
-      if (data.siteStatus === "review" || data.siteStatus === "live") {
+      if (data.siteStatus === "review" || data.siteStatus === "blueprint_ready" || data.siteStatus === "live") {
         setDone(true);
       } else if (
         data.pipelinePhase?.includes("failed") ||
