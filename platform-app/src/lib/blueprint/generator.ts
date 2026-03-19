@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma";
+import { generateSubdomain, spawnProvisioning } from "@/lib/provisioning";
 import { getOpenAIClient } from "@/lib/ai/client";
 import { buildContentPrompt } from "@/lib/ai/prompts/content-generation";
 import { buildPageLayoutPrompt } from "@/lib/ai/prompts/page-layout";
 import { buildFormPrompt } from "@/lib/ai/prompts/form-generation";
+import { buildComponentTree } from "./component-tree-builder";
 import type {
   BlueprintBundle,
   ContentItems,
@@ -288,6 +290,11 @@ export async function generateBlueprint(
     pages = getFallbackPages(data, content);
   }
 
+  // Attach Canvas component trees to each page
+  for (const page of pages) {
+    page.component_tree = buildComponentTree(page.sections);
+  }
+
   // Step 3: Generate form fields
   await updateStep(blueprintId, "forms");
   let formFields: FormField[];
@@ -339,9 +346,32 @@ export async function generateBlueprint(
     },
   });
 
+  // Look up user email for provisioning.
+  const siteRecord = await prisma.site.findUnique({
+    where: { id: siteId },
+    include: { user: { select: { email: true } } },
+  });
+
+  const subdomain = generateSubdomain(data.name || "site");
+
   await prisma.site.update({
     where: { id: siteId },
-    data: { status: "blueprint_ready" },
+    data: { status: "provisioning", subdomain },
+  });
+
+  // Auto-trigger provisioning (fire-and-forget).
+  spawnProvisioning({
+    siteId,
+    siteName: data.name!,
+    email: siteRecord?.user?.email || data.name!,
+    industry: data.industry!,
+    subdomain,
+    blueprintPayload: JSON.parse(JSON.stringify(blueprint)),
+  }).catch((err) => {
+    console.error("[provisioning] Failed to spawn:", err);
+    prisma.site
+      .update({ where: { id: siteId }, data: { status: "blueprint_ready" } })
+      .catch(() => {});
   });
 
   return blueprint;

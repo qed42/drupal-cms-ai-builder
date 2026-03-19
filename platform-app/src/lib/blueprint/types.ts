@@ -28,6 +28,17 @@ export interface PageLayout {
   title: string;
   seo: { meta_title: string; meta_description: string };
   sections: PageSection[];
+  component_tree?: ComponentTreeItem[];
+}
+
+export interface ComponentTreeItem {
+  uuid: string;
+  component_id: string;       // Canvas format: "sdc.space_ds.space-{name}"
+  component_version: string;  // xxh64 hash (16 hex chars)
+  parent_uuid: string | null; // null = root level
+  slot: string | null;        // null = root level
+  inputs: Record<string, unknown>;
+  label?: string;
 }
 
 export interface PageSection {

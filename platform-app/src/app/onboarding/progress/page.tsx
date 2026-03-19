@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import GenerationProgress from "@/components/onboarding/GenerationProgress";
+import { downloadBlueprint } from "@/lib/download";
 
 export default function ProgressPage() {
   const router = useRouter();
@@ -15,6 +16,21 @@ export default function ProgressPage() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [downloadLoading, setDownloadLoading] = useState(false);
+
+  const blueprintReady = step === "ready" || siteStatus === "provisioning" || siteStatus === "live" || siteStatus === "provisioning_failed";
+
+  async function handleDownload() {
+    if (!siteId) return;
+    setDownloadLoading(true);
+    try {
+      await downloadBlueprint(siteId, siteName || "site");
+    } catch (error) {
+      console.error("Error downloading blueprint:", error);
+    } finally {
+      setDownloadLoading(false);
+    }
+  }
 
   const pollStatus = useCallback(async () => {
     try {
@@ -149,6 +165,28 @@ export default function ProgressPage() {
           >
             Try Again
             <span className="text-lg">&#x21bb;</span>
+          </button>
+        )}
+
+        {blueprintReady && siteId && (
+          <button
+            onClick={handleDownload}
+            disabled={downloadLoading}
+            className="rounded-full border border-white/20 px-6 py-3 font-medium text-white/70 hover:bg-white/5 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {downloadLoading ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Downloading...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a2 2 0 002 2h14a2 2 0 002-2v-3" />
+                </svg>
+                Blueprint JSON
+              </>
+            )}
           </button>
         )}
       </div>

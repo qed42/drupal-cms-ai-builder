@@ -17,10 +17,10 @@ export default auth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect logged-in users away from auth pages
+  // Redirect logged-in users away from auth pages to dashboard
   const authPaths = ["/login", "/register"];
   if (authPaths.includes(pathname) && isLoggedIn) {
-    return NextResponse.redirect(new URL("/onboarding/start", req.nextUrl.origin));
+    return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
   }
 
   return NextResponse.next();

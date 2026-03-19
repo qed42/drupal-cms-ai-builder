@@ -11,7 +11,7 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/onboarding/start";
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

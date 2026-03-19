@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { downloadBlueprint } from "@/lib/download";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   onboarding: { label: "Setting Up", color: "text-amber-400", bg: "bg-amber-400/10" },
@@ -28,7 +29,21 @@ export default function SiteCard({ site }: SiteCardProps) {
   const router = useRouter();
   const [editLoading, setEditLoading] = useState(false);
   const [retryLoading, setRetryLoading] = useState(false);
+  const [downloadLoading, setDownloadLoading] = useState(false);
   const config = STATUS_CONFIG[site.status] || STATUS_CONFIG.onboarding;
+
+  const hasBlueprintReady = ["blueprint_ready", "provisioning", "live", "provisioning_failed"].includes(site.status);
+
+  async function handleDownloadBlueprint() {
+    setDownloadLoading(true);
+    try {
+      await downloadBlueprint(site.id, site.name || "site");
+    } catch (error) {
+      console.error("Error downloading blueprint:", error);
+    } finally {
+      setDownloadLoading(false);
+    }
+  }
 
   async function handleEditSite() {
     setEditLoading(true);
@@ -176,7 +191,30 @@ export default function SiteCard({ site }: SiteCardProps) {
         <p className="text-white/50 text-sm truncate">{site.drupalUrl}</p>
       )}
 
-      <div className="pt-2">{getActionButton()}</div>
+      <div className="pt-2 flex items-center gap-3">
+        {getActionButton()}
+        {hasBlueprintReady && (
+          <button
+            onClick={handleDownloadBlueprint}
+            disabled={downloadLoading}
+            className="rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {downloadLoading ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Downloading...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a2 2 0 002 2h14a2 2 0 002-2v-3" />
+                </svg>
+                Blueprint JSON
+              </>
+            )}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

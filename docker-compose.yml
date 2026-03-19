@@ -29,6 +29,9 @@ services:
       - ./platform-app:/app
       - /app/node_modules
       - /app/.next
+      - ./provisioning:/provisioning
+      - ./drupal-site:/drupal-site
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - DATABASE_URL=postgresql://space:space_dev_password@postgres:5432/space_platform
       - NEXTAUTH_URL=http://localhost:3000
@@ -36,10 +39,11 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - JWT_SHARED_SECRET=dev-jwt-secret-change-in-production
       - PROVISION_CALLBACK_KEY=dev-callback-key-change-in-production
-      - DB_HOST=host.docker.internal
+      - DB_HOST=ddev-ai-site-builder-db
       - DB_PORT=3306
-      - DB_USER=db
-      - DB_PASSWORD=db
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - SITE_DOMAIN_SUFFIX=ai-site-builder.ddev.site
     depends_on:
       postgres:
         condition: service_healthy
