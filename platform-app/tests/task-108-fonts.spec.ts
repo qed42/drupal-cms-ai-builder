@@ -29,7 +29,7 @@ test.describe("TASK-108: Wizard Screen 7 — Font Selection", () => {
       page.getByText("Select a primary and a secondary font")
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /Visualize my site/i })
+      page.getByRole("button", { name: /Continue/i })
     ).toBeVisible();
   });
 
@@ -91,7 +91,7 @@ test.describe("TASK-108: Wizard Screen 7 — Font Selection", () => {
     await expect(page.getByText("Add font files locally")).toBeVisible();
   });
 
-  test("'Visualize my site' saves font data and marks onboarding complete", async ({
+  test("'Continue' saves font data and navigates to follow-up step", async ({
     page,
   }) => {
     await page.goto("/onboarding/fonts");
@@ -103,8 +103,8 @@ test.describe("TASK-108: Wizard Screen 7 — Font Selection", () => {
     await headingSelect.selectOption("Montserrat");
     await bodySelect.selectOption("Lato");
 
-    await page.getByRole("button", { name: /Visualize my site/i }).click();
-    await page.waitForURL("**/onboarding/start", { timeout: 10000 });
+    await page.getByRole("button", { name: /Continue/i }).click();
+    await page.waitForURL("**/onboarding/follow-up", { timeout: 10000 });
 
     // Verify saved data
     const resumed = await page.evaluate(async () => {
@@ -113,7 +113,6 @@ test.describe("TASK-108: Wizard Screen 7 — Font Selection", () => {
     });
     expect(resumed.data.fonts.heading).toBe("Montserrat");
     expect(resumed.data.fonts.body).toBe("Lato");
-    expect(resumed.data.onboarding_complete).toBe(true);
   });
 
   test("has Back button navigating to brand step", async ({ page }) => {

@@ -87,7 +87,7 @@ test.describe("TASK-105: Wizard Screen 4 — Page Map", () => {
     await expect(page.getByLabel(/Remove/)).toHaveCount(0);
   });
 
-  test("user can add custom pages via 'Add page +' input", async ({ page }) => {
+  test("user can add custom pages via 'Add Custom Page' button", async ({ page }) => {
     await seedOnboardingData(page, {
       _step: "audience",
       suggested_pages: [
@@ -100,16 +100,17 @@ test.describe("TASK-105: Wizard Screen 4 — Page Map", () => {
     await page.goto("/onboarding/pages");
     await page.waitForLoadState("domcontentloaded");
 
-    // Click "+ Add page" button
-    await page.getByRole("button", { name: /Add page/i }).click();
+    // Click "+ Add Custom Page" button
+    await page.getByRole("button", { name: /Add Custom Page/i }).click();
 
-    // Fill in custom page name and click Add
-    await page.fill('input[placeholder="Page name..."]', "Blog");
-    await page.getByRole("button", { name: "Add" }).click();
+    // Fill in custom page title and click Add Page
+    await page.fill('input[placeholder="Page title..."]', "Blog");
+    await page.getByRole("button", { name: "Add Page" }).click();
 
-    // Verify new page appears
+    // Verify new page appears with custom badge
     await expect(page.getByText("Blog")).toBeVisible();
     await expect(page.getByText("4 of 12 pages")).toBeVisible();
+    await expect(page.getByText("(1 custom)")).toBeVisible();
   });
 
   test("navigates to design screen on submit", async ({ page }) => {

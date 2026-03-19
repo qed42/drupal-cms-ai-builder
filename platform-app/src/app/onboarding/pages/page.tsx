@@ -3,24 +3,29 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
-import PageChip from "@/components/onboarding/PageChip";
 
 interface Page {
   slug: string;
   title: string;
+  description: string;
   required: boolean;
+  custom?: boolean;
 }
 
 const MIN_PAGES = 3;
 const MAX_PAGES = 12;
+const MAX_CUSTOM_PAGES = 3;
 
 export default function PagesPage() {
   const router = useRouter();
   const [pages, setPages] = useState<Page[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [addingPage, setAddingPage] = useState(false);
-  const [newPageTitle, setNewPageTitle] = useState("");
+  const [addingCustom, setAddingCustom] = useState(false);
+  const [customTitle, setCustomTitle] = useState("");
+  const [customDescription, setCustomDescription] = useState("");
+
+  const customPageCount = pages.filter((p) => p.custom).length;
 
   const runAIAnalysis = useCallback(async (data: Record<string, unknown>) => {
     setAnalyzing(true);
@@ -49,7 +54,13 @@ export default function PagesPage() {
       const suggestData = await suggestRes.json();
 
       if (suggestData.pages?.length > 0) {
-        setPages(suggestData.pages);
+        setPages(
+          suggestData.pages.map((p: Page) => ({
+            ...p,
+            description: p.description || "",
+            custom: false,
+          }))
+        );
       }
     } catch {
       // Fallback handled by API
@@ -63,11 +74,16 @@ export default function PagesPage() {
       .then((r) => r.json())
       .then((d) => {
         if (d.data?.suggested_pages?.length > 0) {
-          setPages(d.data.suggested_pages);
+          setPages(
+            d.data.suggested_pages.map((p: Page) => ({
+              ...p,
+              description: p.description || "",
+              custom: p.custom || false,
+            }))
+          );
           setLoaded(true);
         } else {
           setLoaded(true);
-          // Run AI analysis if no pages yet
           runAIAnalysis(d.data || {});
         }
       })
@@ -79,19 +95,40 @@ export default function PagesPage() {
     setPages(pages.filter((p) => p.slug !== slug));
   }
 
-  function addPage() {
-    if (!newPageTitle.trim() || pages.length >= MAX_PAGES) return;
-    const slug = newPageTitle.trim().toLowerCase().replace(/\s+/g, "-");
-    setPages([...pages, { slug, title: newPageTitle.trim(), required: false }]);
-    setNewPageTitle("");
-    setAddingPage(false);
+  function addCustomPage() {
+    if (!customTitle.trim() || customPageCount >= MAX_CUSTOM_PAGES || pages.length >= MAX_PAGES) return;
+    const slug = customTitle.trim().toLowerCase().replace(/\s+/g, "-");
+    setPages([
+      ...pages,
+      {
+        slug,
+        title: customTitle.trim(),
+        description: customDescription.trim() || `Custom page about ${customTitle.trim().toLowerCase()}`,
+        required: false,
+        custom: true,
+      },
+    ]);
+    setCustomTitle("");
+    setCustomDescription("");
+    setAddingCustom(false);
   }
 
   async function handleSubmit() {
     const res = await fetch("/api/onboarding/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ step: "pages", data: { pages } }),
+      body: JSON.stringify({
+        step: "pages",
+        data: {
+          pages: pages.map(({ slug, title, description, required, custom }) => ({
+            slug,
+            title,
+            description,
+            required,
+            custom,
+          })),
+        },
+      }),
     });
     if (res.ok) {
       router.push("/onboarding/design");
@@ -118,52 +155,101 @@ export default function PagesPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex flex-wrap gap-3 justify-center">
+          {/* Page cards with descriptions */}
+          <div className="space-y-2">
             {pages.map((page) => (
-              <PageChip
+              <div
                 key={page.slug}
-                title={page.title}
-                onRemove={() => removePage(page.slug)}
-                removable={pages.length > MIN_PAGES}
-              />
+                className={`flex items-start gap-3 rounded-xl px-4 py-3 text-left transition-all ${
+                  page.custom
+                    ? "bg-purple-500/10 border border-purple-500/30"
+                    : "bg-white/5 border border-white/10"
+                }`}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-white">
+                      {page.title}
+                    </span>
+                    {page.custom && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/30 text-purple-300 uppercase tracking-wide">
+                        Custom
+                      </span>
+                    )}
+                  </div>
+                  {page.description && (
+                    <p className="text-xs text-white/40 mt-0.5 truncate">
+                      {page.description}
+                    </p>
+                  )}
+                </div>
+                {pages.length > MIN_PAGES && !page.required && (
+                  <button
+                    type="button"
+                    onClick={() => removePage(page.slug)}
+                    className="shrink-0 rounded-full hover:bg-white/10 w-6 h-6 flex items-center justify-center text-white/30 hover:text-white transition-colors mt-0.5"
+                    aria-label={`Remove ${page.title}`}
+                  >
+                    &times;
+                  </button>
+                )}
+              </div>
             ))}
           </div>
 
+          {/* Add Custom Page */}
           {pages.length < MAX_PAGES && (
             <div className="flex justify-center">
-              {addingPage ? (
-                <div className="flex items-center gap-2">
+              {addingCustom ? (
+                <div className="w-full rounded-xl border border-dashed border-purple-500/40 bg-purple-500/5 p-4 space-y-3">
                   <input
                     type="text"
-                    value={newPageTitle}
-                    onChange={(e) => setNewPageTitle(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && addPage()}
-                    placeholder="Page name..."
-                    className="rounded-xl bg-white/10 px-4 py-2 text-sm text-white placeholder-white/30 border border-white/10 focus:border-indigo-500 focus:outline-none"
+                    value={customTitle}
+                    onChange={(e) => setCustomTitle(e.target.value)}
+                    placeholder="Page title..."
+                    className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm text-white placeholder-white/30 border border-white/10 focus:border-indigo-500 focus:outline-none"
                     autoFocus
                   />
-                  <button
-                    type="button"
-                    onClick={addPage}
-                    className="rounded-full bg-indigo-500 px-3 py-2 text-sm text-white hover:bg-indigo-600 transition-colors"
-                  >
-                    Add
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setAddingPage(false); setNewPageTitle(""); }}
-                    className="text-white/40 hover:text-white text-sm"
-                  >
-                    Cancel
-                  </button>
+                  <textarea
+                    value={customDescription}
+                    onChange={(e) => setCustomDescription(e.target.value)}
+                    placeholder="Brief description of what this page should contain..."
+                    rows={2}
+                    className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm text-white placeholder-white/30 border border-white/10 focus:border-indigo-500 focus:outline-none resize-none"
+                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={addCustomPage}
+                      disabled={!customTitle.trim()}
+                      className="rounded-full bg-purple-500 px-4 py-1.5 text-sm text-white hover:bg-purple-600 transition-colors disabled:opacity-40"
+                    >
+                      Add Page
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAddingCustom(false);
+                        setCustomTitle("");
+                        setCustomDescription("");
+                      }}
+                      className="text-white/40 hover:text-white text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
+              ) : customPageCount >= MAX_CUSTOM_PAGES ? (
+                <p className="text-xs text-white/30">
+                  Maximum {MAX_CUSTOM_PAGES} custom pages reached
+                </p>
               ) : (
                 <button
                   type="button"
-                  onClick={() => setAddingPage(true)}
-                  className="rounded-full border border-dashed border-white/30 px-4 py-2 text-sm text-white/60 hover:text-white hover:border-white/60 transition-colors"
+                  onClick={() => setAddingCustom(true)}
+                  className="rounded-full border border-dashed border-purple-500/40 px-4 py-2 text-sm text-purple-300/70 hover:text-purple-300 hover:border-purple-500/60 transition-colors"
                 >
-                  + Add page
+                  + Add Custom Page
                 </button>
               )}
             </div>
@@ -171,6 +257,7 @@ export default function PagesPage() {
 
           <p className="text-white/30 text-xs text-center">
             {pages.length} of {MAX_PAGES} pages
+            {customPageCount > 0 && ` (${customPageCount} custom)`}
           </p>
         </div>
       )}

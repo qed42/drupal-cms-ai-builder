@@ -1,12 +1,13 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getOpenAIClient } from "@/lib/ai/client";
+import { getAIProvider } from "@/lib/ai/factory";
 import { SUGGEST_PAGES_PROMPT, getDefaultPages } from "@/lib/ai/prompts";
 import { NextRequest, NextResponse } from "next/server";
 
 interface PageSuggestion {
   slug: string;
   title: string;
+  description: string;
   required: boolean;
 }
 
@@ -27,29 +28,31 @@ export async function POST(req: NextRequest) {
   let pages: PageSuggestion[];
 
   try {
-    const client = getOpenAIClient();
+    const provider = await getAIProvider();
     const prompt = SUGGEST_PAGES_PROMPT
       .replace("{industry}", industry)
       .replace("{idea}", idea)
       .replace("{audience}", audience || "general audience");
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
+    const content = await provider.generateText(prompt, {
       temperature: 0.3,
     });
-
-    const content = completion.choices[0]?.message?.content;
-    if (!content) throw new Error("Empty AI response");
 
     const parsed = JSON.parse(content);
     pages = Array.isArray(parsed) ? parsed : parsed.pages || getDefaultPages(industry);
 
-    // Ensure minimum structure
+    // Ensure minimum structure and descriptions exist
     if (!Array.isArray(pages) || pages.length < 3) {
       pages = getDefaultPages(industry);
     }
+
+    // Ensure every page has a description fallback
+    pages = pages.map((p) => ({
+      slug: p.slug,
+      title: p.title,
+      description: p.description || `Content and information about ${p.title.toLowerCase()}`,
+      required: p.required,
+    }));
   } catch {
     pages = getDefaultPages(industry);
   }

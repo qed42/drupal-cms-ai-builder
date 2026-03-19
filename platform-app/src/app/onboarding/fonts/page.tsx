@@ -61,22 +61,13 @@ export default function FontsPage() {
         data: {
           fonts: { heading: headingFont, body: bodyFont },
           custom_fonts: customFonts,
-          onboarding_complete: true,
         },
       }),
     });
     if (!saveRes.ok) return false;
 
-    // Trigger blueprint generation
-    const genRes = await fetch("/api/provision/generate-blueprint", {
-      method: "POST",
-    });
-    if (genRes.ok) {
-      const genData = await genRes.json();
-      router.push(`/onboarding/progress?siteId=${genData.siteId}`);
-      return true;
-    }
-    return false;
+    router.push("/onboarding/follow-up");
+    return true;
   }
 
   if (!loaded) return null;
@@ -94,7 +85,7 @@ export default function FontsPage() {
       step="fonts"
       title="Select a font"
       subtitle="Select a primary and a secondary font"
-      buttonLabel="Visualize my site"
+      buttonLabel="Continue"
       onSubmit={handleSubmit}
     >
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}

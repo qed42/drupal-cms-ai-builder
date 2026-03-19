@@ -42,7 +42,7 @@ export async function registerAndLogin(page: Page, email?: string, password = "p
 
 export async function navigateToStep(
   page: Page,
-  step: "name" | "idea" | "audience" | "pages" | "design" | "brand" | "fonts"
+  step: "name" | "idea" | "audience" | "pages" | "design" | "brand" | "fonts" | "follow-up" | "tone"
 ) {
   // Click Start Building on start page
   await page.getByRole("button", { name: /Start Building/i }).click();
@@ -71,7 +71,7 @@ export async function navigateToStep(
   );
   await page.getByRole("button", { name: /Plan the Structure/i }).click();
   await page.waitForURL("**/onboarding/pages", { timeout: 15000 });
-  // Wait for AI analysis to complete (spinner disappears, chips appear)
+  // Wait for AI analysis to complete (spinner disappears, cards appear)
   await page.waitForSelector('text="Shape the Experience"', { timeout: 30000 });
   if (step === "pages") return;
 
@@ -88,6 +88,16 @@ export async function navigateToStep(
   // Click through brand screen (no upload required)
   await page.getByRole("button", { name: /Pick Your Fonts/i }).click();
   await page.waitForURL("**/onboarding/fonts", { timeout: 10000 });
+  if (step === "fonts") return;
+
+  // Click through fonts screen
+  await page.getByRole("button", { name: /Continue/i }).click();
+  await page.waitForURL("**/onboarding/follow-up", { timeout: 10000 });
+  if (step === "follow-up") return;
+
+  // Click through follow-up screen (optional questions)
+  await page.getByRole("button", { name: /Continue/i }).click();
+  await page.waitForURL("**/onboarding/tone", { timeout: 10000 });
 }
 
 /**
