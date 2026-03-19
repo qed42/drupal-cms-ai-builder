@@ -3,30 +3,27 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 export default function AudiencePage() {
   const router = useRouter();
+  const { buildStepUrl, resume, save } = useOnboarding();
   const [audience, setAudience] = useState("");
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    fetch("/api/onboarding/resume")
-      .then((r) => r.json())
+    resume()
       .then((d) => {
         if (d.data?.audience) setAudience(d.data.audience);
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
-  }, []);
+  }, [resume]);
 
   async function handleSubmit() {
-    const res = await fetch("/api/onboarding/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ step: "audience", data: { audience } }),
-    });
+    const res = await save("audience", { audience });
     if (res.ok) {
-      router.push("/onboarding/pages");
+      router.push(buildStepUrl("pages"));
       return true;
     }
     return false;

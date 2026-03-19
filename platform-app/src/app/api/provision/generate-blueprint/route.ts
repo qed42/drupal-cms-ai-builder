@@ -14,11 +14,17 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the user's active onboarding session
-    const onboarding = await prisma.onboardingSession.findFirst({
+    // Get the user's active onboarding session (prefer incomplete, fall back to completed)
+    let onboarding = await prisma.onboardingSession.findFirst({
       where: { userId: session.user.id, completed: false },
       orderBy: { createdAt: "desc" },
     });
+    if (!onboarding) {
+      onboarding = await prisma.onboardingSession.findFirst({
+        where: { userId: session.user.id },
+        orderBy: { createdAt: "desc" },
+      });
+    }
 
     if (!onboarding) {
       return NextResponse.json(
@@ -27,11 +33,13 @@ export async function POST() {
       );
     }
 
-    // Get the user's site
-    const site = await prisma.site.findFirst({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
-    });
+    // Get the site — scope by siteId from session if available, else fall back to most recent
+    const site = onboarding.siteId
+      ? await prisma.site.findUnique({ where: { id: onboarding.siteId } })
+      : await prisma.site.findFirst({
+          where: { userId: session.user.id },
+          orderBy: { createdAt: "desc" },
+        });
 
     if (!site) {
       return NextResponse.json({ error: "No site found" }, { status: 404 });
@@ -93,6 +101,11 @@ export async function POST() {
       await prisma.site.update({
         where: { id: site.id },
         data: { status: "onboarding" },
+      });
+      // Revert onboarding session so user can resume
+      await prisma.onboardingSession.update({
+        where: { id: onboarding.id },
+        data: { completed: false },
       });
     });
 

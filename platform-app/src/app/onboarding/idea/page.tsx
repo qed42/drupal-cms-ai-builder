@@ -3,30 +3,27 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 export default function IdeaPage() {
   const router = useRouter();
+  const { buildStepUrl, resume, save } = useOnboarding();
   const [idea, setIdea] = useState("");
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    fetch("/api/onboarding/resume")
-      .then((r) => r.json())
+    resume()
       .then((d) => {
         if (d.data?.idea) setIdea(d.data.idea);
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
-  }, []);
+  }, [resume]);
 
   async function handleSubmit() {
-    const res = await fetch("/api/onboarding/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ step: "idea", data: { idea } }),
-    });
+    const res = await save("idea", { idea });
     if (res.ok) {
-      router.push("/onboarding/audience");
+      router.push(buildStepUrl("audience"));
       return true;
     }
     return false;

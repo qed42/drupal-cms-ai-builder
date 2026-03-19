@@ -44,7 +44,7 @@ export async function POST() {
       {
         sessionId: onboardingSession.id,
         siteId: site.id,
-        redirectUrl: "/onboarding/start",
+        redirectUrl: `/onboarding/start?siteId=${site.id}`,
       },
       { status: 201 }
     );

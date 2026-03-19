@@ -7,6 +7,7 @@ import FontPreviewTile from "@/components/onboarding/FontPreviewTile";
 import FontSelector from "@/components/onboarding/FontSelector";
 import FileUploadZone from "@/components/onboarding/FileUploadZone";
 import { getGoogleFontsUrl, GOOGLE_FONTS } from "@/lib/fonts";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 const DEFAULT_COLORS = [
   { primary: "#6366F1", secondary: "#1E1B4B", accent: "#00F1C6", light: "#E0E7FF" },
@@ -14,6 +15,7 @@ const DEFAULT_COLORS = [
 
 export default function FontsPage() {
   const router = useRouter();
+  const { buildStepUrl, resume, save } = useOnboarding();
   const [loaded, setLoaded] = useState(false);
   const [headingFont, setHeadingFont] = useState(GOOGLE_FONTS[0].name);
   const [bodyFont, setBodyFont] = useState(GOOGLE_FONTS[3].name);
@@ -22,8 +24,7 @@ export default function FontsPage() {
   const [customFontUrl, setCustomFontUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/onboarding/resume")
-      .then((r) => r.json())
+    resume()
       .then((d) => {
         if (d.data?.fonts?.heading) setHeadingFont(d.data.fonts.heading);
         if (d.data?.fonts?.body) setBodyFont(d.data.fonts.body);
@@ -42,7 +43,7 @@ export default function FontsPage() {
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
-  }, []);
+  }, [resume]);
 
   // Load Google Fonts dynamically
   const fontsUrl = getGoogleFontsUrl([headingFont, bodyFont]);
@@ -52,21 +53,13 @@ export default function FontsPage() {
       ? [{ name: customFontFile, file_url: customFontUrl }]
       : [];
 
-    // Save fonts data
-    const saveRes = await fetch("/api/onboarding/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        step: "fonts",
-        data: {
-          fonts: { heading: headingFont, body: bodyFont },
-          custom_fonts: customFonts,
-        },
-      }),
+    const res = await save("fonts", {
+      fonts: { heading: headingFont, body: bodyFont },
+      custom_fonts: customFonts,
     });
-    if (!saveRes.ok) return false;
+    if (!res.ok) return false;
 
-    router.push("/onboarding/follow-up");
+    router.push(buildStepUrl("follow-up"));
     return true;
   }
 

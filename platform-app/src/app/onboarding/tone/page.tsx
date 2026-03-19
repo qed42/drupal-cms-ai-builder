@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
 import { TONE_SAMPLES } from "@/lib/onboarding/tone-samples";
 import { getDifferentiatorPlaceholder } from "@/lib/onboarding/tone-samples";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 export default function TonePage() {
   const router = useRouter();
+  const { siteId, resume, save } = useOnboarding();
   const [loaded, setLoaded] = useState(false);
   const [selectedTone, setSelectedTone] = useState("");
   const [differentiators, setDifferentiators] = useState("");
@@ -17,8 +19,7 @@ export default function TonePage() {
   const [industry, setIndustry] = useState("_default");
 
   useEffect(() => {
-    fetch("/api/onboarding/resume")
-      .then((r) => r.json())
+    resume()
       .then((d) => {
         if (d.data?.industry) setIndustry(d.data.industry);
         if (d.data?.tone) setSelectedTone(d.data.tone);
@@ -28,7 +29,7 @@ export default function TonePage() {
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
-  }, []);
+  }, [resume]);
 
   function updateUrl(index: number, value: string) {
     setReferenceUrls((prev) => {
@@ -52,19 +53,12 @@ export default function TonePage() {
     // Filter out empty URLs
     const cleanUrls = referenceUrls.filter((u) => u.trim() !== "");
 
-    const res = await fetch("/api/onboarding/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        step: "tone",
-        data: {
-          tone: selectedTone,
-          differentiators,
-          referenceUrls: cleanUrls,
-          existingCopy: existingCopy || undefined,
-          onboarding_complete: true,
-        },
-      }),
+    const res = await save("tone", {
+      tone: selectedTone,
+      differentiators,
+      referenceUrls: cleanUrls,
+      existingCopy: existingCopy || undefined,
+      onboarding_complete: true,
     });
     if (!res.ok) return false;
 
@@ -74,7 +68,8 @@ export default function TonePage() {
     });
     if (genRes.ok) {
       const genData = await genRes.json();
-      router.push(`/onboarding/progress?siteId=${genData.siteId}`);
+      const progressSiteId = genData.siteId || siteId;
+      router.push(`/onboarding/progress?siteId=${progressSiteId}`);
       return true;
     }
     return false;

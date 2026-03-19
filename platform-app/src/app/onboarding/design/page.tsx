@@ -4,30 +4,27 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
 import DesignOptionCard from "@/components/onboarding/DesignOptionCard";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 export default function DesignPage() {
   const router = useRouter();
+  const { buildStepUrl, resume, save } = useOnboarding();
   const [designSource, setDesignSource] = useState<"ai" | "figma">("ai");
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    fetch("/api/onboarding/resume")
-      .then((r) => r.json())
+    resume()
       .then((d) => {
         if (d.data?.design_source) setDesignSource(d.data.design_source);
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
-  }, []);
+  }, [resume]);
 
   async function handleSubmit() {
-    const res = await fetch("/api/onboarding/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ step: "design", data: { design_source: designSource } }),
-    });
+    const res = await save("design", { design_source: designSource });
     if (res.ok) {
-      router.push("/onboarding/brand");
+      router.push(buildStepUrl("brand"));
       return true;
     }
     return false;

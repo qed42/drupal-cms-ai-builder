@@ -7,9 +7,11 @@ import {
   getQuestionsForIndustry,
   type IndustryQuestion,
 } from "@/lib/onboarding/industry-questions";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 export default function FollowUpPage() {
   const router = useRouter();
+  const { buildStepUrl, resume, save } = useOnboarding();
   const [loaded, setLoaded] = useState(false);
   const [questions, setQuestions] = useState<IndustryQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -18,8 +20,7 @@ export default function FollowUpPage() {
   >({});
 
   useEffect(() => {
-    fetch("/api/onboarding/resume")
-      .then((r) => r.json())
+    resume()
       .then((d) => {
         const industry = d.data?.industry || "_default";
         const qs = getQuestionsForIndustry(industry);
@@ -42,7 +43,7 @@ export default function FollowUpPage() {
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
-  }, []);
+  }, [resume]);
 
   function updateAnswer(id: string, value: string) {
     setAnswers((prev) => ({ ...prev, [id]: value }));
@@ -61,16 +62,9 @@ export default function FollowUpPage() {
   }
 
   async function handleSubmit() {
-    const res = await fetch("/api/onboarding/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        step: "follow-up",
-        data: { followUpAnswers: answers },
-      }),
-    });
+    const res = await save("follow-up", { followUpAnswers: answers });
     if (res.ok) {
-      router.push("/onboarding/tone");
+      router.push(buildStepUrl("tone"));
       return true;
     }
     return false;

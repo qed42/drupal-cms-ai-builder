@@ -23,6 +23,9 @@
 |--------|------|----------|-------------|--------|
 | BUG-S12-001 | TASK-218b | High | "review" status unmapped in progress calc — drops to 55% | **Fixed** |
 | BUG-S12-002 | TASK-220 | Medium | Progress page stuck loading for v1 pipeline (blueprint_ready) | **Fixed** |
+| BUG-S12-007 | Onboarding | High | Continue Setup starts from scratch — no siteId scoping, completed session not resumable | **Fixed** |
+| BUG-S12-008 | TASK-217 | High | OpenAI rejects `propertyNames` in structured output schema for props field | **Fixed** |
+| BUG-S12-009 | TASK-217 | Medium | Generate phase crashes on control characters in AI-returned props_json | **Fixed** |
 | BUG-S12-003 | TASK-218b | Medium | blueprintId param unused in orchestrator | Deferred |
 | BUG-S12-004 | TASK-218b | Low | PipelinePhase type doesn't cover generate:N/T:Name format | Deferred |
 | BUG-S12-005 | TASK-220 | Low | Extra poll request on error due to React state batching | Deferred |

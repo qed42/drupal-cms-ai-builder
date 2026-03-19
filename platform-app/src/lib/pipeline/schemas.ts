@@ -81,7 +81,7 @@ export type ContentPlan = z.infer<typeof ContentPlanSchema>;
 
 export const PageSectionSchema = z.object({
   component_id: z.string(),
-  props: z.record(z.string(), z.unknown()),
+  props_json: z.string().describe("JSON-encoded object of component props (key-value pairs). Must be valid JSON."),
 });
 
 export const PageLayoutSchema = z.object({

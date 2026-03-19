@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ProgressDots from "./ProgressDots";
 import { getPrevStep } from "@/lib/onboarding-steps";
 
@@ -24,7 +24,14 @@ export default function StepLayout({
   children,
 }: StepLayoutProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const siteId = searchParams.get("siteId");
   const prevStep = getPrevStep(step);
+
+  function buildStepUrl(slug: string) {
+    const base = `/onboarding/${slug}`;
+    return siteId ? `${base}?siteId=${siteId}` : base;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -65,7 +72,7 @@ export default function StepLayout({
         {prevStep && (
           <button
             type="button"
-            onClick={() => router.push(`/onboarding/${prevStep}`)}
+            onClick={() => router.push(buildStepUrl(prevStep))}
             className="rounded-full px-6 py-3 text-white/60 hover:text-white transition-colors"
           >
             Back

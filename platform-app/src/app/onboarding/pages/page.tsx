@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 interface Page {
   slug: string;
@@ -18,6 +19,7 @@ const MAX_CUSTOM_PAGES = 3;
 
 export default function PagesPage() {
   const router = useRouter();
+  const { buildStepUrl, resume, save } = useOnboarding();
   const [pages, setPages] = useState<Page[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -70,8 +72,7 @@ export default function PagesPage() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/onboarding/resume")
-      .then((r) => r.json())
+    resume()
       .then((d) => {
         if (d.data?.suggested_pages?.length > 0) {
           setPages(
@@ -88,7 +89,7 @@ export default function PagesPage() {
         }
       })
       .catch(() => setLoaded(true));
-  }, [runAIAnalysis]);
+  }, [resume, runAIAnalysis]);
 
   function removePage(slug: string) {
     if (pages.length <= MIN_PAGES) return;
@@ -114,24 +115,17 @@ export default function PagesPage() {
   }
 
   async function handleSubmit() {
-    const res = await fetch("/api/onboarding/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        step: "pages",
-        data: {
-          pages: pages.map(({ slug, title, description, required, custom }) => ({
-            slug,
-            title,
-            description,
-            required,
-            custom,
-          })),
-        },
-      }),
+    const res = await save("pages", {
+      pages: pages.map(({ slug, title, description, required, custom }) => ({
+        slug,
+        title,
+        description,
+        required,
+        custom,
+      })),
     });
     if (res.ok) {
-      router.push("/onboarding/design");
+      router.push(buildStepUrl("design"));
       return true;
     }
     return false;

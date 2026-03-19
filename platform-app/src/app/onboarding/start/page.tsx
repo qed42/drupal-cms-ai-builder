@@ -2,9 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import ProgressDots from "@/components/onboarding/ProgressDots";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 export default function StartPage() {
   const router = useRouter();
+  const { buildStepUrl } = useOnboarding();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-xl mx-auto px-6 text-center">
@@ -32,7 +34,7 @@ export default function StartPage() {
       </p>
 
       <button
-        onClick={() => router.push("/onboarding/name")}
+        onClick={() => router.push(buildStepUrl("name"))}
         className="rounded-full bg-white px-8 py-3 font-medium text-[#0a0a2e] transition-all hover:bg-white/90 flex items-center gap-2"
       >
         Start Building

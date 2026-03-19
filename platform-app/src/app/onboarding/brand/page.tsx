@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
 import FileUploadZone from "@/components/onboarding/FileUploadZone";
 import ColorSwatch from "@/components/onboarding/ColorSwatch";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 interface ColorEntry {
   hex: string;
@@ -13,6 +14,7 @@ interface ColorEntry {
 
 export default function BrandPage() {
   const router = useRouter();
+  const { buildStepUrl, resume, save } = useOnboarding();
   const [loaded, setLoaded] = useState(false);
   const [logoFile, setLogoFile] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -22,8 +24,7 @@ export default function BrandPage() {
   const [extracting, setExtracting] = useState(false);
 
   useEffect(() => {
-    fetch("/api/onboarding/resume")
-      .then((r) => r.json())
+    resume()
       .then((d) => {
         if (d.data?.logo_filename) setLogoFile(d.data.logo_filename);
         if (d.data?.logo_url) setLogoUrl(d.data.logo_url);
@@ -39,7 +40,7 @@ export default function BrandPage() {
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
-  }, []);
+  }, [resume]);
 
   async function extractColors(filePath: string, type: "logo" | "palette") {
     setExtracting(true);
@@ -83,22 +84,15 @@ export default function BrandPage() {
       {} as Record<string, string>
     );
 
-    const res = await fetch("/api/onboarding/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        step: "brand",
-        data: {
-          logo_url: logoUrl,
-          logo_filename: logoFile,
-          palette_url: paletteUrl,
-          palette_filename: paletteFile,
-          colors: colorMap,
-        },
-      }),
+    const res = await save("brand", {
+      logo_url: logoUrl,
+      logo_filename: logoFile,
+      palette_url: paletteUrl,
+      palette_filename: paletteFile,
+      colors: colorMap,
     });
     if (res.ok) {
-      router.push("/onboarding/fonts");
+      router.push(buildStepUrl("fonts"));
       return true;
     }
     return false;

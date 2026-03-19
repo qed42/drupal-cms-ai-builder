@@ -90,15 +90,38 @@ export default function SiteCard({ site }: SiteCardProps) {
     }
   }
 
+  const [resumeLoading, setResumeLoading] = useState(false);
+
+  async function handleContinueSetup() {
+    setResumeLoading(true);
+    try {
+      const res = await fetch(`/api/onboarding/resume?siteId=${site.id}`);
+      const data = await res.json();
+      const step = data.step && data.step !== "start" ? data.step : "start";
+      router.push(`/onboarding/${step}?siteId=${site.id}`);
+    } catch {
+      // Fallback to start if resume fails
+      router.push(`/onboarding/start?siteId=${site.id}`);
+    }
+  }
+
   function getActionButton() {
     switch (site.status) {
       case "onboarding":
         return (
           <button
-            onClick={() => router.push("/onboarding/start")}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+            onClick={handleContinueSetup}
+            disabled={resumeLoading}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            Continue Setup
+            {resumeLoading ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Resuming...
+              </>
+            ) : (
+              "Continue Setup"
+            )}
           </button>
         );
       case "generating":

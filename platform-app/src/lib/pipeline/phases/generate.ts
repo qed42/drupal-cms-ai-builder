@@ -57,14 +57,25 @@ export async function runGeneratePhase(
       }
     );
 
+    // Parse props_json strings into props objects.
+    // The AI may include unescaped control characters (newlines, tabs) inside
+    // the JSON string — strip them before parsing.
+    const sections = generated.sections.map((s) => {
+      const sanitized = s.props_json.replace(/[\x00-\x1F\x7F]/g, " ");
+      return {
+        component_id: s.component_id,
+        props: JSON.parse(sanitized) as Record<string, unknown>,
+      };
+    });
+
     // Build Canvas component tree from sections
-    const componentTree = buildComponentTree(generated.sections);
+    const componentTree = buildComponentTree(sections);
 
     pages.push({
       slug: generated.slug,
       title: generated.title,
       seo: generated.seo,
-      sections: generated.sections,
+      sections,
       component_tree: componentTree,
     });
   }
