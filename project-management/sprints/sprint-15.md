@@ -11,29 +11,35 @@ The Product Owner flagged the application as having an "AI-generated tool" aesth
 
 ## Tasks
 
-### Phase 1: Foundation (Day 1)
+### Phase 0: Critical Bug Fix (Day 1 AM)
 | ID | Task | Story | Effort | Status |
 |----|------|-------|--------|--------|
-| TASK-271 | Product Brand Identity — Colors, Logo, Typography, Favicon | DS-1, DS-2, DS-3, DS-10 | L | Not Started |
+| TASK-281 | Fix brand-tokens.css deleted by cache flush during provisioning | BUG | S | Done |
+
+### Phase 1: Foundation (Day 1 PM)
+| ID | Task | Story | Effort | Status |
+|----|------|-------|--------|--------|
+| TASK-271 | Product Brand Identity — Colors, Logo, Typography, Favicon | DS-1, DS-2, DS-3, DS-10 | L | Done |
 
 ### Phase 2: Screen Redesigns (Days 2-4)
 | ID | Task | Story | Effort | Status |
 |----|------|-------|--------|--------|
-| TASK-272 | Auth Screen Redesign — Split Layout with Value Proposition | AUTH-1, AUTH-2, AUTH-4, AUTH-7 | M | Not Started |
-| TASK-273 | Onboarding Visual Overhaul — Step Icons, Progress, Start Page | ONB-1, ONB-2, ONB-7 | L | Not Started |
-| TASK-276 | Dashboard Redesign — Site Previews & Navigation | DASH-1, DASH-2, DASH-4 | M | Not Started |
+| TASK-272 | Auth Screen Redesign — Split Layout with Value Proposition | AUTH-1, AUTH-2, AUTH-4, AUTH-7 | M | Done |
+| TASK-273 | Onboarding Visual Overhaul — Step Icons, Progress, Start Page | ONB-1, ONB-2, ONB-7 | L | Done |
+| TASK-276 | Dashboard Redesign — Site Previews & Navigation | DASH-1, DASH-2, DASH-4 | M | Done |
 
 ### Phase 3: Flow Additions (Day 5)
 | ID | Task | Story | Effort | Status |
 |----|------|-------|--------|--------|
-| TASK-274 | Pre-Generation Review Step | REV-1, REV-4 | M | Not Started |
-| TASK-275 | Generation Progress UX — User Labels & Completion State | GEN-1, GEN-4 | M | Not Started |
+| TASK-274 | Pre-Generation Review Step | REV-1, REV-4 | M | Done |
+| TASK-275 | Generation Progress UX — User Labels & Completion State | GEN-1, GEN-4 | M | Done |
 
 ## Dependencies & Risks
 
 ### Dependency Chain
 ```
-TASK-271 (brand identity) → foundation for ALL other tasks
+TASK-281 (brand token fix) → no dependencies, start immediately
+TASK-271 (brand identity) → depends on TASK-281 (tokens must survive provisioning before redesign)
 TASK-272 (auth redesign) → depends on TASK-271
 TASK-273 (onboarding overhaul) → depends on TASK-271
 TASK-274 (review step) → depends on TASK-271, loosely on TASK-273
@@ -49,14 +55,14 @@ TASK-276 (dashboard) → depends on TASK-271
 
 ## Definition of Done
 
-- [ ] Product has a visible logo, custom color palette (not indigo/purple), and custom font
-- [ ] Auth pages have split layout with value proposition — visually distinct from onboarding
-- [ ] Each onboarding step has unique visual element + labeled progress indicator
-- [ ] Start page has compelling hero with specific value proposition
-- [ ] Pre-generation review step shows all user selections before triggering generation
-- [ ] Generation progress shows user-friendly labels (no "Research/Plan/Generate" jargon)
-- [ ] Generation completion shows what was generated (page count, names) with clear CTA
-- [ ] Dashboard site cards have visual previews, nav sidebar, developer actions hidden
-- [ ] Responsive design works on mobile for all updated screens
-- [ ] Outside observer test: shown app for 5 seconds, can name product, does NOT say "AI tool"
-- [ ] All code committed with passing tests
+- [x] Product has a visible logo, custom color palette (not indigo/purple), and custom font
+- [x] Auth pages have split layout with value proposition — visually distinct from onboarding
+- [x] Each onboarding step has unique visual element + labeled progress indicator
+- [x] Start page has compelling hero with specific value proposition
+- [x] Pre-generation review step shows all user selections before triggering generation
+- [x] Generation progress shows user-friendly labels (no "Research/Plan/Generate" jargon)
+- [x] Generation completion shows what was generated (page count, names) with clear CTA
+- [x] Dashboard site cards have visual previews, nav sidebar, developer actions hidden
+- [x] Responsive design works on mobile for all updated screens
+- [x] Outside observer test: shown app for 5 seconds, can name product, does NOT say "AI tool"
+- [x] All code committed with passing tests

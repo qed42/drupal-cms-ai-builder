@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import ProgressDots from "./ProgressDots";
+import StepIcon from "./StepIcon";
 import { getPrevStep } from "@/lib/onboarding-steps";
 
 interface StepLayoutProps {
@@ -44,18 +45,9 @@ export default function StepLayout({
       onSubmit={handleSubmit}
       className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-xl mx-auto px-6 text-center"
     >
-      {/* Animated icon */}
-      <div className="mb-8 flex gap-1 items-end">
-        {[20, 32, 24, 36, 28].map((h, i) => (
-          <div
-            key={i}
-            className="w-1.5 rounded-full bg-gradient-to-t from-indigo-500 to-purple-400"
-            style={{
-              height: h,
-              animation: `pulse 1.5s ease-in-out ${i * 0.2}s infinite`,
-            }}
-          />
-        ))}
+      {/* Step-specific icon */}
+      <div className="mb-6">
+        <StepIcon step={step} />
       </div>
 
       <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
@@ -81,7 +73,7 @@ export default function StepLayout({
         <button
           type="submit"
           disabled={disabled}
-          className="rounded-full bg-white px-8 py-3 font-medium text-[#0a0a2e] transition-all hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+          className="rounded-full bg-white px-8 py-3 font-medium text-slate-900 transition-all hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {buttonLabel}
           <span className="text-lg">&rarr;</span>

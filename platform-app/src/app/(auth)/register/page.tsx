@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { BRAND } from "@/lib/brand";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -44,12 +45,23 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="w-full max-w-md rounded-2xl bg-white/5 p-8 backdrop-blur-sm border border-white/10">
-      <h1 className="mb-2 text-center text-2xl font-bold text-white">
+    <div className="w-full max-w-sm">
+      {/* Logo — visible on mobile where left panel is hidden */}
+      <div className="flex items-center gap-2 mb-8 lg:mb-10">
+        <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
+          <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 15 L8 7 L12 13 L16 5 L20 15" />
+            <circle cx="12" cy="19" r="1.5" />
+          </svg>
+        </div>
+        <span className="text-lg font-bold text-white">{BRAND.name}</span>
+      </div>
+
+      <h1 className="mb-2 text-2xl font-bold text-white">
         Create your account
       </h1>
-      <p className="mb-8 text-center text-sm text-white/60">
-        Start building your website in minutes
+      <p className="mb-8 text-sm text-white/50">
+        AI builds your Drupal website in under 5 minutes
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -60,7 +72,7 @@ export default function RegisterPage() {
         )}
 
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-white/80 mb-1">
+          <label htmlFor="name" className="block text-sm font-medium text-white/70 mb-1.5">
             Name
           </label>
           <input
@@ -68,13 +80,13 @@ export default function RegisterPage() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-lg bg-white/10 px-4 py-3 text-white placeholder-white/40 border border-white/10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg bg-white/5 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
             placeholder="Your name"
           />
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-white/80 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-1.5">
             Email
           </label>
           <input
@@ -83,13 +95,13 @@ export default function RegisterPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg bg-white/10 px-4 py-3 text-white placeholder-white/40 border border-white/10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg bg-white/5 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-white/80 mb-1">
+          <label htmlFor="password" className="block text-sm font-medium text-white/70 mb-1.5">
             Password
           </label>
           <input
@@ -99,7 +111,7 @@ export default function RegisterPage() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg bg-white/10 px-4 py-3 text-white placeholder-white/40 border border-white/10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg bg-white/5 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
             placeholder="Min. 8 characters"
           />
         </div>
@@ -107,15 +119,15 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg bg-indigo-600 py-3 font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-lg bg-brand-600 py-3 font-medium text-white transition-colors hover:bg-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "Creating account..." : "Get Started"}
+          {loading ? "Creating account..." : "Get Started Free"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-white/50">
+      <p className="mt-6 text-sm text-white/40">
         Already have an account?{" "}
-        <Link href="/login" className="text-indigo-400 hover:text-indigo-300">
+        <Link href="/login" className="text-brand-400 hover:text-brand-300 transition-colors">
           Sign in
         </Link>
       </p>

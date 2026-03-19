@@ -56,14 +56,14 @@ export default function RegenerateButton({
           onChange={(e) => setGuidance(e.target.value)}
           placeholder="Any specific instructions? (optional)"
           rows={2}
-          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/80 focus:outline-none focus:border-indigo-500/50 resize-none"
+          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/80 focus:outline-none focus:border-brand-500/50 resize-none"
         />
         <div className="flex gap-2">
           <button
             type="button"
             onClick={handleRegenerate}
             disabled={loading}
-            className="flex-1 py-1.5 text-xs rounded-md bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-50"
+            className="flex-1 py-1.5 text-xs rounded-md bg-brand-600 hover:bg-brand-500 text-white transition-colors disabled:opacity-50"
           >
             {loading ? "Regenerating..." : "Regenerate"}
           </button>

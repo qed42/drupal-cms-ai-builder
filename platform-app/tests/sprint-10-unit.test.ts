@@ -217,31 +217,35 @@ describe("TASK-203: Enhanced Page Suggestions", () => {
 // =============================================================================
 
 describe("Onboarding Steps: Updated Navigation", () => {
-  it("includes follow-up and tone in step list", async () => {
+  it("includes follow-up, tone, and review-settings in step list", async () => {
     const { ONBOARDING_STEPS } = await import("../src/lib/onboarding-steps");
-    expect(ONBOARDING_STEPS).toHaveLength(10);
+    expect(ONBOARDING_STEPS).toHaveLength(11);
 
     const slugs = ONBOARDING_STEPS.map((s) => s.slug);
     expect(slugs).toContain("follow-up");
     expect(slugs).toContain("tone");
+    expect(slugs).toContain("review-settings");
   });
 
-  it("follow-up is step index 8 and tone is step index 9", async () => {
+  it("follow-up is step index 8, tone is step index 9, review-settings is step index 10", async () => {
     const { getStepIndex } = await import("../src/lib/onboarding-steps");
     expect(getStepIndex("follow-up")).toBe(8);
     expect(getStepIndex("tone")).toBe(9);
+    expect(getStepIndex("review-settings")).toBe(10);
   });
 
-  it("navigation chain: fonts → follow-up → tone → null", async () => {
+  it("navigation chain: fonts → follow-up → tone → review-settings → null", async () => {
     const { getNextStep, getPrevStep } = await import(
       "../src/lib/onboarding-steps"
     );
 
     expect(getNextStep("fonts")).toBe("follow-up");
     expect(getNextStep("follow-up")).toBe("tone");
-    expect(getNextStep("tone")).toBeNull();
+    expect(getNextStep("tone")).toBe("review-settings");
+    expect(getNextStep("review-settings")).toBeNull();
 
     expect(getPrevStep("follow-up")).toBe("fonts");
     expect(getPrevStep("tone")).toBe("follow-up");
+    expect(getPrevStep("review-settings")).toBe("tone");
   });
 });

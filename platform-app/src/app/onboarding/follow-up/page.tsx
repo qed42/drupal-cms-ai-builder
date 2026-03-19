@@ -93,7 +93,7 @@ export default function FollowUpPage() {
                 value={answers[q.id] || ""}
                 onChange={(e) => updateAnswer(q.id, e.target.value)}
                 placeholder={q.placeholder}
-                className="w-full rounded-xl bg-white/10 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl bg-white/10 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none"
               />
             )}
 
@@ -106,7 +106,7 @@ export default function FollowUpPage() {
                     onClick={() => updateAnswer(q.id, option)}
                     className={`rounded-xl px-4 py-3 text-sm text-left transition-all border ${
                       answers[q.id] === option
-                        ? "bg-indigo-500/30 border-indigo-500 text-white"
+                        ? "bg-brand-500/30 border-brand-500 text-white"
                         : "bg-white/5 border-white/10 text-white/70 hover:border-white/30"
                     }`}
                   >
@@ -129,7 +129,7 @@ export default function FollowUpPage() {
                       onClick={() => toggleMultiSelect(q.id, option)}
                       className={`rounded-full px-4 py-2 text-sm transition-all border ${
                         selected
-                          ? "bg-indigo-500/30 border-indigo-500 text-white"
+                          ? "bg-brand-500/30 border-brand-500 text-white"
                           : "bg-white/5 border-white/10 text-white/70 hover:border-white/30"
                       }`}
                     >

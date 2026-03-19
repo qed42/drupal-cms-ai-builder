@@ -54,7 +54,7 @@ export default function FileUploadZone({
   if (currentFile) {
     return (
       <div className="flex items-center gap-3 rounded-xl bg-white/10 border border-white/10 px-4 py-3">
-        <svg className="w-5 h-5 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5 text-brand-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <span className="text-white text-sm truncate flex-1">{currentFile}</span>
@@ -79,7 +79,7 @@ export default function FileUploadZone({
       onClick={() => inputRef.current?.click()}
       className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 cursor-pointer transition-colors ${
         dragOver
-          ? "border-indigo-400 bg-indigo-500/10"
+          ? "border-brand-400 bg-brand-500/10"
           : "border-white/20 bg-white/5 hover:border-white/40"
       }`}
     >
@@ -94,7 +94,7 @@ export default function FileUploadZone({
         }}
       />
       {uploading ? (
-        <div className="w-6 h-6 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-brand-400 border-t-transparent rounded-full animate-spin" />
       ) : (
         <>
           <svg className="w-8 h-8 text-white/30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

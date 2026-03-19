@@ -8,7 +8,7 @@ interface PageChipProps {
 
 export default function PageChip({ title, onRemove, removable }: PageChipProps) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full bg-indigo-500/80 px-4 py-2 text-sm font-medium text-white">
+    <span className="inline-flex items-center gap-2 rounded-full bg-brand-500/80 px-4 py-2 text-sm font-medium text-white">
       {title}
       {removable && (
         <button

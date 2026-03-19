@@ -25,7 +25,7 @@ function StepIcon({ icon, active, done }: { icon: string; active: boolean; done:
         done
           ? "bg-emerald-500/20 text-emerald-400"
           : active
-            ? "bg-indigo-500/30 text-white animate-pulse"
+            ? "bg-brand-500/30 text-white animate-pulse"
             : "bg-white/5 text-white/30"
       }`}
     >
@@ -64,7 +64,7 @@ export default function GenerationProgress({
       {/* Progress bar */}
       <div className="relative h-1.5 bg-white/10 rounded-full overflow-hidden">
         <div
-          className="absolute inset-y-0 left-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 ease-out"
+          className="absolute inset-y-0 left-0 bg-gradient-to-r from-brand-500 to-brand-500 rounded-full transition-all duration-1000 ease-out"
           style={{ width: `${Math.max(progress, 5)}%` }}
         />
       </div>
@@ -80,7 +80,7 @@ export default function GenerationProgress({
               key={step.key}
               className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-500 ${
                 isActive
-                  ? "bg-white/10 shadow-lg shadow-indigo-500/10"
+                  ? "bg-white/10 shadow-lg shadow-brand-500/10"
                   : isDone
                     ? "bg-white/5"
                     : "opacity-40"
@@ -103,7 +103,7 @@ export default function GenerationProgress({
                   {[0, 1, 2].map((d) => (
                     <div
                       key={d}
-                      className="w-1.5 h-1.5 rounded-full bg-indigo-400"
+                      className="w-1.5 h-1.5 rounded-full bg-brand-400"
                       style={{
                         animation: `pulse 1.4s ease-in-out ${d * 0.2}s infinite`,
                       }}

@@ -45,7 +45,7 @@ export default function NamePage() {
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Name of the Project"
-        className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-center"
+        className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 text-center"
         autoFocus
       />
     </StepLayout>

@@ -9,6 +9,7 @@ export const ONBOARDING_STEPS = [
   { slug: "fonts", label: "Fonts" },
   { slug: "follow-up", label: "Details" },
   { slug: "tone", label: "Tone & Voice" },
+  { slug: "review-settings", label: "Review & Generate" },
 ] as const;
 
 export type StepSlug = (typeof ONBOARDING_STEPS)[number]["slug"];

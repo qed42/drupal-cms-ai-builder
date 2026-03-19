@@ -407,7 +407,7 @@ describe("Sprint 13 QA: Content Review Page & Inline Editing", () => {
         path.join(SRC, "app/onboarding/progress/page.tsx"),
         "utf8"
       );
-      expect(content).toContain("Review Your Content");
+      expect(content).toContain("Review Your Website");
       expect(content).toContain("/onboarding/review?siteId=");
     });
 

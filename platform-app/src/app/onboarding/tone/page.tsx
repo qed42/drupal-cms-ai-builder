@@ -58,21 +58,13 @@ export default function TonePage() {
       differentiators,
       referenceUrls: cleanUrls,
       existingCopy: existingCopy || undefined,
-      onboarding_complete: true,
     });
     if (!res.ok) return false;
 
-    // Trigger blueprint generation (final step)
-    const genRes = await fetch("/api/provision/generate-blueprint", {
-      method: "POST",
-    });
-    if (genRes.ok) {
-      const genData = await genRes.json();
-      const progressSiteId = genData.siteId || siteId;
-      router.push(`/onboarding/progress?siteId=${progressSiteId}`);
-      return true;
-    }
-    return false;
+    // Navigate to review-settings step (pre-generation review)
+    const base = `/onboarding/review-settings`;
+    router.push(siteId ? `${base}?siteId=${siteId}` : base);
+    return true;
   }
 
   if (!loaded) return null;
@@ -82,7 +74,7 @@ export default function TonePage() {
       step="tone"
       title="Set your brand voice"
       subtitle="Choose a writing tone and tell us what sets you apart."
-      buttonLabel="Visualize my site"
+      buttonLabel="Review & Generate"
       onSubmit={handleSubmit}
       disabled={!selectedTone}
     >
@@ -100,7 +92,7 @@ export default function TonePage() {
                 onClick={() => setSelectedTone(tone.id)}
                 className={`rounded-xl p-4 text-left transition-all border ${
                   selectedTone === tone.id
-                    ? "bg-indigo-500/20 border-indigo-500 ring-1 ring-indigo-500/50"
+                    ? "bg-brand-500/20 border-brand-500 ring-1 ring-brand-500/50"
                     : "bg-white/5 border-white/10 hover:border-white/30"
                 }`}
               >
@@ -108,12 +100,12 @@ export default function TonePage() {
                   <div
                     className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                       selectedTone === tone.id
-                        ? "border-indigo-500"
+                        ? "border-brand-500"
                         : "border-white/30"
                     }`}
                   >
                     {selectedTone === tone.id && (
-                      <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                      <div className="w-2 h-2 rounded-full bg-brand-500" />
                     )}
                   </div>
                   <span className="text-sm font-semibold text-white">
@@ -141,7 +133,7 @@ export default function TonePage() {
             value={differentiators}
             onChange={(e) => setDifferentiators(e.target.value)}
             placeholder={getDifferentiatorPlaceholder(industry)}
-            className="w-full rounded-xl bg-white/10 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-xl bg-white/10 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none"
           />
         </div>
 
@@ -179,7 +171,7 @@ export default function TonePage() {
                       value={url}
                       onChange={(e) => updateUrl(i, e.target.value)}
                       placeholder="https://example.com"
-                      className="flex-1 rounded-xl bg-white/10 px-4 py-2 text-sm text-white placeholder-white/30 border border-white/10 focus:border-indigo-500 focus:outline-none"
+                      className="flex-1 rounded-xl bg-white/10 px-4 py-2 text-sm text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none"
                     />
                     {referenceUrls.length > 1 && (
                       <button
@@ -196,7 +188,7 @@ export default function TonePage() {
                   <button
                     type="button"
                     onClick={addUrlField}
-                    className="text-xs text-indigo-400 hover:text-indigo-300"
+                    className="text-xs text-brand-400 hover:text-brand-300"
                   >
                     + Add another URL
                   </button>
@@ -218,7 +210,7 @@ export default function TonePage() {
                   }
                   placeholder="Paste existing website copy, brochure text, or marketing material..."
                   rows={4}
-                  className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white placeholder-white/30 border border-white/10 focus:border-indigo-500 focus:outline-none resize-none"
+                  className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none resize-none"
                 />
                 <p className="text-xs text-white/20 text-right mt-1">
                   {existingCopy.length}/2,000

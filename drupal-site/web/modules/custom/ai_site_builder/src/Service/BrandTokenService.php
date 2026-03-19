@@ -31,7 +31,7 @@ class BrandTokenService implements BrandTokenServiceInterface {
   /**
    * The URI where generated brand token CSS is stored.
    */
-  protected const CSS_OUTPUT_URI = 'public://css/brand-tokens.css';
+  protected const CSS_OUTPUT_URI = 'public://brand/brand-tokens.css';
 
   /**
    * The URI where the site logo is stored.
@@ -122,7 +122,7 @@ class BrandTokenService implements BrandTokenServiceInterface {
 
     // Generate CSS from already-parsed tokens to avoid double file read.
     $css = $this->generateTokenCssFromData($tokens);
-    $this->ensureDirectoryExists('public://css');
+    $this->ensureDirectoryExists('public://brand');
     $this->fileSystem->saveData($css, self::CSS_OUTPUT_URI, FileSystemInterface::EXISTS_REPLACE);
     $this->logger->info('Brand token CSS written to @path.', ['@path' => self::CSS_OUTPUT_URI]);
 
@@ -312,8 +312,20 @@ CSS;
    */
   protected function applyLogo(string $logoUrl): void {
     try {
-      // Download or copy logo to public://logo.png.
-      $logoData = file_get_contents($logoUrl);
+      // The logoUrl may be a stream wrapper URI (public://filename.jpg) if the
+      // provisioning step already copied the file, or a remote URL.
+      if (str_starts_with($logoUrl, 'public://')) {
+        $sourcePath = $this->fileSystem->realpath($logoUrl);
+        if (!$sourcePath || !file_exists($sourcePath)) {
+          $this->logger->warning('Logo file not found at @url.', ['@url' => $logoUrl]);
+          return;
+        }
+        $logoData = file_get_contents($sourcePath);
+      }
+      else {
+        $logoData = @file_get_contents($logoUrl);
+      }
+
       if ($logoData === FALSE) {
         $this->logger->warning('Failed to fetch logo from @url.', ['@url' => $logoUrl]);
         return;

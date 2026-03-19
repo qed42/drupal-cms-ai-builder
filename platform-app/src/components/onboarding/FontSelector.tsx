@@ -17,7 +17,7 @@ export default function FontSelector({ label, value, onChange }: FontSelectorPro
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-xl bg-white/10 px-4 py-3 text-white border border-white/10 focus:border-indigo-500 focus:outline-none appearance-none cursor-pointer"
+        className="rounded-xl bg-white/10 px-4 py-3 text-white border border-white/10 focus:border-brand-500 focus:outline-none appearance-none cursor-pointer"
         style={{ fontFamily: value }}
       >
         {GOOGLE_FONTS.map((font) => (

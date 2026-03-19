@@ -41,7 +41,7 @@ function ai_site_builder_toolbar_alter(array &$items): void {
  * Attaches brand token CSS to every page if the generated file exists.
  */
 function ai_site_builder_page_attachments(array &$attachments): void {
-  $css_uri = 'public://css/brand-tokens.css';
+  $css_uri = 'public://brand/brand-tokens.css';
   /** @var \Drupal\Core\File\FileSystemInterface $file_system */
   $file_system = \Drupal::service('file_system');
   $real_path = $file_system->realpath($css_uri);

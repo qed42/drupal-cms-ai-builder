@@ -197,7 +197,7 @@ export default function ReviewPage() {
     return (
       <div className="w-full h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-indigo-500/40 border-t-indigo-500 rounded-full animate-spin mx-auto" />
+          <div className="w-8 h-8 border-2 border-brand-500/40 border-t-brand-500 rounded-full animate-spin mx-auto" />
           <p className="text-sm text-white/40 mt-4">Loading your content...</p>
         </div>
       </div>
@@ -212,7 +212,7 @@ export default function ReviewPage() {
           <button
             type="button"
             onClick={() => router.push("/dashboard")}
-            className="mt-4 text-sm text-indigo-400 hover:text-indigo-300"
+            className="mt-4 text-sm text-brand-400 hover:text-brand-300"
           >
             Go to Dashboard
           </button>

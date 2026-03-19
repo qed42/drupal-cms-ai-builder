@@ -254,10 +254,10 @@ describe("TASK-220: Pipeline Progress UI", () => {
 
     const content = fs.readFileSync(filePath, "utf-8");
 
-    // Three phases
-    expect(content).toContain("Research");
-    expect(content).toContain("Plan");
-    expect(content).toContain("Generate");
+    // Phase keys present in the component
+    expect(content).toContain("research");
+    expect(content).toContain("plan");
+    expect(content).toContain("generate");
 
     // Status indicators
     expect(content).toContain("complete");

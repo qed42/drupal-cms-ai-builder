@@ -45,7 +45,7 @@ export default function IdeaPage() {
         onChange={(e) => setIdea(e.target.value)}
         placeholder="Describe your project or business..."
         rows={4}
-        className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none text-center"
+        className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none text-center"
         autoFocus
       />
     </StepLayout>

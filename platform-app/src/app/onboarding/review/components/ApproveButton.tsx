@@ -53,7 +53,7 @@ export default function ApproveButton({
         disabled={!allViewed || loading}
         className={`w-full py-3 rounded-xl text-sm font-semibold transition-all ${
           allViewed && !loading
-            ? "bg-indigo-600 hover:bg-indigo-500 text-white"
+            ? "bg-brand-600 hover:bg-brand-500 text-white"
             : "bg-white/5 text-white/30 cursor-not-allowed"
         }`}
       >

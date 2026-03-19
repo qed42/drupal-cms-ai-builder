@@ -86,7 +86,7 @@ function SectionView({
       {/* Section header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-white/5 bg-white/[0.02]">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-indigo-400 font-medium">{label}</span>
+          <span className="text-xs text-brand-400 font-medium">{label}</span>
           <span className="text-xs text-white/20">Section {sectionIndex + 1}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -133,14 +133,14 @@ function SectionView({
                   value={field.value}
                   onChange={(e) => onChange(field.key, e.target.value)}
                   rows={4}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/90 focus:outline-none focus:border-indigo-500/50 resize-y"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/90 focus:outline-none focus:border-brand-500/50 resize-y"
                 />
               ) : (
                 <input
                   type="text"
                   value={field.value}
                   onChange={(e) => onChange(field.key, e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/90 focus:outline-none focus:border-indigo-500/50"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/90 focus:outline-none focus:border-brand-500/50"
                 />
               )
             ) : (

@@ -243,7 +243,7 @@ describe("Sprint 13: Content Review Page & Inline Editing", () => {
 
     it("progress page shows Review button when status is review", () => {
       const content = fs.readFileSync(progressPath, "utf8");
-      expect(content).toContain("Review Your Content");
+      expect(content).toContain("Review Your Website");
       expect(content).toContain("/onboarding/review");
     });
 

@@ -79,7 +79,7 @@ export default function PageSidebar({
                 onClick={() => onPageSelect(index)}
                 className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${
                   isActive
-                    ? "bg-indigo-500/10 border-r-2 border-indigo-500"
+                    ? "bg-brand-500/10 border-r-2 border-brand-500"
                     : "hover:bg-white/5"
                 }`}
               >
@@ -154,21 +154,21 @@ export default function PageSidebar({
               value={addTitle}
               onChange={(e) => setAddTitle(e.target.value)}
               placeholder="Page title"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/80 focus:outline-none focus:border-indigo-500/50"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/80 focus:outline-none focus:border-brand-500/50"
             />
             <textarea
               value={addDescription}
               onChange={(e) => setAddDescription(e.target.value)}
               placeholder="Brief description (optional)"
               rows={2}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/80 focus:outline-none focus:border-indigo-500/50 resize-none"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/80 focus:outline-none focus:border-brand-500/50 resize-none"
             />
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={handleAdd}
                 disabled={!addTitle.trim() || addLoading}
-                className="flex-1 py-1.5 text-xs rounded-md bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-50"
+                className="flex-1 py-1.5 text-xs rounded-md bg-brand-600 hover:bg-brand-500 text-white transition-colors disabled:opacity-50"
               >
                 {addLoading ? "Adding..." : "Add Page"}
               </button>
