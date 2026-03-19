@@ -1,7 +1,11 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateBlueprint } from "@/lib/blueprint/generator";
+import { runPipeline } from "@/lib/pipeline/orchestrator";
 import { NextResponse } from "next/server";
+import type { OnboardingData } from "@/lib/blueprint/types";
+
+const USE_V2_PIPELINE = process.env.CONTENT_PIPELINE_V2 !== "false";
 
 export async function POST() {
   try {
@@ -66,7 +70,11 @@ export async function POST() {
     });
 
     // Run generation in background (don't await — client will poll for status)
-    generateBlueprint(blueprint.id, site.id, sessionData).catch(async (err) => {
+    const generationPromise = USE_V2_PIPELINE
+      ? runV2Pipeline(blueprint.id, site.id, sessionData as OnboardingData)
+      : generateBlueprint(blueprint.id, site.id, sessionData);
+
+    generationPromise.catch(async (err) => {
       console.error("Blueprint generation failed:", err);
       await prisma.blueprint.update({
         where: { id: blueprint.id },
@@ -95,4 +103,21 @@ export async function POST() {
       { status: 500 }
     );
   }
+}
+
+/**
+ * V2 pipeline: run Research → Plan, then fall through to v1 blueprint
+ * generation for provisioning compatibility.
+ */
+async function runV2Pipeline(
+  blueprintId: string,
+  siteId: string,
+  data: OnboardingData
+): Promise<void> {
+  // Phase 1-2: Research → Plan (v2 pipeline)
+  await runPipeline(siteId, data);
+
+  // Phase 3: Fall through to v1 blueprint generation for provisioning
+  // Sprint 12 will replace this with the Generate phase (TASK-217)
+  await generateBlueprint(blueprintId, siteId, data);
 }
