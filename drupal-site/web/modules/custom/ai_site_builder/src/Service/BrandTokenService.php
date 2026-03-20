@@ -34,9 +34,42 @@ class BrandTokenService implements BrandTokenServiceInterface {
   protected const FONTS_OUTPUT_DIR = 'public://fonts';
 
   /**
-   * Mapping of blueprint color token keys to Space DS theme setting keys.
+   * All valid Space DS theme color setting keys.
+   *
+   * Colors provided using these keys are written directly to config without
+   * translation. This is the preferred format for the generation pipeline.
    */
-  protected const COLOR_MAP = [
+  protected const NATIVE_COLOR_KEYS = [
+    'base_brand_color',
+    'accent_color_primary',
+    'accent_color_secondary',
+    'neutral_color',
+    'heading_color',
+    'border_color',
+    'gray_color',
+    'success_color',
+    'danger_color',
+    'warning_color',
+    'info_color',
+    'background_color_1',
+    'background_color_2',
+    'background_color_3',
+    'background_color_4',
+    'background_color_5',
+    'background_color_6',
+    'background_color_7',
+    'background_color_8',
+    'background_color_9',
+    'background_color_10',
+  ];
+
+  /**
+   * Backward-compatible mapping of generic color keys to Space DS setting keys.
+   *
+   * Used when the onboarding UI sends colors with simple role names (e.g.,
+   * "primary") instead of Space DS native keys (e.g., "accent_color_primary").
+   */
+  protected const LEGACY_COLOR_MAP = [
     'brand' => 'base_brand_color',
     'base' => 'base_brand_color',
     'primary' => 'accent_color_primary',
@@ -104,18 +137,35 @@ class BrandTokenService implements BrandTokenServiceInterface {
     $colors = $tokens['colors'] ?? [];
     $fonts = $tokens['fonts'] ?? [];
 
-    // Map named color tokens to theme settings.
-    foreach (self::COLOR_MAP as $tokenKey => $settingKey) {
-      if (!empty($colors[$tokenKey])) {
-        $config->set($settingKey, $colors[$tokenKey]);
-      }
-    }
+    $nativeKeySet = array_flip(self::NATIVE_COLOR_KEYS);
+    $appliedCount = 0;
 
-    // Background colors (1-10).
-    for ($i = 1; $i <= 10; $i++) {
-      $bgKey = "background_{$i}";
-      if (!empty($colors[$bgKey])) {
-        $config->set("background_color_{$i}", $colors[$bgKey]);
+    foreach ($colors as $tokenKey => $value) {
+      if (empty($value)) {
+        continue;
+      }
+
+      if (isset($nativeKeySet[$tokenKey])) {
+        // Native Space DS key — write directly.
+        $config->set($tokenKey, $value);
+        $appliedCount++;
+      }
+      elseif (isset(self::LEGACY_COLOR_MAP[$tokenKey])) {
+        // Legacy generic key — translate to native.
+        $config->set(self::LEGACY_COLOR_MAP[$tokenKey], $value);
+        $appliedCount++;
+      }
+      else {
+        // Legacy background_N format (e.g., "background_1").
+        if (preg_match('/^background_(\d+)$/', $tokenKey, $m)) {
+          $config->set("background_color_{$m[1]}", $value);
+          $appliedCount++;
+        }
+        else {
+          $this->logger->warning('Unknown color token key "@key", skipping.', [
+            '@key' => $tokenKey,
+          ]);
+        }
       }
     }
 
@@ -132,7 +182,9 @@ class BrandTokenService implements BrandTokenServiceInterface {
     }
 
     $config->save();
-    $this->logger->info('Brand settings written to space_ds.settings config.');
+    $this->logger->info('Brand settings written to space_ds.settings config (@count color tokens applied).', [
+      '@count' => $appliedCount,
+    ]);
   }
 
   /**

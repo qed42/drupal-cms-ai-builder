@@ -194,6 +194,103 @@ function getFallbackFormFields(): FormField[] {
   ];
 }
 
+/**
+ * Map onboarding color roles to Space DS native setting keys.
+ *
+ * Accepts both native keys (pass-through) and legacy generic keys
+ * (primary, secondary, accent, etc.) and auto-derives background colors
+ * from the brand palette when not explicitly provided.
+ */
+function mapColorsToSpaceDS(
+  colors: Record<string, string>
+): Record<string, string> {
+  const LEGACY_MAP: Record<string, string> = {
+    brand: "base_brand_color",
+    base: "base_brand_color",
+    primary: "accent_color_primary",
+    secondary: "accent_color_secondary",
+    neutral: "neutral_color",
+    text: "neutral_color",
+    heading: "heading_color",
+    accent: "accent_color_primary",
+    muted: "gray_color",
+    dark: "heading_color",
+    light: "background_color_2",
+  };
+
+  const NATIVE_KEYS = new Set([
+    "base_brand_color",
+    "accent_color_primary",
+    "accent_color_secondary",
+    "neutral_color",
+    "heading_color",
+    "border_color",
+    "gray_color",
+    "success_color",
+    "danger_color",
+    "warning_color",
+    "info_color",
+    ...Array.from({ length: 10 }, (_, i) => `background_color_${i + 1}`),
+  ]);
+
+  const result: Record<string, string> = {};
+
+  // Map input colors to native keys.
+  for (const [key, value] of Object.entries(colors)) {
+    if (!value) continue;
+    if (NATIVE_KEYS.has(key)) {
+      result[key] = value;
+    } else if (LEGACY_MAP[key]) {
+      // Only set if not already provided as a native key.
+      if (!result[LEGACY_MAP[key]]) {
+        result[LEGACY_MAP[key]] = value;
+      }
+    }
+  }
+
+  // Auto-derive background colors if not explicitly provided.
+  // Uses the brand color to create a harmonious 10-shade palette.
+  const brandColor = result.base_brand_color || result.accent_color_primary;
+  if (brandColor && !result.background_color_1) {
+    const bgDefaults: Record<string, string> = {
+      background_color_1: "#ffffff",
+      background_color_2: "#f8f9fa",
+      background_color_3: "#e2e6ea",
+      background_color_4: "#ced4da",
+      background_color_5: "#adb5bd",
+      background_color_6: "#6c757d",
+      background_color_7: "#343a40",
+      background_color_8: result.accent_color_primary || "#007bff",
+      background_color_9: mixHexColors(brandColor, "#ffffff", 0.9),
+      background_color_10: result.accent_color_secondary || "#dc3545",
+    };
+    for (const [bgKey, bgValue] of Object.entries(bgDefaults)) {
+      if (!result[bgKey]) {
+        result[bgKey] = bgValue;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Simple hex color mixer: blends color1 toward color2 by ratio (0-1).
+ */
+function mixHexColors(hex1: string, hex2: string, ratio: number): string {
+  const parse = (h: string) => {
+    const c = h.replace("#", "");
+    return [parseInt(c.slice(0, 2), 16), parseInt(c.slice(2, 4), 16), parseInt(c.slice(4, 6), 16)];
+  };
+  const [r1, g1, b1] = parse(hex1);
+  const [r2, g2, b2] = parse(hex2);
+  const mix = (a: number, b: number) =>
+    Math.round(a + (b - a) * ratio)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${mix(r1, r2)}${mix(g1, g2)}${mix(b1, b2)}`;
+}
+
 export async function generateBlueprint(
   blueprintId: string,
   siteId: string,
@@ -364,6 +461,9 @@ export async function generateBlueprint(
     component_tree: footerTree,
   };
 
+  // Map onboarding colors to Space DS native token names.
+  const brandColors = mapColorsToSpaceDS(data.colors || {});
+
   // Assemble blueprint
   const blueprint: BlueprintBundle = {
     site: {
@@ -375,7 +475,7 @@ export async function generateBlueprint(
       tone: data.tone!,
     },
     brand: {
-      colors: data.colors!,
+      colors: brandColors,
       fonts: data.fonts!,
       logo_url: data.logo_url,
     },
