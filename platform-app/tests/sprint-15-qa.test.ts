@@ -23,42 +23,35 @@ const PROVISIONING = path.resolve(PLATFORM, "..", "provisioning");
 // =====================================================================
 // TASK-281: Brand token CSS path fix
 // =====================================================================
-describe("TASK-281: Brand token CSS survives cache flush", () => {
+describe("TASK-281: Brand tokens written to space_ds.settings config (v2)", () => {
   const brandServicePath = path.join(
     DRUPAL,
     "web/modules/custom/ai_site_builder/src/Service/BrandTokenService.php"
-  );
-  const modulePath = path.join(
-    DRUPAL,
-    "web/modules/custom/ai_site_builder/ai_site_builder.module"
   );
   const applyBrandPath = path.join(
     PROVISIONING,
     "src/steps/09-apply-brand.ts"
   );
 
-  it("CSS output URI uses public://brand/ not public://css/", () => {
+  it("brand tokens are written to space_ds.settings Drupal config (not CSS file)", () => {
     const content = fs.readFileSync(brandServicePath, "utf8");
-    expect(content).toContain("public://brand/brand-tokens.css");
-    expect(content).not.toContain("CSS_OUTPUT_URI = 'public://css/");
+    expect(content).toContain("space_ds.settings");
+    expect(content).toContain("applyBrandSettings");
+    // v2 no longer writes CSS files
+    expect(content).not.toContain("brand-tokens.css");
   });
 
-  it("ensureDirectoryExists uses public://brand not public://css", () => {
+  it("BrandTokenService maps brand colors to theme setting keys", () => {
     const content = fs.readFileSync(brandServicePath, "utf8");
-    expect(content).toContain("ensureDirectoryExists('public://brand')");
-    expect(content).not.toContain("ensureDirectoryExists('public://css')");
+    expect(content).toContain("base_brand_color");
+    expect(content).toContain("accent_color_primary");
+    expect(content).toContain("accent_color_secondary");
   });
 
-  it("hook_page_attachments references public://brand/brand-tokens.css", () => {
-    const content = fs.readFileSync(modulePath, "utf8");
-    expect(content).toContain("public://brand/brand-tokens.css");
-    expect(content).not.toContain("public://css/brand-tokens.css");
-  });
-
-  it("applyLogo handles public:// stream wrapper URIs", () => {
+  it("BrandTokenService maps font settings to theme config", () => {
     const content = fs.readFileSync(brandServicePath, "utf8");
-    expect(content).toContain("str_starts_with($logoUrl, 'public://')");
-    expect(content).toContain("$this->fileSystem->realpath($logoUrl)");
+    expect(content).toContain("font_family");
+    expect(content).toContain("mapToThemeFont");
   });
 
   it("provisioning step copies logo to Drupal files dir", () => {

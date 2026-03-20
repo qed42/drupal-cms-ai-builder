@@ -88,8 +88,8 @@ describe("TASK-217: Page Generation Prompt Builder", () => {
     expect(prompt).toContain("~40 words");
     expect(prompt).toContain("~250 words");
 
-    // Component mapping instructions
-    expect(prompt).toContain("space_ds:space-hero-banner-style-01");
+    // Component mapping instructions (v2 uses style-02 as the primary hero)
+    expect(prompt).toContain("space_ds:space-hero-banner-style-02");
     expect(prompt).toContain("component_id");
 
     // Global content context

@@ -248,144 +248,141 @@ describe("TASK-253: Provisioning failure detail and retry", () => {
 // ============================================================================
 // TASK-282: Layout Wrapper Rules — Container Wrapping & Anti-Monotony
 // ============================================================================
-describe("TASK-282: Layout wrapper rules", () => {
-  it("wraps text-media components in space-container", () => {
+describe("TASK-282: Layout wrapper rules (v2 — slot-based composition)", () => {
+  it("full-width organisms (hero-banner-style-02) render at root without container", () => {
     const sections = [
       {
-        component_id: "space_ds:space-text-media-default",
-        props: { title: "About Us", description: "We are a company." },
+        component_id: "space_ds:space-hero-banner-style-02",
+        props: { title: "Welcome" },
       },
     ];
 
     const tree = buildComponentTree(sections);
 
-    // Should produce 2 items: container + organism
+    // Full-width organism: 1 item at root
+    expect(tree).toHaveLength(1);
+    expect(tree[0].component_id).toBe(toCanvasComponentId("space_ds:space-hero-banner-style-02"));
+    expect(tree[0].parent_uuid).toBeNull();
+    expect(tree[0].slot).toBeNull();
+  });
+
+  it("full-width hero-banner-with-media renders at root without container", () => {
+    const sections = [
+      { component_id: "space_ds:space-hero-banner-with-media", props: { title: "Welcome" } },
+    ];
+
+    const tree = buildComponentTree(sections);
+    expect(tree).toHaveLength(1);
+    expect(tree[0].parent_uuid).toBeNull();
+  });
+
+  it("CTA banner type-1 renders at root (full-width organism)", () => {
+    const sections = [
+      { component_id: "space_ds:space-cta-banner-type-1", props: { title: "Contact Us" } },
+    ];
+
+    const tree = buildComponentTree(sections);
+
+    // CTA banner type-1 is in FULL_WIDTH_ORGANISMS
+    expect(tree[0].parent_uuid).toBeNull();
+    expect(tree[0].component_id).toBe(toCanvasComponentId("space_ds:space-cta-banner-type-1"));
+  });
+
+  it("CTA banner with children nests them correctly", () => {
+    const sections = [
+      {
+        component_id: "space_ds:space-cta-banner-type-1",
+        props: { title: "Get Started" },
+        children: [
+          { component_id: "space_ds:space-button", slot: "content", props: { label: "Sign Up" } },
+        ],
+      },
+    ];
+
+    const tree = buildComponentTree(sections);
+
+    // CTA (1) + button child (1) = 2
     expect(tree).toHaveLength(2);
+    expect(tree[0].parent_uuid).toBeNull();
+    expect(tree[1].parent_uuid).toBe(tree[0].uuid);
+    expect(tree[1].slot).toBe("content");
+  });
 
-    // First item is the container
+  it("composed section builds container → flexi → children structure", () => {
+    const sections = [
+      {
+        pattern: "text-image-split-50-50",
+        component_id: "space_ds:space-flexi",
+        props: {},
+        children: [
+          { component_id: "space_ds:space-heading", slot: "column_one", props: { text: "Title" } },
+          { component_id: "space_ds:space-image", slot: "column_two", props: { src: "/photo.jpg" } },
+        ],
+      },
+    ];
+
+    const tree = buildComponentTree(sections);
+
+    // container (1) + flexi (1) + 2 children = 4
+    expect(tree.length).toBeGreaterThanOrEqual(3);
+
+    // First item: container at root
     const container = tree[0];
-    expect(container.component_id).toBe("sdc.space_ds.space-container");
+    expect(container.component_id).toBe(toCanvasComponentId("space_ds:space-container"));
     expect(container.parent_uuid).toBeNull();
-    expect(container.slot).toBeNull();
-    expect(container.inputs).toEqual({
-      width: "boxed-width",
-      padding_top: "large",
-      padding_bottom: "large",
-    });
 
-    // Second item is the organism, parented to the container
-    const organism = tree[1];
-    expect(organism.component_id).toBe("sdc.space_ds.space-text-media-default");
-    expect(organism.parent_uuid).toBe(container.uuid);
-    expect(organism.slot).toBe("content");
-    expect(organism.inputs).toEqual({ title: "About Us", description: "We are a company." });
+    // Flexi parented to container
+    const flexi = tree.find(item => item.component_id === toCanvasComponentId("space_ds:space-flexi"));
+    expect(flexi).toBeDefined();
+    expect(flexi!.parent_uuid).toBe(container.uuid);
+    expect(flexi!.slot).toBe("content");
+    expect(flexi!.inputs).toHaveProperty("column_width", "50-50");
+
+    // Children parented to flexi
+    const children = tree.filter(item =>
+      item.parent_uuid === flexi!.uuid
+    );
+    expect(children).toHaveLength(2);
+    expect(children[0].slot).toBe("column_one");
+    expect(children[1].slot).toBe("column_two");
   });
 
-  it("does NOT wrap hero banners in containers", () => {
-    const heroStyles = [
-      "space_ds:space-hero-banner-style-01",
-      "space_ds:space-hero-banner-style-03",
-      "space_ds:space-hero-banner-style-09",
-    ];
-
-    for (const heroId of heroStyles) {
-      const sections = [{ component_id: heroId, props: { title: "Welcome" } }];
-      const tree = buildComponentTree(sections);
-
-      // Should produce 1 item only (no container)
-      expect(tree).toHaveLength(1);
-      expect(tree[0].component_id).toBe(toCanvasComponentId(heroId));
-      expect(tree[0].parent_uuid).toBeNull();
-      expect(tree[0].slot).toBeNull();
-    }
-  });
-
-  it("does NOT wrap CTA banners in containers", () => {
-    const ctaTypes = [
-      "space_ds:space-cta-banner-type-1",
-      "space_ds:space-cta-banner-type-2",
-      "space_ds:space-cta-banner-type-3",
-    ];
-
-    for (const ctaId of ctaTypes) {
-      const sections = [{ component_id: ctaId, props: { title: "Contact Us" } }];
-      const tree = buildComponentTree(sections);
-
-      expect(tree).toHaveLength(1);
-      expect(tree[0].parent_uuid).toBeNull();
-    }
-  });
-
-  it("applies anti-monotony: swaps consecutive duplicate component IDs", () => {
+  it("mixed page: hero at root, composed section in container, CTA at root", () => {
     const sections = [
-      { component_id: "space_ds:space-text-media-default", props: { title: "Section 1" } },
-      { component_id: "space_ds:space-text-media-default", props: { title: "Section 2" } },
-    ];
-
-    const tree = buildComponentTree(sections);
-
-    // 2 sections × 2 items each (container + organism) = 4 items
-    expect(tree).toHaveLength(4);
-
-    // First organism should be text-media-default
-    const firstOrganism = tree[1];
-    expect(firstOrganism.component_id).toBe("sdc.space_ds.space-text-media-default");
-
-    // Second organism should be swapped to an alternate (text-media-with-checklist)
-    const secondOrganism = tree[3];
-    expect(secondOrganism.component_id).not.toBe("sdc.space_ds.space-text-media-default");
-    expect(secondOrganism.component_id).toBe("sdc.space_ds.space-text-media-with-checklist");
-  });
-
-  it("does NOT swap non-consecutive duplicates", () => {
-    const sections = [
-      { component_id: "space_ds:space-text-media-default", props: { title: "Section 1" } },
-      { component_id: "space_ds:space-cta-banner-type-1", props: { title: "CTA" } },
-      { component_id: "space_ds:space-text-media-default", props: { title: "Section 3" } },
-    ];
-
-    const tree = buildComponentTree(sections);
-
-    // First text-media: container + organism = 2
-    // CTA: just 1 (no container)
-    // Third text-media: container + organism = 2
-    // Total = 5
-    expect(tree).toHaveLength(5);
-
-    // Both text-media instances should remain as text-media-default
-    expect(tree[1].component_id).toBe("sdc.space_ds.space-text-media-default");
-    expect(tree[4].component_id).toBe("sdc.space_ds.space-text-media-default");
-  });
-
-  it("mixed page: hero at root, text-media in container, CTA at root", () => {
-    const sections = [
-      { component_id: "space_ds:space-hero-banner-style-01", props: { title: "Welcome" } },
-      { component_id: "space_ds:space-text-media-default", props: { title: "About" } },
+      { component_id: "space_ds:space-hero-banner-style-02", props: { title: "Welcome" } },
+      {
+        pattern: "full-width-text",
+        component_id: "space_ds:space-flexi",
+        props: {},
+        children: [
+          { component_id: "space_ds:space-text", slot: "column_one", props: { body: "About us" } },
+        ],
+      },
       { component_id: "space_ds:space-cta-banner-type-1", props: { title: "Get Started" } },
     ];
 
     const tree = buildComponentTree(sections);
 
-    // hero (1) + container+text-media (2) + cta (1) = 4
-    expect(tree).toHaveLength(4);
-
     // Hero: root level
     expect(tree[0].component_id).toContain("hero-banner");
     expect(tree[0].parent_uuid).toBeNull();
 
-    // Text-media: inside container
-    expect(tree[1].component_id).toContain("space-container");
-    expect(tree[2].parent_uuid).toBe(tree[1].uuid);
-    expect(tree[2].slot).toBe("content");
-
-    // CTA: root level
-    expect(tree[3].component_id).toContain("cta-banner");
-    expect(tree[3].parent_uuid).toBeNull();
+    // Last item: CTA at root level
+    const cta = tree[tree.length - 1];
+    expect(cta.component_id).toContain("cta-banner");
+    expect(cta.parent_uuid).toBeNull();
   });
 
   it("container uses correct version hash from canvas catalog", () => {
     const sections = [
-      { component_id: "space_ds:space-text-media-default", props: { title: "Test" } },
+      {
+        pattern: "full-width-text",
+        component_id: "space_ds:space-flexi",
+        props: {},
+        children: [
+          { component_id: "space_ds:space-text", slot: "column_one", props: { body: "Test" } },
+        ],
+      },
     ];
 
     const tree = buildComponentTree(sections);

@@ -294,7 +294,7 @@ describe("Component Validator — Image Objects", () => {
 
     const sections = [
       {
-        component_id: "space_ds:space-hero-banner-style-01",
+        component_id: "space_ds:space-hero-banner-style-02",
         props: {
           title: "Welcome",
           background_image: { src: "/uploads/stock/abc/photo.jpg", alt: "Office", width: 1920, height: 1080 },
@@ -313,7 +313,7 @@ describe("Component Validator — Image Objects", () => {
 
     const sections = [
       {
-        component_id: "space_ds:space-hero-banner-style-01",
+        component_id: "space_ds:space-hero-banner-style-02",
         props: {
           title: "Welcome",
           background_image: { alt: "No src", width: 100, height: 100 },

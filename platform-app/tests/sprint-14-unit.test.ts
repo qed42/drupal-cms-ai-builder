@@ -163,11 +163,11 @@ describe("Sprint 14: Blueprint Validation & AI Regeneration", () => {
       expect(content).toContain("CRITICAL: Only use props that are listed");
     });
 
-    it("prompt references hero-banner-style-01 without description prop", () => {
+    it("prompt references hero-banner-style-02 as the primary hero in v2", () => {
       const content = fs.readFileSync(promptPath, "utf8");
-      expect(content).toContain("space-hero-banner-style-01");
-      // The prop reference is generated from manifest — hero-01 should NOT have description
-      expect(content).not.toContain('hero: \'{"title":"...","sub_headline":"...","description":"..."}\'');
+      expect(content).toContain("space-hero-banner-style-02");
+      // v1 hero-01 no longer exists in v2 manifest
+      expect(content).not.toContain("space-hero-banner-style-01");
     });
   });
 
@@ -181,10 +181,12 @@ describe("Sprint 14: Blueprint Validation & AI Regeneration", () => {
       expect(content).not.toContain('"space_ds:space-cta-banner-type-1": { width:');
     });
 
-    it("component-tree-builder.ts wraps organisms in space-container (TASK-282)", () => {
+    it("component-tree-builder.ts uses FULL_WIDTH_ORGANISMS for root-level placement (v2)", () => {
       const content = fs.readFileSync(builderPath, "utf8");
       expect(content).toContain("space-container");
-      expect(content).toContain("SKIP_CONTAINER");
+      expect(content).toContain("FULL_WIDTH_ORGANISMS");
+      // v1 SKIP_CONTAINER removed in v2
+      expect(content).not.toContain("SKIP_CONTAINER");
     });
   });
 

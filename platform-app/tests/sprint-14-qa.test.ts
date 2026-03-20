@@ -7,47 +7,50 @@ const SRC = path.join(__dirname, "..", "src");
 describe("Sprint 14 QA: Blueprint Validation & AI Regeneration", () => {
   // === TASK-268 QA: Component Validator Correctness ===
   describe("QA: Component Validator loads full manifest", () => {
-    it("manifest JSON has 84+ components", () => {
+    it("manifest JSON has 31 components (v2 compositional model)", () => {
       const manifest = JSON.parse(
         fs.readFileSync(path.join(SRC, "lib/ai/space-component-manifest.json"), "utf8")
       );
-      expect(manifest.length).toBeGreaterThanOrEqual(84);
+      expect(manifest.length).toBe(31);
     });
 
-    it("validator handles all organism categories", () => {
+    it("validator handles all v2 component categories", () => {
       const manifest = JSON.parse(
         fs.readFileSync(path.join(SRC, "lib/ai/space-component-manifest.json"), "utf8")
       );
-      const organisms = manifest.filter((c: { category: string }) => c.category === "organism");
-      expect(organisms.length).toBeGreaterThanOrEqual(30);
+      const categories = [...new Set(manifest.map((c: { category: string }) => c.category))];
+      expect(categories).toContain("base");
+      expect(categories).toContain("atom");
+      expect(categories).toContain("molecule");
+      expect(categories).toContain("organism");
     });
 
-    it("space-hero-banner-style-01 has exactly title, sub_headline, background_image props", () => {
+    it("space-hero-banner-style-02 exists as the primary hero in v2", () => {
+      const manifest = JSON.parse(
+        fs.readFileSync(path.join(SRC, "lib/ai/space-component-manifest.json"), "utf8")
+      );
+      const hero02 = manifest.find((c: { id: string }) => c.id === "space_ds:space-hero-banner-style-02");
+      expect(hero02).toBeDefined();
+      const propNames = hero02.props.map((p: { name: string }) => p.name);
+      expect(propNames).toContain("title");
+    });
+
+    it("v1 hero-banner-style-01 is removed in v2 manifest", () => {
       const manifest = JSON.parse(
         fs.readFileSync(path.join(SRC, "lib/ai/space-component-manifest.json"), "utf8")
       );
       const hero01 = manifest.find((c: { id: string }) => c.id === "space_ds:space-hero-banner-style-01");
-      expect(hero01).toBeDefined();
-      const propNames = hero01.props.map((p: { name: string }) => p.name).sort();
-      expect(propNames).toEqual(["background_image", "sub_headline", "title"]);
+      expect(hero01).toBeUndefined();
     });
 
-    it("space-hero-banner-style-01 does NOT have description prop (root cause bug)", () => {
+    it("v2 manifest includes compositional base components (container, flexi)", () => {
       const manifest = JSON.parse(
         fs.readFileSync(path.join(SRC, "lib/ai/space-component-manifest.json"), "utf8")
       );
-      const hero01 = manifest.find((c: { id: string }) => c.id === "space_ds:space-hero-banner-style-01");
-      const propNames = hero01.props.map((p: { name: string }) => p.name);
-      expect(propNames).not.toContain("description");
-    });
-
-    it("space-hero-banner-style-03 DOES have description prop", () => {
-      const manifest = JSON.parse(
-        fs.readFileSync(path.join(SRC, "lib/ai/space-component-manifest.json"), "utf8")
-      );
-      const hero03 = manifest.find((c: { id: string }) => c.id === "space_ds:space-hero-banner-style-03");
-      const propNames = hero03.props.map((p: { name: string }) => p.name);
-      expect(propNames).toContain("description");
+      const container = manifest.find((c: { id: string }) => c.id === "space_ds:space-container");
+      const flexi = manifest.find((c: { id: string }) => c.id === "space_ds:space-flexi");
+      expect(container).toBeDefined();
+      expect(flexi).toBeDefined();
     });
 
     it("cta-banner-type-1 has required props width and alignment", () => {
