@@ -61,6 +61,16 @@ const PATTERN_COLUMN_WIDTHS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 /**
+ * Required prop defaults for components where Canvas enforces required fields.
+ * Prevents import failures when AI omits required props.
+ */
+const REQUIRED_PROP_DEFAULTS: Record<string, Record<string, unknown>> = {
+  "space_ds:space-heading": { tag_name: "h2" },
+  "space_ds:space-container": { width: "boxed-width" },
+  "space_ds:space-section-heading": { tag_name: "h2" },
+};
+
+/**
  * Create a single ComponentTreeItem with Canvas-format IDs and version hash.
  */
 function createItem(
@@ -70,6 +80,10 @@ function createItem(
   inputs: Record<string, unknown>,
   label?: string
 ): ComponentTreeItem {
+  // Merge required prop defaults (inputs take precedence)
+  const defaults = REQUIRED_PROP_DEFAULTS[componentId] ?? {};
+  const mergedInputs = { ...defaults, ...inputs };
+
   const canvasId = toCanvasComponentId(componentId);
   const version = getComponentVersion(componentId);
   const autoLabel =
@@ -87,7 +101,7 @@ function createItem(
     component_version: version,
     parent_uuid: parentUuid,
     slot,
-    inputs,
+    inputs: mergedInputs,
     label: autoLabel,
   };
 }
