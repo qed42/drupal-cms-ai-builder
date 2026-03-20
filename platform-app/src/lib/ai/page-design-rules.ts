@@ -1051,6 +1051,47 @@ export function formatRulesForGeneration(
     ``
   );
 
+  // Anti-monotony & image alternation rules
+  lines.push(
+    `## Anti-Monotony Rules`,
+    `- NEVER use the same composition pattern in two consecutive sections`,
+    `- When two text+image sections appear near each other, alternate the image position:`,
+    `  - First: text-image-split-50-50 or text-image-split-66-33 (image on right)`,
+    `  - Second: image-text-split-33-66 (image on left)`,
+    `- Vary visual weight between sections (heavy → light → medium → light → heavy)`,
+    ``
+  );
+
+  // Heading hierarchy rules
+  lines.push(
+    `## Heading Hierarchy (Semantic HTML)`,
+    `- Hero title = h1 (the ONLY h1 on the page)`,
+    `- Section headings (space-section-heading title) = h2`,
+    `- Subsection headings within content columns = h3`,
+    `- Card/item titles = h3 or h4`,
+    `- Never skip heading levels (no h1 → h3 without h2 in between)`,
+    ``
+  );
+
+  // Icon validation
+  lines.push(
+    `## Icon Validation`,
+    `- All icon names MUST be valid Phosphor Icons (https://phosphoricons.com/)`,
+    `- Safe values: rocket, star, phone, envelope, map-pin, clock, shield-check, heart, users, chart-line, lightbulb, gear, house, arrow-right, check-circle, trophy, handshake, target, briefcase, globe`,
+    ``
+  );
+
+  // Flexi column matching
+  lines.push(
+    `## Flexi Column Matching`,
+    `- column_width segments MUST equal the number of children in the flexi grid`,
+    `- "33-33-33" = exactly 3 children (column_one, column_two, column_three)`,
+    `- "50-50" = exactly 2 children (column_one, column_two)`,
+    `- "25-25-25-25" = exactly 4 children (column_one, column_two, column_three, column_four)`,
+    `- "100" = exactly 1 child (column_one or content)`,
+    ``
+  );
+
   // Page-specific composition guidance
   if (rule.compositionGuidance) {
     lines.push(

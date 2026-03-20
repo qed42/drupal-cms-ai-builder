@@ -88,7 +88,37 @@ For EACH page, generate a layout as a JSON object with:
      - "container_background": background color (transparent|white|base-brand|option-1..option-10)
      - "children": array of atom/molecule components with slot assignments
 
-Rules:
+## LAYOUT RULES (MUST FOLLOW)
+
+### Container & Width Rules
+- Every section MUST be wrapped in a space-container (heroes and CTA banners are self-contained full-width organisms and are the only exceptions)
+- Use "boxed-width" for all content sections (default). Use "full-width" ONLY for heroes and CTA banners
+- Add padding_top: "large" and padding_bottom: "large" on every container for proper section spacing
+
+### Background Variety
+- Alternate container backgrounds for visual rhythm: transparent → option-1 → white → option-2
+- Never use the same background color on two consecutive sections
+
+### Flexi Column Matching
+- The number of columns in column_width MUST match the number of children in the flexi grid
+- Example: column_width "33-33-33" means exactly 3 children in column_one, column_two, column_three
+- Example: column_width "50-50" means exactly 2 children in column_one, column_two
+
+### Anti-Monotony Rules
+- NEVER use the same composition pattern in two consecutive sections
+- When two text+image sections appear near each other, alternate image position (e.g., "text-image-split-50-50" then "image-text-split-33-66")
+
+### Heading Hierarchy (Semantic HTML)
+- Hero title = h1 (only ONE h1 per page)
+- Section headings = h2
+- Subsection headings within content = h3
+- Never skip heading levels (e.g., no h1 → h3 without h2)
+
+### Icon Validation
+- All icon names MUST be valid Phosphor Icons (https://phosphoricons.com/)
+- Safe icon names: rocket, star, phone, envelope, map-pin, clock, shield-check, heart, users, chart-line, lightbulb, gear, house, arrow-right, check-circle, trophy, handshake, target, briefcase, globe
+
+## Content Rules
 - Homepage should have 4-6 sections: start with a hero banner, add feature/service sections, testimonials, and end with a CTA banner
 - Inner pages should have 2-4 sections
 - Always start pages with a hero banner organism (space-hero-banner-style-02 for homepage, space-hero-banner-with-media or space-detail-page-hero-banner for inner pages)
@@ -98,7 +128,6 @@ Rules:
 - Use composed sections with space-imagecard or space-content-detail for feature/service listings
 - For text+image sections, use a two-column flexi with space-text + space-image atoms
 - Every non-hero, non-CTA section should include a space-section-heading
-- Alternate container backgrounds for visual rhythm: transparent → option-1 → white → option-2
 - Make all text content specific to the business, not generic placeholder text
 - Keep CTA URLs as relative paths (e.g., "/contact", "/services")
 {compliance_sections}

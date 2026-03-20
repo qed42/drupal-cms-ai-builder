@@ -25,6 +25,7 @@ Rules:
 - Use professional language matching the specified tone
 - Names should be realistic but clearly fictional (not real people)
 - Do NOT include any placeholder text like "Lorem ipsum"
+- For icon names: ONLY use valid Phosphor Icon names (https://phosphoricons.com/). Safe values: rocket, star, phone, envelope, map-pin, clock, shield-check, heart, users, chart-line, lightbulb, gear, house, arrow-right, check-circle, trophy, handshake, target, briefcase, globe. Do NOT use emoji for icon fields — use Phosphor icon names only
 {compliance_instructions}
 
 Return ONLY valid JSON, no markdown or explanation.`;

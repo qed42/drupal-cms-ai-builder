@@ -41,6 +41,19 @@ const ORGANISM_PATTERNS = new Set([
 const SECTION_BACKGROUNDS = ["transparent", "option-1", "white", "option-2"];
 
 /**
+ * Map column_width string to expected number of children.
+ * E.g., "33-33-33" -> 3, "50-50" -> 2, "100" -> 1
+ */
+function getColumnCount(columnWidth: string): number {
+  return columnWidth.split("-").length;
+}
+
+/**
+ * Slot names ordered by column index.
+ */
+const COLUMN_SLOTS = ["column_one", "column_two", "column_three", "column_four"];
+
+/**
  * Pattern name to flexi column_width mapping.
  */
 const PATTERN_COLUMN_WIDTHS: Record<string, string> = {
@@ -376,14 +389,27 @@ function buildComposedSection(
   );
   items.push(flexi);
 
-  // Add children into flexi slots
+  // Add children into flexi slots, enforcing column count match
   if (section.children?.length) {
-    for (const child of section.children) {
+    const expectedColumns = getColumnCount(columnWidth);
+    const children = section.children;
+
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      // If the child's slot doesn't match expected columns, reassign to correct column slot
+      let slot = child.slot;
+      if (expectedColumns > 1 && i < expectedColumns && COLUMN_SLOTS[i]) {
+        // Ensure children are distributed to matching column slots
+        if (!slot || !COLUMN_SLOTS.includes(slot)) {
+          slot = COLUMN_SLOTS[i];
+        }
+      }
+
       items.push(
         createItem(
           child.component_id,
           flexi.uuid,
-          child.slot,
+          slot,
           { ...child.props },
           labelFromId(child.component_id)
         )
@@ -413,8 +439,30 @@ export function buildComponentTree(
 ): ComponentTreeItem[] {
   const items: ComponentTreeItem[] = [];
   let bgIndex = 0;
+  let prevPattern: string | undefined;
+
+  /**
+   * Anti-monotony: text-image patterns that can be swapped to alternate
+   * image position when two similar patterns appear consecutively.
+   */
+  const TEXT_IMAGE_ALTERNATES: Record<string, string> = {
+    "text-image-split-50-50": "image-text-split-33-66",
+    "text-image-split-66-33": "image-text-split-33-66",
+    "image-text-split-33-66": "text-image-split-66-33",
+  };
 
   for (const section of sections) {
+    let currentPattern = section.pattern ?? section.component_id;
+
+    // Anti-monotony: if this pattern matches the previous one, try to swap
+    if (currentPattern && currentPattern === prevPattern && section.pattern) {
+      const alternate = TEXT_IMAGE_ALTERNATES[section.pattern];
+      if (alternate && PATTERN_COLUMN_WIDTHS[alternate]) {
+        section.pattern = alternate;
+        currentPattern = alternate;
+      }
+    }
+
     // Check if this is a pattern that routes to organism handling
     if (section.pattern && ORGANISM_PATTERNS.has(section.pattern)) {
       // Map organism patterns to their component_id if not already set
@@ -427,6 +475,8 @@ export function buildComponentTree(
       // Type A: Organism section
       items.push(...buildOrganismSection(section));
     }
+
+    prevPattern = currentPattern;
     bgIndex++;
   }
 
@@ -573,6 +623,7 @@ export function buildFooterTree(
   options?: {
     brandDescription?: string;
     disclaimer?: string;
+    navLinks?: Array<{ title: string; url: string }>;
     socialLinks?: Array<{ platform: string; url: string; icon: string }>;
     legalLinks?: Array<{ title: string; url: string }>;
   }
@@ -580,6 +631,7 @@ export function buildFooterTree(
   const {
     brandDescription = "",
     disclaimer,
+    navLinks = [],
     socialLinks = [],
     legalLinks = [],
   } = options ?? {};
@@ -602,14 +654,27 @@ export function buildFooterTree(
 
   const items: ComponentTreeItem[] = [footer];
 
-  // Social links slot
+  // Navigation links in columns slot
+  for (const link of navLinks) {
+    items.push(
+      createItem(
+        "space_ds:space-link",
+        footer.uuid,
+        "columns",
+        { text: link.title, url: link.url },
+        `Footer Nav: ${link.title}`
+      )
+    );
+  }
+
+  // Social links slot (with Phosphor icon names)
   for (const social of socialLinks) {
     items.push(
       createItem(
         "space_ds:space-link",
         footer.uuid,
         "social_links",
-        { text: social.platform, url: social.url },
+        { text: social.platform, url: social.url, icon: social.icon },
         `Social: ${social.platform}`
       )
     );
