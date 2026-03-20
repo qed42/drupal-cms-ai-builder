@@ -142,6 +142,15 @@ function createItem(
   // Layer 3: user/AI-provided inputs take final precedence
   const mergedInputs = { ...manifestDefaults, ...overrides, ...inputs };
 
+  // Strip null/undefined/empty-object props so Canvas uses component defaults.
+  for (const [key, value] of Object.entries(mergedInputs)) {
+    if (value === null || value === undefined) {
+      delete mergedInputs[key];
+    } else if (typeof value === "object" && !Array.isArray(value) && Object.keys(value as object).length === 0) {
+      delete mergedInputs[key];
+    }
+  }
+
   const canvasId = toCanvasComponentId(componentId);
   const version = getComponentVersion(componentId);
   const autoLabel =

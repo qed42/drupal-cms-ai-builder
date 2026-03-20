@@ -142,9 +142,30 @@ export function validateSections(sections: PageSection[]): ValidationResult {
         continue;
       }
 
-      // 4b. Image object validation (type: "object" with image $ref)
-      if (propDef.type === "object" && value !== null && typeof value === "object") {
+      // 4b. Null/undefined values — strip to allow component defaults
+      if (value === null || value === undefined) {
+        issues.push({
+          type: "warning",
+          sectionIndex: i,
+          componentId: section.component_id,
+          message: `Stripped NULL prop "${key}" from ${comp.name} to allow component default.`,
+        });
+        continue;
+      }
+
+      // 4c. Image object validation (type: "object" with image $ref)
+      if (propDef.type === "object" && typeof value === "object") {
         const imgObj = value as Record<string, unknown>;
+        if (Object.keys(imgObj).length === 0) {
+          // Empty object — strip to allow component default
+          issues.push({
+            type: "warning",
+            sectionIndex: i,
+            componentId: section.component_id,
+            message: `Stripped empty object prop "${key}" from ${comp.name} to allow component default.`,
+          });
+          continue;
+        }
         if (imgObj.src && typeof imgObj.src === "string") {
           // Valid image object — pass through
           cleanProps[key] = value;

@@ -505,6 +505,9 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
         $inputs = $this->resolveImageInputs($inputs, $componentEntity);
       }
 
+      // Strip NULL and empty-object inputs so Canvas uses component defaults.
+      $inputs = $this->stripNullInputs($inputs, $item['component_id']);
+
       $prepared[] = [
         'uuid' => $item['uuid'],
         'component_id' => $item['component_id'],
@@ -516,6 +519,43 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
     }
 
     return $prepared;
+  }
+
+  /**
+   * Strips NULL and empty-object inputs from component props.
+   *
+   * NULL values in Canvas override the component's default, preventing it
+   * from rendering correctly. Removing them lets Canvas fall back to the
+   * defaults defined in the .component.yml file.
+   *
+   * @param array $inputs
+   *   The component inputs.
+   * @param string $componentId
+   *   The component ID for logging.
+   *
+   * @return array
+   *   The filtered inputs with NULL/empty values removed.
+   */
+  protected function stripNullInputs(array $inputs, string $componentId): array {
+    $filtered = [];
+    foreach ($inputs as $key => $value) {
+      if ($value === NULL) {
+        $this->logger->info('Stripped NULL prop "@prop" from @component.', [
+          '@prop' => $key,
+          '@component' => $componentId,
+        ]);
+        continue;
+      }
+      if (is_array($value) && empty($value)) {
+        $this->logger->info('Stripped empty prop "@prop" from @component.', [
+          '@prop' => $key,
+          '@component' => $componentId,
+        ]);
+        continue;
+      }
+      $filtered[$key] = $value;
+    }
+    return $filtered;
   }
 
   /**
@@ -711,8 +751,8 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
    * Removes all existing links from the main menu.
    *
    * Handles both content menu links (menu_link_content entities) and
-   * system-defined static menu links (e.g., standard.front_page from the
-   * standard install profile). This prevents duplicate Home entries when
+   * system-defined static menu links from any install profile (standard,
+   * drupal_cms_installer, etc.). This prevents duplicate Home entries when
    * the blueprint import creates its own menu links.
    *
    * @param \Drupal\Core\Entity\EntityStorageInterface $menuLinkStorage
@@ -729,18 +769,13 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
     }
 
     // Remove system-defined (static) menu links in the main menu.
-    // The standard profile defines 'standard.front_page' as a Home link.
-    $staticPluginIds = [
-      'standard.front_page',
-    ];
-
-    foreach ($staticPluginIds as $pluginId) {
-      if ($this->menuLinkManager->hasDefinition($pluginId)) {
-        $this->menuLinkManager->removeDefinition($pluginId);
-        $this->logger->info('Removed static menu link "@id" from main menu.', [
-          '@id' => $pluginId,
-        ]);
-      }
+    // The standard profile defines 'standard.front_page'; other profiles may
+    // define their own. The drupal_cms_installer profile uses content-based
+    // menu links (handled above) rather than static links, but we check for
+    // the standard profile's link as a safety net for all install profiles.
+    if ($this->menuLinkManager->hasDefinition('standard.front_page')) {
+      $this->menuLinkManager->removeDefinition('standard.front_page');
+      $this->logger->info('Removed static menu link "standard.front_page" from main menu.');
     }
   }
 
