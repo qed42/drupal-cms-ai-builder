@@ -29,6 +29,8 @@ class BlueprintImportResult {
     public readonly array $pages,
     public readonly array $content,
     public readonly array $forms,
+    public readonly array $header = [],
+    public readonly array $footer = [],
   ) {}
 
 }

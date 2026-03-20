@@ -16,6 +16,9 @@ Generate content items as a JSON object with these sections (include only what's
 Also generate:
 4. "site_tagline" — a compelling tagline (under 10 words)
 5. "site_description" — a 2-3 sentence site description for the homepage
+6. "footer_description" — a 2-3 sentence company/brand description for the site footer
+7. "footer_disclaimer" — a brief legal disclaimer appropriate for this industry (empty string if not needed)
+8. "cta_text" — short call-to-action button text for the header (e.g., "Get Started", "Book Now", "Contact Us")
 
 Rules:
 - Content must be realistic and specific to the business type

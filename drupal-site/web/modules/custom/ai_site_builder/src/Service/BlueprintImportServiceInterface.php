@@ -67,7 +67,17 @@ interface BlueprintImportServiceInterface {
   public function importForms(array $forms): void;
 
   /**
-   * Runs a full blueprint import: site, pages, content, forms.
+   * Imports header and footer as canvas_page entities.
+   *
+   * @param array $headerData
+   *   The header configuration with 'component_tree' key.
+   * @param array $footerData
+   *   The footer configuration with 'component_tree' key.
+   */
+  public function importHeaderFooter(array $headerData, array $footerData): void;
+
+  /**
+   * Runs a full blueprint import: site, pages, content, forms, header/footer.
    *
    * @param string $jsonPath
    *   The file path to the blueprint JSON.

@@ -473,3 +473,151 @@ function mapOrganismPattern(section: PageSection): PageSection {
     pattern: undefined, // Clear pattern so it routes through organism path
   };
 }
+
+// ---------------------------------------------------------------------------
+// Header / Footer Builders
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a Canvas-ready component tree for the site header.
+ *
+ * Structure:
+ *   space-header (root)
+ *     space-image (slot="logo")
+ *     space-link × N (slot="navigation")
+ *     space-button (slot="links") — CTA
+ */
+export function buildHeaderTree(
+  siteName: string,
+  pages: Array<{ slug: string; title: string }>,
+  options?: {
+    logoUrl?: string;
+    menuAlign?: string;
+    ctaText?: string;
+    ctaUrl?: string;
+  }
+): ComponentTreeItem[] {
+  const { logoUrl, menuAlign = "center", ctaText, ctaUrl } = options ?? {};
+
+  const header = createItem(
+    "space_ds:space-header",
+    null,
+    null,
+    { menu_align: menuAlign },
+    "Header"
+  );
+
+  const items: ComponentTreeItem[] = [header];
+
+  // Logo slot
+  if (logoUrl) {
+    items.push(
+      createItem(
+        "space_ds:space-image",
+        header.uuid,
+        "logo",
+        { image: { src: logoUrl, alt: `${siteName} logo`, width: 160, height: 40 } },
+        "Site Logo"
+      )
+    );
+  }
+
+  // Navigation slot — one link per page
+  for (const page of pages) {
+    items.push(
+      createItem(
+        "space_ds:space-link",
+        header.uuid,
+        "navigation",
+        { text: page.title, url: `/${page.slug}` },
+        `Nav: ${page.title}`
+      )
+    );
+  }
+
+  // CTA button slot
+  if (ctaText && ctaUrl) {
+    items.push(
+      createItem(
+        "space_ds:space-button",
+        header.uuid,
+        "links",
+        { text: ctaText, url: ctaUrl, size: "small", variant: "primary" },
+        "Header CTA"
+      )
+    );
+  }
+
+  return items;
+}
+
+/**
+ * Build a Canvas-ready component tree for the site footer.
+ *
+ * Structure:
+ *   space-footer (root, brand props populated)
+ *     space-link × N (slot="social_links")
+ *     space-link × N (slot="footer_bottom_links")
+ */
+export function buildFooterTree(
+  site: { name: string; tagline?: string },
+  options?: {
+    brandDescription?: string;
+    disclaimer?: string;
+    socialLinks?: Array<{ platform: string; url: string; icon: string }>;
+    legalLinks?: Array<{ title: string; url: string }>;
+  }
+): ComponentTreeItem[] {
+  const {
+    brandDescription = "",
+    disclaimer,
+    socialLinks = [],
+    legalLinks = [],
+  } = options ?? {};
+
+  const currentYear = new Date().getFullYear();
+
+  const footer = createItem(
+    "space_ds:space-footer",
+    null,
+    null,
+    {
+      brand_name: site.name,
+      brand_slogan: site.tagline || "",
+      brand_description: brandDescription,
+      copyright: `© ${currentYear} ${site.name}. All rights reserved.`,
+      ...(disclaimer ? { disclaimer } : {}),
+    },
+    "Footer"
+  );
+
+  const items: ComponentTreeItem[] = [footer];
+
+  // Social links slot
+  for (const social of socialLinks) {
+    items.push(
+      createItem(
+        "space_ds:space-link",
+        footer.uuid,
+        "social_links",
+        { text: social.platform, url: social.url },
+        `Social: ${social.platform}`
+      )
+    );
+  }
+
+  // Legal links slot (footer_bottom_links)
+  for (const link of legalLinks) {
+    items.push(
+      createItem(
+        "space_ds:space-link",
+        footer.uuid,
+        "footer_bottom_links",
+        { text: link.title, url: link.url },
+        `Legal: ${link.title}`
+      )
+    );
+  }
+
+  return items;
+}

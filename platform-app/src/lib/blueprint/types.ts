@@ -6,6 +6,23 @@ export interface BlueprintBundle {
   pages: PageLayout[];
   content: ContentItems;
   forms: FormDefinitions;
+  header?: HeaderConfig;
+  footer?: FooterConfig;
+}
+
+export interface HeaderConfig {
+  menu_align: "left" | "center" | "right";
+  cta_text?: string;
+  cta_url?: string;
+  component_tree?: ComponentTreeItem[];
+}
+
+export interface FooterConfig {
+  brand_description?: string;
+  disclaimer?: string;
+  social_links?: Array<{ platform: string; url: string; icon: string }>;
+  legal_links?: Array<{ title: string; url: string }>;
+  component_tree?: ComponentTreeItem[];
 }
 
 export interface SiteMetadata {

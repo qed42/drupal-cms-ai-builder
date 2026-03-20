@@ -108,6 +108,8 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
       pages: $data['pages'] ?? [],
       content: $data['content'] ?? [],
       forms: $data['forms'] ?? [],
+      header: $data['header'] ?? [],
+      footer: $data['footer'] ?? [],
     );
   }
 
@@ -385,8 +387,68 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
     $this->importPages($result->pages);
     $this->importContent($result->content);
     $this->importForms($result->forms);
+    $this->importHeaderFooter($result->header, $result->footer);
 
     $this->logger->info('Blueprint import complete.');
+  }
+
+  /**
+   * Imports header and footer as canvas_page entities.
+   *
+   * Header and footer are created as special canvas_page entities with
+   * component trees. They are stored with reserved slugs '__header' and
+   * '__footer' so the theme can identify and render them in the appropriate
+   * regions.
+   *
+   * @param array $headerData
+   *   The header configuration with 'component_tree' key.
+   * @param array $footerData
+   *   The footer configuration with 'component_tree' key.
+   */
+  public function importHeaderFooter(array $headerData, array $footerData): void {
+    $pageStorage = $this->entityTypeManager->getStorage('canvas_page');
+
+    // Import header.
+    if (!empty($headerData['component_tree'])) {
+      $headerValues = [
+        'title' => 'Header',
+        'status' => TRUE,
+        'path' => ['alias' => '/__header'],
+        'components' => $this->prepareComponentTree($headerData['component_tree']),
+      ];
+      $headerPage = $pageStorage->create($headerValues);
+      $headerPage->save();
+
+      // Store header page ID in site config for theme consumption.
+      $this->configFactory->getEditable('ai_site_builder.layout')
+        ->set('header_page_id', (int) $headerPage->id())
+        ->save();
+
+      $this->logger->info('Created header canvas_page (id: @id).', [
+        '@id' => $headerPage->id(),
+      ]);
+    }
+
+    // Import footer.
+    if (!empty($footerData['component_tree'])) {
+      $footerValues = [
+        'title' => 'Footer',
+        'status' => TRUE,
+        'path' => ['alias' => '/__footer'],
+        'components' => $this->prepareComponentTree($footerData['component_tree']),
+      ];
+      $footerPage = $pageStorage->create($footerValues);
+      $footerPage->save();
+
+      // Store footer page ID in site config for theme consumption.
+      $this->configFactory->getEditable('ai_site_builder.layout')
+        ->set('footer_page_id', (int) $footerPage->id())
+        ->save();
+
+      $this->logger->info('Created footer canvas_page (id: @id).', [
+        '@id' => $footerPage->id(),
+      ]);
+    }
   }
 
   /**

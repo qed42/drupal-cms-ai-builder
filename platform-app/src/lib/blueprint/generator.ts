@@ -4,10 +4,12 @@ import { getAIProvider } from "@/lib/ai/factory";
 import { buildContentPrompt } from "@/lib/ai/prompts/content-generation";
 import { buildPageLayoutPrompt } from "@/lib/ai/prompts/page-layout";
 import { buildFormPrompt } from "@/lib/ai/prompts/form-generation";
-import { buildComponentTree } from "./component-tree-builder";
+import { buildComponentTree, buildHeaderTree, buildFooterTree } from "./component-tree-builder";
 import type {
   BlueprintBundle,
   ContentItems,
+  HeaderConfig,
+  FooterConfig,
   OnboardingData,
   PageLayout,
   FormField,
@@ -216,6 +218,9 @@ export async function generateBlueprint(
   let content: ContentItems;
   let siteTagline = data.idea || "";
   let siteDescription = "";
+  let footerDescription = "";
+  let footerDisclaimer = "";
+  let ctaText = "Get Started";
 
   try {
     const contentPrompt = buildContentPrompt({
@@ -237,6 +242,9 @@ export async function generateBlueprint(
     };
     siteTagline = parsed.site_tagline || siteTagline;
     siteDescription = parsed.site_description || siteDescription;
+    footerDescription = parsed.footer_description || "";
+    footerDisclaimer = parsed.footer_disclaimer || "";
+    ctaText = parsed.cta_text || "Get Started";
   } catch {
     content = getFallbackContent(data);
   }
@@ -311,6 +319,51 @@ export async function generateBlueprint(
   // via buildFormTree has been removed — contact sections are now handled
   // entirely through composition patterns in buildComponentTree.
 
+  // Step 4: Generate header and footer component trees
+  const contactPage = pages.find(
+    (p) => p.slug === "contact" || p.slug === "contact-us"
+  );
+  const ctaUrl = contactPage ? `/${contactPage.slug}` : "/contact";
+
+  const headerTree = buildHeaderTree(
+    data.name!,
+    (data.pages || []).map((p) => ({ slug: p.slug, title: p.title })),
+    {
+      logoUrl: data.logo_url,
+      menuAlign: "center",
+      ctaText,
+      ctaUrl,
+    }
+  );
+
+  const defaultLegalLinks = [
+    { title: "Privacy Policy", url: "/privacy" },
+    { title: "Terms of Service", url: "/terms" },
+  ];
+
+  const footerTree = buildFooterTree(
+    { name: data.name!, tagline: siteTagline },
+    {
+      brandDescription: footerDescription || siteDescription,
+      disclaimer: footerDisclaimer || undefined,
+      legalLinks: defaultLegalLinks,
+    }
+  );
+
+  const header: HeaderConfig = {
+    menu_align: "center",
+    cta_text: ctaText,
+    cta_url: ctaUrl,
+    component_tree: headerTree,
+  };
+
+  const footer: FooterConfig = {
+    brand_description: footerDescription || siteDescription,
+    disclaimer: footerDisclaimer || undefined,
+    legal_links: defaultLegalLinks,
+    component_tree: footerTree,
+  };
+
   // Assemble blueprint
   const blueprint: BlueprintBundle = {
     site: {
@@ -331,6 +384,8 @@ export async function generateBlueprint(
     forms: {
       contact: { fields: formFields },
     },
+    header,
+    footer,
   };
 
   // Save to DB
