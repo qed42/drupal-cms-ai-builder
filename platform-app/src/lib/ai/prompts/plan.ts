@@ -1,5 +1,6 @@
 import type { OnboardingData } from "@/lib/blueprint/types";
 import type { ResearchBrief } from "@/lib/pipeline/schemas";
+import { formatRulesForPlan } from "../page-design-rules";
 
 /**
  * Build the plan phase prompt from research brief + onboarding data.
@@ -68,13 +69,13 @@ export function buildPlanPrompt(
     `  - "teamMembers": Optional array of { "name": string, "role": string } — 2-4 members`,
     `  - "testimonials": Optional array of { "quote": string, "authorName": string, "authorRole": string } — 2-3 testimonials`,
     ``,
-    `Guidelines:`,
-    `- Home page should have 4-6 sections (hero, services/features, about snippet, testimonials, CTA)`,
-    `- Service/about pages should have 3-5 sections`,
-    `- Contact page: hero + contact info section`,
+    ...formatRulesForPlan(pages),
+    ``,
+    `## Content Guidelines`,
     `- Use the research brief's tone guidance and key messages throughout`,
     `- Each section's contentBrief should be specific and actionable, not vague`,
     `- Include SEO keywords naturally in section briefs`,
+    `- Every content section MUST have an estimatedWordCount that meets the word count range specified in the page requirements above`,
     ``,
     `Return ONLY valid JSON.`
   );

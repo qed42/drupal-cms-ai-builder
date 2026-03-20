@@ -3,8 +3,56 @@ import { getAIProvider, resolveModel } from "@/lib/ai/factory";
 import { generateValidatedJSON } from "@/lib/ai/validation";
 import { ContentPlanSchema } from "@/lib/pipeline/schemas";
 import { buildPlanPrompt } from "@/lib/ai/prompts/plan";
+import { classifyPageType, getRule } from "@/lib/ai/page-design-rules";
 import type { OnboardingData } from "@/lib/blueprint/types";
 import type { ResearchBrief, ContentPlan } from "@/lib/pipeline/schemas";
+
+interface PlanDepthValidation {
+  valid: boolean;
+  feedback: string[];
+}
+
+/**
+ * Validate that each page in the content plan meets the minimum section count
+ * defined in PAGE_DESIGN_RULES for its page type.
+ */
+function validatePlanDepth(plan: ContentPlan): PlanDepthValidation {
+  const feedback: string[] = [];
+
+  for (const page of plan.pages) {
+    const pageType = classifyPageType(page.slug, page.title);
+    const rule = getRule(pageType);
+    const min = rule.sectionCountRange[0];
+    const actual = page.sections.length;
+
+    if (actual < min) {
+      // Check which required section types are missing
+      const requiredTypes = rule.sections
+        .filter((s) => s.required)
+        .map((s) => s.type);
+      const presentTypes = page.sections.map((s) => s.type);
+      const missingTypes = requiredTypes.filter((t) => !presentTypes.includes(t));
+
+      const missingNote = missingTypes.length > 0
+        ? ` Missing required section types: ${missingTypes.join(", ")}.`
+        : "";
+
+      feedback.push(
+        `Page "${page.title}" (/${page.slug}) has ${actual} sections but REQUIRES at least ${min} for a ${pageType} page.${missingNote} Add more sections.`
+      );
+
+      console.log(
+        `[plan] Page "${page.title}" (${pageType}) section count: ${actual}/${min} — FAIL`
+      );
+    } else {
+      console.log(
+        `[plan] Page "${page.title}" (${pageType}) section count: ${actual}/${min} — PASS`
+      );
+    }
+  }
+
+  return { valid: feedback.length === 0, feedback };
+}
 
 export interface PlanPhaseResult {
   planId: string;
@@ -27,11 +75,12 @@ export async function runPlanPhase(
 
   const provider = await getAIProvider("plan");
   const model = resolveModel("plan") || "default";
-  const prompt = buildPlanPrompt(data, research);
+  const basePrompt = buildPlanPrompt(data, research);
 
-  const plan = await generateValidatedJSON<ContentPlan>(
+  // Generate plan with depth validation + max 1 retry (ADR-012)
+  let plan = await generateValidatedJSON<ContentPlan>(
     provider,
-    prompt,
+    basePrompt,
     ContentPlanSchema,
     {
       phase: "plan",
@@ -39,6 +88,31 @@ export async function runPlanPhase(
       maxTokens: 6000,
     }
   );
+
+  const depthCheck = validatePlanDepth(plan);
+  if (!depthCheck.valid) {
+    console.log(`[plan] Depth validation failed. Retrying with feedback...`);
+    const retryPrompt = `${basePrompt}\n\n--- SECTION COUNT VALIDATION ERROR ---\nYour previous plan was rejected because it did not meet minimum section count requirements:\n${depthCheck.feedback.map((f) => `- ${f}`).join("\n")}\n\nYou MUST produce a plan where every page meets its minimum section count. This is a hard requirement.`;
+
+    plan = await generateValidatedJSON<ContentPlan>(
+      provider,
+      retryPrompt,
+      ContentPlanSchema,
+      {
+        phase: "plan",
+        temperature: 0.3,
+        maxTokens: 6000,
+      }
+    );
+
+    const retryCheck = validatePlanDepth(plan);
+    if (!retryCheck.valid) {
+      console.warn(
+        `[plan] Depth validation still failing after retry. Using best-effort plan.`,
+        retryCheck.feedback
+      );
+    }
+  }
 
   const durationMs = Date.now() - startTime;
 

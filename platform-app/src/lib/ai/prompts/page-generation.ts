@@ -3,6 +3,7 @@ import type { ResearchBrief, ContentPlan } from "@/lib/pipeline/schemas";
 import type { z } from "zod";
 import type { ContentPlanPageSchema } from "@/lib/pipeline/schemas";
 import { getManifestComponent } from "../../blueprint/component-validator";
+import { formatRulesForGeneration } from "../page-design-rules";
 
 type ContentPlanPage = z.infer<typeof ContentPlanPageSchema>;
 
@@ -14,8 +15,16 @@ type ContentPlanPage = z.infer<typeof ContentPlanPageSchema>;
 function buildComponentPropReference(): string[] {
   const commonComponents = [
     "space_ds:space-hero-banner-style-01",
+    "space_ds:space-hero-banner-style-02",
     "space_ds:space-hero-banner-style-03",
+    "space_ds:space-hero-banner-style-04",
+    "space_ds:space-hero-banner-style-05",
+    "space_ds:space-hero-banner-style-06",
+    "space_ds:space-hero-banner-style-07",
+    "space_ds:space-hero-banner-style-08",
     "space_ds:space-hero-banner-style-09",
+    "space_ds:space-hero-banner-style-10",
+    "space_ds:space-hero-banner-style-11",
     "space_ds:space-text-media-default",
     "space_ds:space-text-media-with-checklist",
     "space_ds:space-text-media-with-link",
@@ -164,20 +173,16 @@ export function buildPageGenerationPrompt(
     ``,
     ...buildComponentPropReference(),
     ``,
-    `Component ID mapping (use the BEST matching component for each section type):`,
-    `- hero → "space_ds:space-hero-banner-style-01" (simple hero) or "space_ds:space-hero-banner-style-03" (hero with description) or "space_ds:space-hero-banner-style-09" (text-only hero)`,
-    `- text/about → "space_ds:space-text-media-default" (text with optional image)`,
-    `- features → "space_ds:space-text-media-with-checklist" (features with checklist) or "space_ds:space-text-media-with-stats" (features with stats)`,
-    `- cta → "space_ds:space-cta-banner-type-1" or "space_ds:space-cta-banner-type-2" (with image) or "space_ds:space-cta-banner-type-3"`,
-    `- testimonials → "space_ds:space-people-card-testimony-with-avatar" (single testimonial) or "space_ds:space-testimony-card" (testimonial card)`,
-    `- team → "space_ds:space-team-section-image-card-1" (team with photos) or "space_ds:space-team-section-simple-1" (simple team list)`,
-    `- faq → "space_ds:space-accordion" (collapsible Q&A)`,
-    `- stats/kpi → "space_ds:space-stats-kpi" (key metrics display)`,
-    `- gallery/images → "space_ds:space-text-media-with-images" (image gallery with text)`,
-    `- links/resources → "space_ds:space-text-media-with-link" (content with links)`,
-    `- pricing → "space_ds:space-pricing-card" (pricing tier) or "space_ds:space-pricing-featured-card" (featured pricing)`,
+    ...formatRulesForGeneration(page.slug, page.title),
     ``,
     `IMPORTANT: Choose the most appropriate component for each section. Do NOT default everything to space-text-media-default — use specialized components when they match the content type.`,
+    ``,
+    `## Layout Rules`,
+    `- Hero banners and CTA banners are full-width — they handle their own container layout.`,
+    `- All other components will be automatically wrapped in a boxed-width container by the build system.`,
+    `- Do NOT use the same component type for two consecutive sections. Alternate between variants to create visual rhythm.`,
+    `  - Good: hero → text-media-default → cta → text-media-with-checklist → accordion`,
+    `  - Bad: text-media-default → text-media-default → text-media-default`,
     ``,
     `Guidelines:`,
     `- CRITICAL: Only use props that are listed in the Component Prop Reference above. Do NOT use props that don't exist on a component.`,
