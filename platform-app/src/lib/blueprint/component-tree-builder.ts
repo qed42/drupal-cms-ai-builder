@@ -140,6 +140,20 @@ function buildRequiredPropDefaults(): Map<string, Record<string, unknown>> {
 const MANIFEST_REQUIRED_DEFAULTS = buildRequiredPropDefaults();
 
 /**
+ * Index of all prop names per component — used to guard against injecting
+ * props that don't exist on a component (which causes Canvas OutOfRangeException).
+ */
+const MANIFEST_PROP_INDEX = new Map<string, Set<string>>();
+for (const comp of componentManifest as ManifestComponent[]) {
+  MANIFEST_PROP_INDEX.set(comp.id, new Set(comp.props.map((p) => p.name)));
+}
+
+/** Check if a component defines a given prop in the manifest. */
+function componentHasProp(componentId: string, propName: string): boolean {
+  return MANIFEST_PROP_INDEX.get(componentId)?.has(propName) ?? false;
+}
+
+/**
  * Intentional overrides where our desired default differs from the manifest.
  * These take precedence over manifest defaults but are overridden by user input.
  */
@@ -173,6 +187,18 @@ function createItem(
       delete mergedInputs[key];
     } else if (typeof value === "object" && !Array.isArray(value) && Object.keys(value as object).length === 0) {
       delete mergedInputs[key];
+    }
+  }
+
+  // Deterministic guard: strip any prop not defined in the manifest.
+  // Prevents Canvas OutOfRangeException when AI or tree builder injects
+  // a prop that doesn't exist on the component's .component.yml schema.
+  const validProps = MANIFEST_PROP_INDEX.get(componentId);
+  if (validProps) {
+    for (const key of Object.keys(mergedInputs)) {
+      if (!validProps.has(key)) {
+        delete mergedInputs[key];
+      }
     }
   }
 
@@ -289,8 +315,9 @@ function buildOrganismSection(section: PageSection, sectionTag: string = "h2"): 
   const label = labelFromId(componentId);
   const inputs = { ...section.props } as Record<string, unknown>;
 
-  // Set tag_name on organisms that have heading props (heroes, CTAs, etc.)
-  if ("tag_name" in inputs === false) {
+  // Only set tag_name on components that actually define it in the manifest.
+  // Heroes and banners do NOT have tag_name — only heading components do.
+  if (!("tag_name" in inputs) && componentHasProp(componentId, "tag_name")) {
     inputs.tag_name = sectionTag;
   }
 
