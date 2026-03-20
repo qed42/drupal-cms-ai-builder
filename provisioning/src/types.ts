@@ -11,10 +11,16 @@ export interface ProvisioningConfig {
   industry: string;
   /** Path to the Drupal root (drupal-site/). */
   drupalRoot: string;
-  /** Database configuration. */
+  /** Admin database credentials (for creating databases and users). */
   database: {
     host: string;
     port: number;
+    user: string;
+    password: string;
+  };
+  /** Per-site database credentials (generated at provisioning time). */
+  siteDatabase: {
+    name: string;
     user: string;
     password: string;
   };

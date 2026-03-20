@@ -6,13 +6,16 @@ export async function createDatabaseStep(
   config: ProvisioningConfig,
   logger: winston.Logger
 ): Promise<StepResult> {
-  const dbName = `site_${config.siteId}`;
+  const { name: dbName, user: siteUser, password: sitePassword } = config.siteDatabase;
 
-  await createDatabase(dbName, config.database, logger);
+  await createDatabase(dbName, config.database, logger, {
+    user: siteUser,
+    password: sitePassword,
+  });
 
   return {
     success: true,
-    message: `Database ${dbName} created`,
-    data: { dbName },
+    message: `Database ${dbName} created with dedicated user ${siteUser}`,
+    data: { dbName, siteUser },
   };
 }

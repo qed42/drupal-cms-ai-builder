@@ -1,5 +1,6 @@
 # Sprint 15: UX Overhaul Phase 1 — Identity & Trust
 
+**Status:** CLOSED (2026-03-19)
 **Milestone:** M11 — Product Identity & UX Quality
 **Duration:** 1 week
 

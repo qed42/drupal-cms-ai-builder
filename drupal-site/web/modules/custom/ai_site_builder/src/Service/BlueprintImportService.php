@@ -8,6 +8,7 @@ use Drupal\ai_site_builder\BlueprintImportResult;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Menu\MenuLinkManagerInterface;
 use Drupal\system\Entity\Menu;
@@ -73,6 +74,7 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
     protected MenuLinkManagerInterface $menuLinkManager,
     protected ?PluginManagerInterface $webformHandlerManager,
     LoggerChannelFactoryInterface $loggerFactory,
+    protected ?FileSystemInterface $fileSystem = NULL,
   ) {
     $this->logger = $loggerFactory->get('ai_site_builder');
   }
@@ -419,17 +421,172 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
         ]);
       }
 
+      // Resolve image inputs: convert { src, alt } to { target_id, alt }.
+      $inputs = $item['inputs'] ?? [];
+      if ($componentEntity) {
+        $inputs = $this->resolveImageInputs($inputs, $componentEntity);
+      }
+
       $prepared[] = [
         'uuid' => $item['uuid'],
         'component_id' => $item['component_id'],
         'component_version' => $item['component_version'] ?? '',
         'parent_uuid' => $item['parent_uuid'] ?? NULL,
         'slot' => $item['slot'] ?? NULL,
-        'inputs' => $item['inputs'] ?? [],
+        'inputs' => $inputs,
       ];
     }
 
     return $prepared;
+  }
+
+  /**
+   * Resolves image-type inputs from raw { src, alt } to { target_id, alt }.
+   *
+   * Canvas stores image props using Drupal's image field type, which expects
+   * a file entity reference (target_id). This method detects image props via
+   * the component's prop_field_definitions, creates file entities for the
+   * physical files, and returns the corrected inputs.
+   *
+   * @param array $inputs
+   *   The raw component inputs from the blueprint.
+   * @param \Drupal\Core\Entity\EntityInterface $componentEntity
+   *   The Canvas Component config entity.
+   *
+   * @return array
+   *   The inputs with image props resolved to file entity references.
+   */
+  protected function resolveImageInputs(array $inputs, $componentEntity): array {
+    $settings = $componentEntity->getSettings();
+    $propFieldDefs = $settings['prop_field_definitions'] ?? [];
+
+    foreach ($propFieldDefs as $propName => $def) {
+      // Canvas maps image schema refs to entity_reference targeting media.
+      if (($def['field_type'] ?? '') !== 'entity_reference'
+          || ($def['field_storage_settings']['target_type'] ?? '') !== 'media') {
+        continue;
+      }
+
+      if (!isset($inputs[$propName]) || !is_array($inputs[$propName])) {
+        continue;
+      }
+
+      $imageData = $inputs[$propName];
+
+      // Skip if already in Canvas format (has sourceType or is a scalar ID).
+      if (isset($imageData['sourceType']) || isset($imageData['target_id'])) {
+        continue;
+      }
+
+      // Must have a src to create a media entity.
+      if (empty($imageData['src'])) {
+        continue;
+      }
+
+      $mediaId = $this->createMediaEntityFromImage($imageData['src'], $imageData['alt'] ?? '');
+      if ($mediaId === NULL) {
+        $this->logger->warning('Could not create media entity for image "@src" in prop "@prop".', [
+          '@src' => $imageData['src'],
+          '@prop' => $propName,
+        ]);
+        continue;
+      }
+
+      // Replace with collapsed entity_reference value (just the media ID).
+      $inputs[$propName] = $mediaId;
+
+      $this->logger->info('Resolved image prop "@prop": created media entity @mid for "@src".', [
+        '@prop' => $propName,
+        '@mid' => $mediaId,
+        '@src' => $imageData['src'],
+      ]);
+    }
+
+    return $inputs;
+  }
+
+  /**
+   * Creates a Drupal media entity (type: image) for a web-accessible file.
+   *
+   * Canvas image props use entity_reference to media entities. This method
+   * creates both the file entity and media entity wrapper.
+   *
+   * @param string $webPath
+   *   The web-relative path (e.g., /sites/example.com/files/stock/img.jpg).
+   * @param string $alt
+   *   The alt text for the image.
+   *
+   * @return int|null
+   *   The media entity ID, or NULL if creation failed.
+   */
+  protected function createMediaEntityFromImage(string $webPath, string $alt): ?int {
+    // Convert web path to stream wrapper URI.
+    // Pattern: /sites/{domain}/files/{path} → public://{path}
+    if (preg_match('#/sites/[^/]+/files/(.+)$#', $webPath, $matches)) {
+      $uri = 'public://' . $matches[1];
+    }
+    else {
+      $uri = $webPath;
+    }
+
+    $filename = basename($webPath);
+    $mime = $this->guessMimeType($filename);
+
+    try {
+      // Create file entity.
+      $fileStorage = $this->entityTypeManager->getStorage('file');
+      $file = $fileStorage->create([
+        'uri' => $uri,
+        'filename' => $filename,
+        'filemime' => $mime,
+        'status' => 1,
+      ]);
+      $file->save();
+
+      // Create media entity wrapping the file.
+      $mediaStorage = $this->entityTypeManager->getStorage('media');
+      $media = $mediaStorage->create([
+        'bundle' => 'image',
+        'name' => $alt ?: $filename,
+        'field_media_image' => [
+          'target_id' => $file->id(),
+          'alt' => $alt,
+        ],
+        'status' => 1,
+      ]);
+      $media->save();
+
+      return (int) $media->id();
+    }
+    catch (\Exception $e) {
+      $this->logger->error('Failed to create media entity for "@path": @error', [
+        '@path' => $webPath,
+        '@error' => $e->getMessage(),
+      ]);
+      return NULL;
+    }
+  }
+
+  /**
+   * Guesses MIME type from filename extension.
+   *
+   * @param string $filename
+   *   The filename.
+   *
+   * @return string
+   *   The guessed MIME type.
+   */
+  protected function guessMimeType(string $filename): string {
+    $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    return match ($extension) {
+      'jpg', 'jpeg' => 'image/jpeg',
+      'png' => 'image/png',
+      'gif' => 'image/gif',
+      'webp' => 'image/webp',
+      'svg' => 'image/svg+xml',
+      'avif' => 'image/avif',
+      default => 'application/octet-stream',
+    };
   }
 
   /**

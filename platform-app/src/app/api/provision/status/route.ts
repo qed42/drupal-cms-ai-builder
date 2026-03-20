@@ -75,7 +75,22 @@ export async function GET(req: NextRequest) {
 
   // Calculate overall progress — prefer pipeline phase if active.
   let progress: number;
-  if (site.status === "review" || site.status === "provisioning" || site.status === "live" || site.status === "provisioning_failed") {
+  let provisioningProgress: { currentStep: number; totalSteps: number; stepLabel: string } | null = null;
+
+  if (site.status === "provisioning" && pipelinePhase?.startsWith("provision:")) {
+    // Parse provisioning step progress: "provision:5/12:Adding website features"
+    const match = pipelinePhase.match(/^provision:(\d+)\/(\d+):(.+)$/);
+    if (match) {
+      const current = parseInt(match[1], 10);
+      const total = parseInt(match[2], 10);
+      const label = match[3];
+      // Map provisioning steps to 70-99% range (100% = live).
+      progress = 70 + Math.round((current / total) * 29);
+      provisioningProgress = { currentStep: current, totalSteps: total, stepLabel: label };
+    } else {
+      progress = 70;
+    }
+  } else if (site.status === "review" || site.status === "provisioning" || site.status === "live" || site.status === "provisioning_failed") {
     progress = SITE_STATUS_PROGRESS[site.status] ?? 70;
   } else if (pipelinePhase && (pipelinePhase in PIPELINE_PHASE_PROGRESS || pipelinePhase.startsWith("generate:") || pipelinePhase.startsWith("enhance"))) {
     if (pipelinePhase.startsWith("generate:")) {
@@ -107,6 +122,7 @@ export async function GET(req: NextRequest) {
     pipelinePhase: pipelinePhase || null,
     progress,
     pipeline,
+    provisioningProgress,
     error: blueprint?.generationError || site.pipelineError || null,
   });
 }

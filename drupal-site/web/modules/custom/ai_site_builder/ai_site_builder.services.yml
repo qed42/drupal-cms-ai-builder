@@ -4,7 +4,7 @@ services:
     arguments: ['@file_system', '@config.factory', '@file_url_generator', '@logger.factory']
   ai_site_builder.blueprint_import:
     class: Drupal\ai_site_builder\Service\BlueprintImportService
-    arguments: ['@entity_type.manager', '@config.factory', '@plugin.manager.menu.link', '@?plugin.manager.webform.handler', '@logger.factory']
+    arguments: ['@entity_type.manager', '@config.factory', '@plugin.manager.menu.link', '@?plugin.manager.webform.handler', '@logger.factory', '@file_system']
   ai_site_builder.auto_login:
     class: Drupal\ai_site_builder\Service\AutoLoginService
     arguments: ['@entity_type.manager', '@logger.factory']

@@ -1,9 +1,13 @@
 import { writeFile, readFile, copyFile, mkdir } from "node:fs/promises";
 import { join, dirname, basename } from "node:path";
 import { existsSync } from "node:fs";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { drush } from "../utils/drush.js";
 import type { ProvisioningConfig, StepResult } from "../types.js";
 import type winston from "winston";
+
+const execFileAsync = promisify(execFile);
 
 export async function applyBrandStep(
   config: ProvisioningConfig,
@@ -60,6 +64,21 @@ export async function applyBrandStep(
   // so the DDEV web container can access them via docker exec.
   const tokensPath = join(dirname(config.blueprintPath), `tokens-${config.siteId}.json`);
   await writeFile(tokensPath, JSON.stringify(blueprint.brand), "utf-8");
+
+  // Wait for the file to be visible inside the DDEV web container.
+  // Docker shared volumes can have multi-second propagation delays.
+  const ddevWebContainer = "ddev-ai-site-builder-web";
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      await execFileAsync("docker", [
+        "exec", ddevWebContainer, "test", "-f", tokensPath,
+      ]);
+      break; // File visible
+    } catch {
+      logger.info(`Waiting for tokens file to sync to web container (attempt ${attempt + 1})...`, { step: "apply-brand" });
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
 
   await drush(
     "ai-site-builder:apply-brand",

@@ -60,6 +60,8 @@ When `width: "boxed-width"`, the container applies `container relative mx-auto` 
 4. The page generation prompt (`page-generation.ts`) mentions layout rules so the AI understands the containment model
 5. Hero banners and CTA banners are NOT wrapped (they handle their own width)
 6. Generated Canvas component trees render correctly in Drupal with proper boxed-width containment
+7. **Anti-monotony constraint:** The component tree builder must not place two consecutive sections using the same `component_id`. If the AI generates back-to-back identical component types (e.g., two `space-text-media-default` in a row), the tree builder should substitute the second instance with an alternate variant from the same component family (e.g., `space-text-media-reversed`). If no variant exists, insert a visual break component (e.g., a divider or alternate background container) between them.
+8. The page generation prompt (`page-generation.ts`) includes an explicit instruction: "Do not use the same component type for two consecutive sections. Alternate between variants to create visual rhythm."
 
 ## Implementation Notes
 

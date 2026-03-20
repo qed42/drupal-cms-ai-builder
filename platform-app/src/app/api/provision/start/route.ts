@@ -44,10 +44,15 @@ export async function POST(req: NextRequest) {
     const siteData = blueprintPayload.site as Record<string, string> | undefined;
     const subdomain = generateSubdomain(site.name || "site");
 
-    // Update site status to provisioning.
+    // Update site status to provisioning and clear any previous error state.
     await prisma.site.update({
       where: { id: site.id },
-      data: { status: "provisioning", subdomain },
+      data: {
+        status: "provisioning",
+        subdomain,
+        pipelineError: null,
+        pipelinePhase: null,
+      },
     });
 
     // Spawn the provisioning engine.

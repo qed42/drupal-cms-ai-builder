@@ -181,9 +181,10 @@ describe("Sprint 14: Blueprint Validation & AI Regeneration", () => {
       expect(content).not.toContain('"space_ds:space-cta-banner-type-1": { width:');
     });
 
-    it("component-tree-builder.ts references component-validator for defaults", () => {
+    it("component-tree-builder.ts wraps organisms in space-container (TASK-282)", () => {
       const content = fs.readFileSync(builderPath, "utf8");
-      expect(content).toContain("component-validator");
+      expect(content).toContain("space-container");
+      expect(content).toContain("SKIP_CONTAINER");
     });
   });
 

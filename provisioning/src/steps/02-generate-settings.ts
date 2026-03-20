@@ -10,7 +10,7 @@ export async function generateSettingsStep(
 ): Promise<StepResult> {
   const sitesDir = join(config.drupalRoot, "web", "sites", config.domain);
   const settingsPath = join(sitesDir, "settings.php");
-  const dbName = `site_${config.siteId}`;
+  const { name: dbName, user: dbUser, password: dbPassword } = config.siteDatabase;
   const hashSalt = randomBytes(32).toString("hex");
 
   await mkdir(sitesDir, { recursive: true });
@@ -28,8 +28,8 @@ export async function generateSettingsStep(
 
 $databases['default']['default'] = [
   'database' => '${esc(dbName)}',
-  'username' => '${esc(config.database.user)}',
-  'password' => '${esc(config.database.password)}',
+  'username' => '${esc(dbUser)}',
+  'password' => '${esc(dbPassword)}',
   'host' => '${esc(config.database.host)}',
   'port' => '${esc(config.database.port)}',
   'driver' => 'mysql',

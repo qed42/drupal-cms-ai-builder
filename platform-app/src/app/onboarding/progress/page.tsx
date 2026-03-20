@@ -38,6 +38,11 @@ export default function ProgressPage() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [downloadLoading, setDownloadLoading] = useState(false);
+  const [provisioningProgress, setProvisioningProgress] = useState<{
+    currentStep: number;
+    totalSteps: number;
+    stepLabel: string;
+  } | null>(null);
 
   const blueprintReady = siteStatus === "review" || siteStatus === "provisioning" || siteStatus === "live" || siteStatus === "provisioning_failed";
 
@@ -71,6 +76,11 @@ export default function ProgressPage() {
         setPipeline(data.pipeline);
       }
 
+      // Update provisioning step progress
+      if (data.provisioningProgress) {
+        setProvisioningProgress(data.provisioningProgress);
+      }
+
       if (data.siteStatus === "review" || data.siteStatus === "blueprint_ready" || data.siteStatus === "live") {
         setDone(true);
       } else if (
@@ -101,17 +111,37 @@ export default function ProgressPage() {
   }, [pollStatus, done, error]);
 
   async function handleRetry() {
-    setError(null);
-    setProgress(0);
-    setDone(false);
-    setPipeline(DEFAULT_PIPELINE);
-    setSiteStatus("generating");
+    // Determine what to retry based on where the failure occurred.
+    const isProvisioningFailure = siteStatus === "provisioning_failed";
 
-    const res = await fetch("/api/provision/generate-blueprint", {
-      method: "POST",
-    });
-    if (!res.ok) {
-      setError("Failed to restart generation. Please try again.");
+    setError(null);
+    setDone(false);
+
+    if (isProvisioningFailure) {
+      // Retry provisioning — keep pipeline progress, just reset provisioning state.
+      setProvisioningProgress(null);
+      setSiteStatus("provisioning");
+
+      const res = await fetch("/api/provision/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ siteId }),
+      });
+      if (!res.ok) {
+        setError("Failed to restart provisioning. Please try again.");
+      }
+    } else {
+      // Retry content generation.
+      setProgress(0);
+      setPipeline(DEFAULT_PIPELINE);
+      setSiteStatus("generating");
+
+      const res = await fetch("/api/provision/generate-blueprint", {
+        method: "POST",
+      });
+      if (!res.ok) {
+        setError("Failed to restart generation. Please try again.");
+      }
     }
   }
 
@@ -132,7 +162,9 @@ export default function ProgressPage() {
 
   function getSubheading(): string {
     if (done) return "Review your generated content, make any edits, then approve to launch your site.";
+    if (error && siteStatus === "provisioning_failed") return "Your content is safe. You can retry launching your site.";
     if (error) return "Your data is safe. You can try again.";
+    if (siteStatus === "provisioning") return "Launching your website. This usually takes 2-3 minutes.";
     return "This usually takes 2-3 minutes. You can stay on this page or come back later.";
   }
 
@@ -175,6 +207,40 @@ export default function ProgressPage() {
           error={error}
         />
       </div>
+
+      {/* Provisioning step progress */}
+      {siteStatus === "provisioning" && provisioningProgress && (
+        <div className="w-full mb-8" role="status" aria-live="polite">
+          <div className="rounded-xl border border-brand-500/30 bg-brand-500/5 p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 rounded-full border-2 border-brand-500/40 border-t-brand-500 animate-spin shrink-0" />
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-semibold text-white">
+                  Launching your website
+                </span>
+                <p className="text-xs text-white/40">
+                  Step {provisioningProgress.currentStep} of {provisioningProgress.totalSteps}
+                </p>
+              </div>
+              <span className="text-xs text-white/30 tabular-nums shrink-0">
+                {Math.round((provisioningProgress.currentStep / provisioningProgress.totalSteps) * 100)}%
+              </span>
+            </div>
+            {/* Step progress bar */}
+            <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden mb-2">
+              <div
+                className="h-full bg-brand-500 rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.round((provisioningProgress.currentStep / provisioningProgress.totalSteps) * 100)}%`,
+                }}
+              />
+            </div>
+            <p className="text-xs text-white/50" aria-live="assertive">
+              {provisioningProgress.stepLabel}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Completion summary — what was generated */}
       {done && pageNames.length > 0 && (
