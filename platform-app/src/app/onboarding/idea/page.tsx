@@ -38,16 +38,30 @@ export default function IdeaPage() {
       subtitle="In a few lines, tell us what this is all about."
       buttonLabel="Your Audience"
       onSubmit={handleSubmit}
-      disabled={idea.trim().length < 1}
+      disabled={idea.trim().length < 20}
     >
-      <textarea
-        value={idea}
-        onChange={(e) => setIdea(e.target.value)}
-        placeholder="Describe your project or business..."
-        rows={4}
-        className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none text-center"
-        autoFocus
-      />
+      <div className="w-full">
+        <textarea
+          value={idea}
+          onChange={(e) => setIdea(e.target.value)}
+          placeholder="Describe your project or business..."
+          rows={4}
+          className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none text-center"
+          autoFocus
+        />
+        <div className="flex items-center justify-between mt-2 px-1">
+          {idea.trim().length > 0 && idea.trim().length < 20 ? (
+            <p className="text-xs text-amber-400/80">
+              Add a bit more detail for better results
+            </p>
+          ) : (
+            <span />
+          )}
+          <p className="text-xs text-white/30">
+            {idea.length} characters
+          </p>
+        </div>
+      </div>
     </StepLayout>
   );
 }

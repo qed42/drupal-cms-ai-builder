@@ -32,12 +32,23 @@ export default function RegisterPage() {
         return;
       }
 
-      // Auto-login after registration
-      await signIn("credentials", {
+      // Auto-login after registration — use redirect: false to avoid
+      // NextAuth resolving the callback against NEXTAUTH_URL (which may
+      // differ from the browser origin, e.g. in Docker/preview envs).
+      const result = await signIn("credentials", {
         email,
         password,
+        redirect: false,
         callbackUrl: "/onboarding/start",
       });
+
+      if (result?.error) {
+        setError("Account created but auto-login failed. Please sign in.");
+        setLoading(false);
+        return;
+      }
+
+      window.location.href = "/onboarding/start";
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);

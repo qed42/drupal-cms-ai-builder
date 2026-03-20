@@ -185,7 +185,7 @@ describe("formatRulesForPlan", () => {
   it("includes section count ranges as hard constraints", () => {
     const lines = formatRulesForPlan([{ slug: "home", title: "Home" }]);
     const joined = lines.join("\n");
-    expect(joined).toContain("MINIMUM 5 sections");
+    expect(joined).toContain("MINIMUM 7 sections");
     expect(joined).toContain("REQUIRED sections");
   });
 

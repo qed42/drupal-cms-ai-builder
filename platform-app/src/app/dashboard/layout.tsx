@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { BRAND } from "@/lib/brand";
+import { SignOutButton } from "./sign-out-button";
 
 export default async function DashboardLayout({
   children,
@@ -31,28 +33,23 @@ export default async function DashboardLayout({
 
             {/* Nav links */}
             <nav className="hidden sm:flex items-center gap-1">
-              <span className="px-3 py-1.5 text-sm font-medium text-white bg-white/10 rounded-md">
+              <Link href="/dashboard" className="px-3 py-1.5 text-sm font-medium text-white bg-white/10 rounded-md">
                 Sites
-              </span>
-              <span className="px-3 py-1.5 text-sm text-white/40 hover:text-white/60 cursor-default rounded-md">
+              </Link>
+              <Link href="/dashboard/settings" className="px-3 py-1.5 text-sm text-white/40 hover:text-white/60 rounded-md flex items-center gap-1.5">
                 Settings
-              </span>
-              <span className="px-3 py-1.5 text-sm text-white/40 hover:text-white/60 cursor-default rounded-md">
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/30">Soon</span>
+              </Link>
+              <Link href="/dashboard/help" className="px-3 py-1.5 text-sm text-white/40 hover:text-white/60 rounded-md flex items-center gap-1.5">
                 Help
-              </span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/30">Soon</span>
+              </Link>
             </nav>
           </div>
 
           <div className="flex items-center gap-4">
             <span className="text-white/40 text-sm hidden sm:block">{session.user.email}</span>
-            <form action="/api/auth/signout" method="POST">
-              <button
-                type="submit"
-                className="text-white/30 text-sm hover:text-white transition-colors"
-              >
-                Sign out
-              </button>
-            </form>
+            <SignOutButton />
           </div>
         </div>
       </header>

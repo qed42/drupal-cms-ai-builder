@@ -26,7 +26,9 @@ function makeInput(overrides: Partial<ReviewInput> = {}): ReviewInput {
     makeSection("space_ds:space-hero-banner-style-01", { title: "Welcome to SmileBright Dental — Portland's Premier Dental Care Provider", sub_headline: "Your trusted dental care provider in Portland Oregon offering comprehensive dental services including cleanings, implants, cosmetic dentistry, and emergency care for the whole family" }),
     makeSection("space_ds:space-text-media-with-checklist", { title: "Our Dental Care Services", description: servicesText }),
     makeSection("space_ds:space-text-media-default", { title: "Why Choose SmileBright Dental", description: aboutText }),
+    makeSection("space_ds:space-stats-kpi", { title: "SmileBright Dental By The Numbers", stats: [{ value: "15+", label: "Years of dental care experience in Portland" }, { value: "500+", label: "Happy patients and families served" }, { value: "4.9", label: "Average star rating from patient reviews" }] }),
     makeSection("space_ds:space-testimony-card", { title: "What Our Patients Say About Our Dental Care", quote: "Excellent dental care service! The team at SmileBright is professional and caring. Our whole family trusts them with our dental health. The facilities are modern, clean, and welcoming. I would highly recommend SmileBright Dental to anyone looking for a trusted dental care provider in the Portland area.", author_name: "Sarah M.", author_role: "Patient since 2018" }),
+    makeSection("space_ds:space-text-media-with-images", { title: "Our Modern Portland Dental Facility", description: "Our state-of-the-art dental clinic in Portland features private treatment rooms, digital X-rays, laser dentistry equipment, and a comfortable waiting area. We invest in the latest dental technology to provide you with the most effective and comfortable care possible." }),
     makeSection("space_ds:space-cta-banner-type-1", { title: "Book Your Dental Care Appointment Today in Portland", description: "Ready for a healthier smile? Our Portland dental care team is here for you. Contact us at /contact to schedule your appointment today. New patients receive a complimentary consultation and comprehensive dental exam. We accept most major dental insurance plans and offer flexible payment options for all dental care procedures." }),
   ];
 
@@ -40,7 +42,9 @@ function makeInput(overrides: Partial<ReviewInput> = {}): ReviewInput {
         { type: "hero", heading: "Welcome", estimatedWordCount: 40 },
         { type: "features", heading: "Services", estimatedWordCount: 150 },
         { type: "text", heading: "Why Choose Us", estimatedWordCount: 150 },
+        { type: "stats", heading: "By The Numbers", estimatedWordCount: 30 },
         { type: "testimonials", heading: "Testimonials", estimatedWordCount: 80 },
+        { type: "text", heading: "Our Facility", estimatedWordCount: 60 },
         { type: "cta", heading: "Book Now", estimatedWordCount: 30 },
       ],
     },
@@ -76,7 +80,7 @@ describe("estimateWordCount", () => {
 // ---------------------------------------------------------------------------
 
 describe("Content Depth Checks", () => {
-  it("section-count: PASS when Home has 5 sections", () => {
+  it("section-count: PASS when Home has 7 sections", () => {
     const result = reviewPage(makeInput());
     const check = result.checks.find((c) => c.name === "section-count");
     expect(check?.passed).toBe(true);

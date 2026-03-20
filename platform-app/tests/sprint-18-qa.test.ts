@@ -176,9 +176,9 @@ describe("TASK-289: Token budget scaling", () => {
     expect(gen).toContain("perExtraSection = 500");
   });
 
-  it("calculateTokenBudget caps at 8000", () => {
+  it("calculateTokenBudget caps at 10000", () => {
     const gen = fs.readFileSync(path.join(SRC, "lib/pipeline/phases/generate.ts"), "utf8");
-    expect(gen).toContain("8000");
+    expect(gen).toContain("10000");
   });
 
   it("generate.ts uses dynamic maxTokens instead of hardcoded 4000", () => {
@@ -504,8 +504,9 @@ describe("Cross-task: Review agent behavior integration", () => {
     expect(dimensions.has("geo")).toBe(true);
   });
 
-  it("contact page has lower section count minimum (2-3)", () => {
+  it("contact page has section count minimum (4-5)", () => {
     const rule = getRule("contact");
-    expect(rule.sectionCountRange[0]).toBeLessThanOrEqual(3);
+    expect(rule.sectionCountRange[0]).toBeLessThanOrEqual(5);
+    expect(rule.sectionCountRange[0]).toBeGreaterThanOrEqual(4);
   });
 });

@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "--network=drupal-cms-ai-builder_default",
+        "--add-host=host.docker.internal:host-gateway",
+        "mcp/playwright"
+      ]
+    }
+  }
+}

@@ -7,6 +7,7 @@ namespace Drupal\ai_site_builder\Service;
 use Drupal\ai_site_builder\BlueprintImportResult;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
@@ -605,6 +606,11 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
 
     $menuLinkStorage = $this->entityTypeManager->getStorage('menu_link_content');
 
+    // Remove all existing menu links in the main menu to prevent duplicates.
+    // Drupal CMS (via the standard profile) ships with a default "Home" link
+    // (standard.front_page) that duplicates the Home link from the blueprint.
+    $this->clearMainMenuLinks($menuLinkStorage);
+
     foreach ($createdPages as $pageInfo) {
       $entity = $pageInfo['entity'];
       $uri = 'internal:/page/' . $entity->id();
@@ -622,6 +628,43 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
     $this->logger->info('Main menu built with @count links.', [
       '@count' => count($createdPages),
     ]);
+  }
+
+  /**
+   * Removes all existing links from the main menu.
+   *
+   * Handles both content menu links (menu_link_content entities) and
+   * system-defined static menu links (e.g., standard.front_page from the
+   * standard install profile). This prevents duplicate Home entries when
+   * the blueprint import creates its own menu links.
+   *
+   * @param \Drupal\Core\Entity\EntityStorageInterface $menuLinkStorage
+   *   The menu_link_content entity storage.
+   */
+  protected function clearMainMenuLinks(EntityStorageInterface $menuLinkStorage): void {
+    // Remove content-based menu links (menu_link_content entities).
+    $existingLinks = $menuLinkStorage->loadByProperties(['menu_name' => 'main']);
+    if (!empty($existingLinks)) {
+      $menuLinkStorage->delete($existingLinks);
+      $this->logger->info('Removed @count existing content menu links from main menu.', [
+        '@count' => count($existingLinks),
+      ]);
+    }
+
+    // Remove system-defined (static) menu links in the main menu.
+    // The standard profile defines 'standard.front_page' as a Home link.
+    $staticPluginIds = [
+      'standard.front_page',
+    ];
+
+    foreach ($staticPluginIds as $pluginId) {
+      if ($this->menuLinkManager->hasDefinition($pluginId)) {
+        $this->menuLinkManager->removeDefinition($pluginId);
+        $this->logger->info('Removed static menu link "@id" from main menu.', [
+          '@id' => $pluginId,
+        ]);
+      }
+    }
   }
 
 }

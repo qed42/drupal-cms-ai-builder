@@ -38,16 +38,30 @@ export default function AudiencePage() {
       subtitle="Describe your ideal audience — who will visit your site?"
       buttonLabel="Plan the Structure"
       onSubmit={handleSubmit}
-      disabled={false}
+      disabled={audience.trim().length < 10}
     >
-      <input
-        type="text"
-        value={audience}
-        onChange={(e) => setAudience(e.target.value)}
-        placeholder="Describe your ideal audience..."
-        className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 text-center"
-        autoFocus
-      />
+      <div className="w-full">
+        <input
+          type="text"
+          value={audience}
+          onChange={(e) => setAudience(e.target.value)}
+          placeholder="Describe your ideal audience..."
+          className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 text-center"
+          autoFocus
+        />
+        <div className="flex items-center justify-between mt-2 px-1">
+          {audience.trim().length > 0 && audience.trim().length < 10 ? (
+            <p className="text-xs text-amber-400/80">
+              A bit more detail helps us tailor your site
+            </p>
+          ) : (
+            <span />
+          )}
+          <p className="text-xs text-white/30">
+            {audience.length} characters
+          </p>
+        </div>
+      </div>
     </StepLayout>
   );
 }

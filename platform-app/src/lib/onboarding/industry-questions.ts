@@ -1,4 +1,5 @@
 // TASK-200: Industry-specific follow-up questions configuration
+// TASK-299: Expanded industry list with detection from business description
 
 export interface IndustryQuestion {
   id: string;
@@ -9,6 +10,26 @@ export interface IndustryQuestion {
 }
 
 export const INDUSTRY_QUESTIONS: Record<string, IndustryQuestion[]> = {
+  technology: [
+    {
+      id: "tech_type",
+      text: "What type of technology product or service do you offer?",
+      inputType: "text",
+      placeholder: "e.g., SaaS platform, Mobile app, IT consulting",
+    },
+    {
+      id: "target_users",
+      text: "Who are your primary users?",
+      inputType: "multi-select",
+      options: ["Consumers (B2C)", "Businesses (B2B)", "Enterprise", "Developers", "Government"],
+    },
+    {
+      id: "stage",
+      text: "What stage is your product in?",
+      inputType: "select",
+      options: ["Pre-launch / Coming soon", "Early stage / MVP", "Growth stage", "Established / Mature"],
+    },
+  ],
   healthcare: [
     {
       id: "specialties",
@@ -57,6 +78,32 @@ export const INDUSTRY_QUESTIONS: Record<string, IndustryQuestion[]> = {
     },
   ],
 
+  food_and_beverage: [
+    {
+      id: "cuisine",
+      text: "What type of food or beverage do you specialize in?",
+      inputType: "text",
+      placeholder: "e.g., Italian cuisine, Artisan bread, Craft coffee",
+    },
+    {
+      id: "services",
+      text: "Which services do you offer?",
+      inputType: "multi-select",
+      options: ["Dine-in", "Takeout", "Delivery", "Catering", "Private events", "Online ordering"],
+    },
+    {
+      id: "reservation",
+      text: "Do you accept reservations or pre-orders?",
+      inputType: "select",
+      options: ["Yes — online reservations", "Yes — phone only", "No — first come, first served", "Pre-orders available"],
+    },
+    {
+      id: "highlight",
+      text: "What makes your offerings special?",
+      inputType: "text",
+      placeholder: "e.g., Locally sourced ingredients, Family recipes, Organic",
+    },
+  ],
   restaurant: [
     {
       id: "cuisine",
@@ -81,6 +128,146 @@ export const INDUSTRY_QUESTIONS: Record<string, IndustryQuestion[]> = {
       text: "What makes your dining experience special?",
       inputType: "text",
       placeholder: "e.g., Rooftop seating, live music, locally sourced ingredients",
+    },
+  ],
+  retail: [
+    {
+      id: "products",
+      text: "What types of products do you sell?",
+      inputType: "text",
+      placeholder: "e.g., Clothing, Electronics, Home goods, Gifts",
+    },
+    {
+      id: "channels",
+      text: "How do customers shop with you?",
+      inputType: "multi-select",
+      options: ["Physical store", "Online store", "Pop-up shops", "Wholesale", "Marketplace (Etsy, Amazon)"],
+    },
+    {
+      id: "unique_selling",
+      text: "What makes your products or shop stand out?",
+      inputType: "text",
+      placeholder: "e.g., Locally made, Curated selection, Sustainable materials",
+    },
+  ],
+  finance: [
+    {
+      id: "services",
+      text: "What financial services do you provide?",
+      inputType: "text",
+      placeholder: "e.g., Tax preparation, Investment advisory, Bookkeeping",
+    },
+    {
+      id: "client_type",
+      text: "Who are your typical clients?",
+      inputType: "multi-select",
+      options: ["Individuals", "Small businesses", "Mid-size companies", "High-net-worth", "Startups", "Retirees"],
+    },
+    {
+      id: "certifications",
+      text: "Do you hold any certifications or licenses?",
+      inputType: "select",
+      options: ["CPA", "CFP", "CFA", "EA (Enrolled Agent)", "Series 7/66", "Multiple certifications", "Not applicable"],
+    },
+  ],
+  manufacturing: [
+    {
+      id: "products",
+      text: "What do you manufacture?",
+      inputType: "text",
+      placeholder: "e.g., Custom metal parts, Food packaging, Electronics components",
+    },
+    {
+      id: "capabilities",
+      text: "What manufacturing capabilities do you have?",
+      inputType: "multi-select",
+      options: ["CNC machining", "3D printing", "Injection molding", "Assembly", "Packaging", "Custom fabrication"],
+    },
+    {
+      id: "certifications",
+      text: "Do you hold any quality certifications?",
+      inputType: "select",
+      options: ["ISO 9001", "ISO 14001", "AS9100", "IATF 16949", "Multiple certifications", "In progress", "Not yet"],
+    },
+  ],
+  creative_and_design: [
+    {
+      id: "services",
+      text: "What creative services do you offer?",
+      inputType: "text",
+      placeholder: "e.g., Logo design, Photography, Video production, Web design",
+    },
+    {
+      id: "client_type",
+      text: "Who are your typical clients?",
+      inputType: "multi-select",
+      options: ["Small businesses", "Corporations", "Startups", "Individuals", "Agencies", "Nonprofits"],
+    },
+    {
+      id: "portfolio_style",
+      text: "How would you describe your creative style?",
+      inputType: "select",
+      options: ["Minimalist & modern", "Bold & colorful", "Classic & elegant", "Eclectic & experimental", "Industry-specific"],
+    },
+  ],
+  hospitality: [
+    {
+      id: "property_type",
+      text: "What type of hospitality business do you run?",
+      inputType: "select",
+      options: ["Hotel", "Bed & Breakfast", "Resort", "Vacation rental", "Hostel", "Event venue", "Other"],
+    },
+    {
+      id: "amenities",
+      text: "What amenities do you offer?",
+      inputType: "multi-select",
+      options: ["Restaurant/Bar", "Pool", "Spa", "Fitness center", "Meeting rooms", "Concierge", "Free Wi-Fi"],
+    },
+    {
+      id: "booking",
+      text: "How do guests book with you?",
+      inputType: "select",
+      options: ["Direct online booking", "Phone reservations", "Third-party platforms (Booking.com, Airbnb)", "All of the above"],
+    },
+  ],
+  fitness_and_wellness: [
+    {
+      id: "modalities",
+      text: "What fitness or wellness services do you offer?",
+      inputType: "text",
+      placeholder: "e.g., Yoga, Personal training, Massage therapy, Meditation",
+    },
+    {
+      id: "setting",
+      text: "Where do you provide services?",
+      inputType: "multi-select",
+      options: ["Studio/gym", "Client's home", "Online/virtual", "Outdoors", "Corporate on-site", "Retreats"],
+    },
+    {
+      id: "certifications",
+      text: "Do you hold any certifications or licenses?",
+      inputType: "select",
+      options: ["Yes — nationally certified", "Yes — state licensed", "Yes — multiple certifications", "In progress", "Not applicable"],
+    },
+  ],
+  automotive: [
+    {
+      id: "business_type",
+      text: "What type of automotive business do you run?",
+      inputType: "select",
+      options: ["Dealership — new cars", "Dealership — used cars", "Auto repair/mechanic", "Body shop", "Tire shop", "Specialty/custom", "Parts supplier"],
+    },
+    {
+      id: "brands",
+      text: "Do you specialize in particular brands or vehicle types?",
+      inputType: "text",
+      placeholder: "e.g., Toyota, European imports, Trucks & SUVs, Classic cars",
+    },
+    {
+      id: "services",
+      text: "What services do you offer?",
+      inputType: "multi-select",
+      options: ["Sales", "Repairs & maintenance", "Detailing", "Financing", "Trade-ins", "Inspections"],
     },
   ],
 

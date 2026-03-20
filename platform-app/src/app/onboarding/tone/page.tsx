@@ -135,6 +135,9 @@ export default function TonePage() {
             placeholder={getDifferentiatorPlaceholder(industry)}
             className="w-full rounded-xl bg-white/10 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none"
           />
+          <p className="text-xs text-white/30 text-right mt-1">
+            {differentiators.length} characters
+          </p>
         </div>
 
         {/* Advanced Section (Collapsible) */}

@@ -22,7 +22,7 @@ function calculateTokenBudget(sectionCount: number): number {
   const base = 4000;
   const perExtraSection = 500;
   const extra = Math.max(0, sectionCount - 3) * perExtraSection;
-  return Math.min(base + extra, 8000);
+  return Math.min(base + extra, 10000);
 }
 
 export interface GeneratePhaseResult {

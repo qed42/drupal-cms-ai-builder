@@ -48,6 +48,7 @@ export interface PageDesignRule {
   };
   avoidComponents: string[];
   closingPattern: string;
+  compositionGuidance: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -62,7 +63,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     titlePatterns: ["home", "welcome", "homepage"],
     description:
       "Primary landing page — maximum visual impact, clear value proposition, social proof, strong CTA",
-    sectionCountRange: [5, 7],
+    sectionCountRange: [7, 9],
     sections: [
       {
         type: "hero",
@@ -148,6 +149,11 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     avoidComponents: ["space_ds:space-accordion"],
     closingPattern:
       "End with a CTA banner. Optionally precede it with testimonials or stats for social proof before the ask.",
+    compositionGuidance: [
+      "TESTIMONIALS: MUST use a SINGLE \"space_ds:space-testimony-card\" organism component for testimonials — do NOT stack multiple individual testimony cards as separate sections. If multiple testimonials are available, use one testimony-card per testimonial but group them within a single testimonial section.",
+      "FEATURES: PREFER \"space_ds:space-text-media-with-checklist\" or \"space_ds:space-text-media-with-stats\" for feature sections — these are organism-level containers that present features in a structured layout. Do NOT create separate text-media-default sections for each feature.",
+      "TEAM (if used): MUST use a \"space_ds:space-team-section-image-card-1\" or \"space_ds:space-team-section-simple-1\" organism — these are grid containers with slots for individual team member cards. Do NOT stack individual people-cards as separate sections.",
+    ].join("\n"),
   },
 
   // ── About ─────────────────────────────────────────────────────────────
@@ -157,7 +163,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     titlePatterns: ["about", "our story", "who we are"],
     description:
       "Narrative-driven page — builds trust through story, team, and values",
-    sectionCountRange: [4, 6],
+    sectionCountRange: [6, 8],
     sections: [
       {
         type: "hero",
@@ -236,6 +242,11 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     ],
     closingPattern:
       "End with a warm CTA (e.g., 'Let's work together' or 'Get to know us better').",
+    compositionGuidance: [
+      "TEAM: MUST use a \"space_ds:space-team-section-image-card-1\" or \"space_ds:space-team-section-simple-1\" organism — these are grid containers with slots for individual team member cards. Do NOT create separate people-card sections for each team member.",
+      "TESTIMONIALS (if used): MUST use a SINGLE \"space_ds:space-testimony-card\" organism component — do NOT stack multiple individual testimony cards as separate sections.",
+      "FEATURES: PREFER \"space_ds:space-text-media-with-checklist\" to present values/capabilities in a structured layout rather than flat text blocks.",
+    ].join("\n"),
   },
 
   // ── Services ──────────────────────────────────────────────────────────
@@ -257,7 +268,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     ],
     description:
       "Showcase page — highlight service offerings with clear differentiation and CTAs",
-    sectionCountRange: [4, 7],
+    sectionCountRange: [6, 9],
     sections: [
       {
         type: "hero",
@@ -333,6 +344,11 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     avoidComponents: [],
     closingPattern:
       "End with a CTA banner pushing consultation or inquiry. Consider testimonials just before the CTA for social proof.",
+    compositionGuidance: [
+      "FEATURES: MUST use \"space_ds:space-text-media-with-checklist\" or \"space_ds:space-text-media-with-stats\" organisms for service/feature listings — these present multiple features within a single structured component. Do NOT create a separate text-media section for each individual service.",
+      "TESTIMONIALS (if used): MUST use a SINGLE \"space_ds:space-testimony-card\" or \"space_ds:space-people-card-testimony-with-avatar\" component — do NOT stack multiple individual testimony cards as separate sections.",
+      "FAQ (if used): MUST use \"space_ds:space-accordion\" organism with \"space_ds:space-accordion-item\" children — do NOT use separate text blocks for each Q&A pair.",
+    ].join("\n"),
   },
 
   // ── Contact ───────────────────────────────────────────────────────────
@@ -342,7 +358,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     titlePatterns: ["contact", "get in touch", "reach us"],
     description:
       "Utility page — minimal content, focused on contact info and form",
-    sectionCountRange: [2, 3],
+    sectionCountRange: [4, 5],
     sections: [
       {
         type: "hero",
@@ -388,6 +404,8 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     ],
     closingPattern:
       "The contact info/form IS the closing. No separate CTA needed.",
+    compositionGuidance:
+      "Contact pages are minimal. No organism-level composition patterns needed — use simple text-media components for contact details.",
   },
 
   // ── Portfolio / Gallery ───────────────────────────────────────────────
@@ -397,7 +415,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     titlePatterns: ["portfolio", "gallery", "our work", "projects", "case studies"],
     description:
       "Visual showcase page — let the work speak through imagery and brief captions",
-    sectionCountRange: [3, 5],
+    sectionCountRange: [5, 7],
     sections: [
       {
         type: "hero",
@@ -457,6 +475,10 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     avoidComponents: ["space_ds:space-accordion", "space_ds:space-stats-kpi"],
     closingPattern:
       "End with a CTA to start a project or view more work.",
+    compositionGuidance: [
+      "GALLERY: PREFER \"space_ds:space-text-media-with-images\" to showcase multiple portfolio items within a single structured section. Do NOT create separate text-media-default sections for each portfolio piece.",
+      "TESTIMONIALS (if used): MUST use a SINGLE \"space_ds:space-testimony-card\" organism — do NOT stack individual testimony cards as separate sections.",
+    ].join("\n"),
   },
 
   // ── Pricing ───────────────────────────────────────────────────────────
@@ -466,7 +488,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     titlePatterns: ["pricing", "plans", "packages"],
     description:
       "Conversion page — clear pricing tiers, comparison, FAQ to remove objections",
-    sectionCountRange: [3, 5],
+    sectionCountRange: [5, 7],
     sections: [
       {
         type: "hero",
@@ -523,6 +545,11 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     avoidComponents: ["space_ds:space-team-section-image-card-1"],
     closingPattern:
       "End with a CTA pushing the primary conversion action (sign up, start trial, contact sales).",
+    compositionGuidance: [
+      "FAQ: MUST use \"space_ds:space-accordion\" organism with \"space_ds:space-accordion-item\" children for the FAQ section — do NOT use separate text blocks or text-media-default sections for each question/answer pair. Alternatively, use \"space_ds:space-accordion-with-image-variation-2\" for a visually richer FAQ with section heading.",
+      "PRICING: Use \"space_ds:space-pricing-card\" and/or \"space_ds:space-pricing-featured-card\" as distinct tier cards — these are already self-contained organisms.",
+      "TESTIMONIALS (if used): MUST use a SINGLE \"space_ds:space-testimony-card\" organism — do NOT stack individual testimony cards as separate sections.",
+    ].join("\n"),
   },
 
   // ── FAQ ───────────────────────────────────────────────────────────────
@@ -532,7 +559,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     titlePatterns: ["faq", "frequently asked", "common questions"],
     description:
       "Utility page — comprehensive Q&A in collapsible format, minimal surrounding content",
-    sectionCountRange: [2, 4],
+    sectionCountRange: [4, 6],
     sections: [
       {
         type: "hero",
@@ -575,6 +602,8 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     ],
     closingPattern:
       "Optionally end with a CTA pointing to contact for unanswered questions.",
+    compositionGuidance:
+      "FAQ: MUST use \"space_ds:space-accordion\" organism with \"space_ds:space-accordion-item\" children — this is the ONLY correct pattern for FAQ content. Each Q&A pair becomes an accordion-item with title (question) and body (answer). Do NOT use separate text-media sections for individual questions. For a visually richer FAQ, use \"space_ds:space-accordion-with-image-variation-2\" which adds a section heading and image alongside the accordion.",
   },
 
   // ── Team ──────────────────────────────────────────────────────────────
@@ -584,7 +613,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     titlePatterns: ["team", "our team", "people", "staff", "leadership"],
     description:
       "People-focused page — introduce team members with photos, roles, and brief bios",
-    sectionCountRange: [3, 5],
+    sectionCountRange: [5, 7],
     sections: [
       {
         type: "hero",
@@ -645,6 +674,10 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     ],
     closingPattern:
       "The team grid is the main content. Optionally close with a hiring CTA or contact CTA.",
+    compositionGuidance: [
+      "TEAM: MUST use a \"space_ds:space-team-section-image-card-1\", \"space_ds:space-team-section-image-card-2\", or \"space_ds:space-team-section-simple-1\" organism — these are grid containers with slots for individual people cards. Do NOT create separate people-card sections for each team member. Choose image-card variants for visual-heavy pages and simple variants for text-focused pages.",
+      "TESTIMONIALS (if used): MUST use a SINGLE \"space_ds:space-testimony-card\" organism — do NOT stack individual testimony cards as separate sections.",
+    ].join("\n"),
   },
 
   // ── Landing ───────────────────────────────────────────────────────────
@@ -654,7 +687,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     titlePatterns: ["landing", "special offer", "limited time", "exclusive"],
     description:
       "Conversion-focused page — single goal, persuasive flow, urgency, minimal distractions",
-    sectionCountRange: [4, 6],
+    sectionCountRange: [6, 8],
     sections: [
       {
         type: "hero",
@@ -719,6 +752,10 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     avoidComponents: ["space_ds:space-accordion"],
     closingPattern:
       "End with a strong, urgent CTA. The entire page should funnel toward this single action.",
+    compositionGuidance: [
+      "TESTIMONIALS: MUST use a SINGLE \"space_ds:space-testimony-card\" organism component — do NOT stack multiple individual testimony cards as separate sections. Group all testimonials within one section.",
+      "FEATURES: MUST use \"space_ds:space-text-media-with-checklist\" or \"space_ds:space-text-media-with-stats\" organisms — these present multiple features within a single structured layout. Do NOT create separate text blocks for each benefit.",
+    ].join("\n"),
   },
 
   // ── Generic (fallback) ────────────────────────────────────────────────
@@ -728,7 +765,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     titlePatterns: [],
     description:
       "General-purpose page — balanced mix of content sections with reasonable defaults",
-    sectionCountRange: [3, 5],
+    sectionCountRange: [5, 7],
     sections: [
       {
         type: "hero",
@@ -779,6 +816,12 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     },
     avoidComponents: [],
     closingPattern: "End with a CTA banner.",
+    compositionGuidance: [
+      "TESTIMONIALS (if used): MUST use a SINGLE \"space_ds:space-testimony-card\" organism — do NOT stack individual testimony cards as separate sections.",
+      "FAQ (if used): MUST use \"space_ds:space-accordion\" organism with \"space_ds:space-accordion-item\" children — do NOT use separate text blocks for each Q&A pair.",
+      "TEAM (if used): MUST use a \"space_ds:space-team-section-image-card-1\" or \"space_ds:space-team-section-simple-1\" organism — do NOT stack individual people-cards as separate sections.",
+      "FEATURES (if used): PREFER \"space_ds:space-text-media-with-checklist\" for structured feature presentation over flat text blocks.",
+    ].join("\n"),
   },
 ];
 
@@ -856,12 +899,13 @@ export function formatRulesForPlan(
       `  - REQUIRED sections: ${required.join(", ")}`,
       optional.length > 0 ? `  - Optional sections (pick 1-2): ${optional.join(", ")}` : ``,
       `  - Rhythm: ${rule.rhythm.guidance}`,
+      rule.compositionGuidance ? `  - Composition: ${rule.compositionGuidance.split("\n")[0]}` : ``,
     );
   }
 
   lines.push(
     ``,
-    `REMINDER: Do NOT produce pages with only 2-3 sections. Content-rich pages (home, services, about, landing) MUST have at least 4-5 sections to provide sufficient depth for a professional website.`
+    `REMINDER: Do NOT produce pages with only 2-3 sections. Content-rich pages (home, services, about, landing) MUST have at least 5-6 sections to provide sufficient depth for a professional website.`
   );
 
   return lines.filter(Boolean);
@@ -971,6 +1015,17 @@ export function formatRulesForGeneration(
     lines.push(
       ``,
       `AVOID on ${pageType} pages: ${rule.avoidComponents.map((c) => `"${c}"`).join(", ")}`
+    );
+  }
+
+  // Organism composition rules
+  if (rule.compositionGuidance) {
+    lines.push(
+      ``,
+      `## Organism Composition Rules (CRITICAL)`,
+      `The following rules dictate how content MUST be composed into organism-level containers rather than flat, stacked components:`,
+      ``,
+      rule.compositionGuidance
     );
   }
 

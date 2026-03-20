@@ -1,10 +1,62 @@
+export const INDUSTRY_OPTIONS = [
+  "technology",
+  "healthcare",
+  "legal",
+  "food_and_beverage",
+  "retail",
+  "education",
+  "real_estate",
+  "finance",
+  "manufacturing",
+  "creative_and_design",
+  "hospitality",
+  "fitness_and_wellness",
+  "automotive",
+  "nonprofit",
+  "professional_services",
+  "other",
+] as const;
+
+export type IndustryType = (typeof INDUSTRY_OPTIONS)[number];
+
+export const INDUSTRY_LABELS: Record<string, string> = {
+  technology: "Technology",
+  healthcare: "Healthcare",
+  legal: "Legal",
+  food_and_beverage: "Food & Beverage",
+  retail: "Retail",
+  education: "Education",
+  real_estate: "Real Estate",
+  finance: "Finance",
+  manufacturing: "Manufacturing",
+  creative_and_design: "Creative & Design",
+  hospitality: "Hospitality",
+  fitness_and_wellness: "Fitness & Wellness",
+  automotive: "Automotive",
+  nonprofit: "Non-Profit",
+  professional_services: "Professional Services",
+  other: "Other",
+};
+
 export const ANALYZE_PROMPT = `You are a business analyst. Analyze the following business description and audience.
 
 Return a JSON object with exactly these fields:
-- "industry": one of "healthcare", "legal", "real_estate", "restaurant", "professional_services", "education", "ecommerce", "nonprofit", "other"
+- "industry": one of ${INDUSTRY_OPTIONS.map((i) => `"${i}"`).join(", ")}
 - "keywords": array of 5-10 relevant keywords
 - "compliance_flags": array of applicable flags from ["hipaa", "ada", "fair_housing", "attorney_advertising", "gdpr", "ferpa", "pci_dss"]
 - "tone": one of "professional_warm", "corporate", "casual", "friendly"
+
+Be specific with industry classification. For example:
+- A bakery, cafe, restaurant, or food truck → "food_and_beverage"
+- A gym, yoga studio, or personal trainer → "fitness_and_wellness"
+- A hotel, B&B, or resort → "hospitality"
+- A car dealership or mechanic → "automotive"
+- A graphic design studio or photography business → "creative_and_design"
+- A software company or IT services → "technology"
+- A bank, accounting firm, or financial advisor → "finance"
+- A factory or production facility → "manufacturing"
+- An online store or retail shop → "retail"
+Only use "other" if the business truly does not fit any of the above categories.
 
 Business idea: {idea}
 Target audience: {audience}
@@ -60,6 +112,22 @@ export const INDUSTRY_DEFAULT_PAGES: Record<string, DefaultPage[]> = {
     { slug: "about", title: "About Us", description: "Brokerage story, market expertise, and client success approach", required: true },
     { slug: "contact", title: "Contact", description: "Office locations, agent directory, and property inquiry form", required: true },
   ],
+  technology: [
+    { slug: "home", title: "Home", description: "Company overview with product highlights, tech capabilities, and call-to-action", required: true },
+    { slug: "products", title: "Products", description: "Product or platform descriptions with features, pricing tiers, and use cases", required: true },
+    { slug: "solutions", title: "Solutions", description: "Industry-specific solutions showing how your technology solves real problems", required: false },
+    { slug: "about", title: "About Us", description: "Company story, team, and technology vision", required: true },
+    { slug: "blog", title: "Blog", description: "Technical articles, product updates, and industry insights", required: false },
+    { slug: "contact", title: "Contact", description: "Sales inquiries, support channels, and demo request form", required: true },
+  ],
+  food_and_beverage: [
+    { slug: "home", title: "Home", description: "Showcase with ambiance photos, featured items, and reservation or ordering CTA", required: true },
+    { slug: "menu", title: "Menu", description: "Full menu with descriptions, dietary info, and seasonal highlights", required: true },
+    { slug: "ordering", title: "Order Online", description: "Online ordering for pickup, delivery, or catering services", required: false },
+    { slug: "gallery", title: "Gallery", description: "Photo gallery of dishes, baked goods, drinks, and dining spaces", required: false },
+    { slug: "about", title: "About Us", description: "Story, culinary philosophy, and what makes your food special", required: true },
+    { slug: "contact", title: "Contact", description: "Location, hours, phone, and catering or event inquiry form", required: true },
+  ],
   restaurant: [
     { slug: "home", title: "Home", description: "Restaurant showcase with ambiance photos, featured dishes, and reservation CTA", required: true },
     { slug: "menu", title: "Menu", description: "Full menu with descriptions, dietary info, and seasonal highlights", required: true },
@@ -67,6 +135,62 @@ export const INDUSTRY_DEFAULT_PAGES: Record<string, DefaultPage[]> = {
     { slug: "gallery", title: "Gallery", description: "Photo gallery of dishes, dining spaces, and events", required: false },
     { slug: "about", title: "About Us", description: "Restaurant story, chef background, and culinary philosophy", required: true },
     { slug: "contact", title: "Contact", description: "Location, hours, phone, and catering or event inquiry form", required: true },
+  ],
+  retail: [
+    { slug: "home", title: "Home", description: "Storefront showcase with featured products, promotions, and brand story", required: true },
+    { slug: "products", title: "Products", description: "Product catalog with categories, descriptions, and pricing", required: true },
+    { slug: "about", title: "About Us", description: "Brand story, values, and what makes your shop unique", required: true },
+    { slug: "testimonials", title: "Testimonials", description: "Customer reviews and shopping experiences", required: false },
+    { slug: "faq", title: "FAQ", description: "Shipping, returns, sizing, and common product questions", required: false },
+    { slug: "contact", title: "Contact", description: "Store location, hours, and customer service contact form", required: true },
+  ],
+  finance: [
+    { slug: "home", title: "Home", description: "Firm overview with service highlights and trust-building credentials", required: true },
+    { slug: "services", title: "Services", description: "Financial services offered with scope, approach, and client benefits", required: true },
+    { slug: "team", title: "Our Team", description: "Advisor profiles with certifications, experience, and specializations", required: true },
+    { slug: "resources", title: "Resources", description: "Financial guides, calculators, and educational content", required: false },
+    { slug: "about", title: "About Us", description: "Firm history, philosophy, and fiduciary commitment", required: true },
+    { slug: "contact", title: "Contact", description: "Office locations, consultation scheduling, and inquiry form", required: true },
+  ],
+  manufacturing: [
+    { slug: "home", title: "Home", description: "Company overview with capabilities, industries served, and quality commitment", required: true },
+    { slug: "products", title: "Products", description: "Product lines with specifications, materials, and applications", required: true },
+    { slug: "capabilities", title: "Capabilities", description: "Manufacturing processes, equipment, and capacity details", required: true },
+    { slug: "quality", title: "Quality & Certifications", description: "Quality standards, certifications (ISO, etc.), and testing procedures", required: false },
+    { slug: "about", title: "About Us", description: "Company history, facilities, and manufacturing expertise", required: true },
+    { slug: "contact", title: "Contact", description: "RFQ form, facility address, and sales contact information", required: true },
+  ],
+  creative_and_design: [
+    { slug: "home", title: "Home", description: "Creative showcase with featured work, capabilities, and brand personality", required: true },
+    { slug: "portfolio", title: "Portfolio", description: "Gallery of completed projects with case studies and client results", required: true },
+    { slug: "services", title: "Services", description: "Creative services offered with process descriptions and deliverables", required: true },
+    { slug: "about", title: "About Us", description: "Creative philosophy, team bios, and studio story", required: true },
+    { slug: "blog", title: "Blog", description: "Design insights, project spotlights, and creative inspiration", required: false },
+    { slug: "contact", title: "Contact", description: "Project inquiry form, studio location, and collaboration details", required: true },
+  ],
+  hospitality: [
+    { slug: "home", title: "Home", description: "Property showcase with stunning imagery, amenities, and booking CTA", required: true },
+    { slug: "rooms", title: "Rooms & Suites", description: "Room types with photos, amenities, rates, and availability", required: true },
+    { slug: "amenities", title: "Amenities", description: "Facilities, dining, spa, activities, and guest services", required: true },
+    { slug: "events", title: "Events & Meetings", description: "Event spaces, wedding venues, and corporate meeting facilities", required: false },
+    { slug: "about", title: "About Us", description: "Property story, location highlights, and hospitality philosophy", required: true },
+    { slug: "contact", title: "Contact", description: "Reservations, directions, and guest inquiry form", required: true },
+  ],
+  fitness_and_wellness: [
+    { slug: "home", title: "Home", description: "Welcome page with service highlights, trainer features, and booking CTA", required: true },
+    { slug: "services", title: "Services", description: "Programs, classes, and wellness services with descriptions and benefits", required: true },
+    { slug: "trainers", title: "Our Trainers", description: "Trainer and practitioner profiles with certifications and specialties", required: true },
+    { slug: "schedule", title: "Schedule", description: "Class schedule, session availability, and booking information", required: false },
+    { slug: "about", title: "About Us", description: "Studio story, wellness philosophy, and community mission", required: true },
+    { slug: "contact", title: "Contact", description: "Location, hours, membership inquiries, and contact form", required: true },
+  ],
+  automotive: [
+    { slug: "home", title: "Home", description: "Business showcase with featured vehicles or services and trust signals", required: true },
+    { slug: "inventory", title: "Inventory", description: "Vehicle listings or service catalog with details and pricing", required: true },
+    { slug: "services", title: "Services", description: "Automotive services offered with descriptions and scheduling", required: true },
+    { slug: "about", title: "About Us", description: "Business history, certifications, and customer commitment", required: true },
+    { slug: "testimonials", title: "Testimonials", description: "Customer reviews and satisfaction stories", required: false },
+    { slug: "contact", title: "Contact", description: "Location, hours, appointment scheduling, and inquiry form", required: true },
   ],
   professional_services: [
     { slug: "home", title: "Home", description: "Company overview with service highlights and client trust signals", required: true },

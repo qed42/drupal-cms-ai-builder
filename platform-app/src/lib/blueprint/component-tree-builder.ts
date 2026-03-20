@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import type { PageSection, ComponentTreeItem } from "./types";
+import type { PageSection, ComponentTreeItem, FormField } from "./types";
 import { toCanvasComponentId, getComponentVersion } from "./canvas-component-versions";
 
 // Components that are full-width by design and do NOT need a space-container wrapper.
@@ -143,6 +143,103 @@ export function buildComponentTree(
         slot: null,
         inputs,
         label,
+      });
+    }
+  }
+
+  return items;
+}
+
+/**
+ * Build a Canvas-ready component tree for a contact form section.
+ *
+ * Creates a space-container > space-form > [space-input | space-textarea | space-select]
+ * hierarchy from the blueprint's form field definitions.
+ */
+export function buildFormTree(fields: FormField[]): ComponentTreeItem[] {
+  const items: ComponentTreeItem[] = [];
+
+  // 1. Container wrapper
+  const containerUuid = randomUUID();
+  const containerCanvasId = toCanvasComponentId("space_ds:space-container");
+  const containerVersion = getComponentVersion("space_ds:space-container");
+
+  items.push({
+    uuid: containerUuid,
+    component_id: containerCanvasId,
+    component_version: containerVersion,
+    parent_uuid: null,
+    slot: null,
+    inputs: {
+      width: "boxed-width",
+      padding_top: "large",
+      padding_bottom: "large",
+    },
+    label: "Container: Contact Form",
+  });
+
+  // 2. Form wrapper inside the container
+  const formUuid = randomUUID();
+  const formCanvasId = toCanvasComponentId("space_ds:space-form");
+  const formVersion = getComponentVersion("space_ds:space-form");
+
+  items.push({
+    uuid: formUuid,
+    component_id: formCanvasId,
+    component_version: formVersion,
+    parent_uuid: containerUuid,
+    slot: "content",
+    inputs: {},
+    label: "Contact Form",
+  });
+
+  // 3. Individual form fields inside the form's "children" slot
+  for (const field of fields) {
+    if (field.type === "textarea") {
+      const canvasId = toCanvasComponentId("space_ds:space-textarea");
+      const version = getComponentVersion("space_ds:space-textarea");
+      items.push({
+        uuid: randomUUID(),
+        component_id: canvasId,
+        component_version: version,
+        parent_uuid: formUuid,
+        slot: "children",
+        inputs: {
+          placeholder: `Enter your ${field.label.toLowerCase()}`,
+          rows: 5,
+          resizable: "vertical",
+        },
+        label: field.label,
+      });
+    } else if (field.type === "select") {
+      const canvasId = toCanvasComponentId("space_ds:space-select");
+      const version = getComponentVersion("space_ds:space-select");
+      items.push({
+        uuid: randomUUID(),
+        component_id: canvasId,
+        component_version: version,
+        parent_uuid: formUuid,
+        slot: "children",
+        inputs: {},
+        label: field.label,
+      });
+    } else {
+      // text, email, tel, and other input types
+      const canvasId = toCanvasComponentId("space_ds:space-input");
+      const version = getComponentVersion("space_ds:space-input");
+      items.push({
+        uuid: randomUUID(),
+        component_id: canvasId,
+        component_version: version,
+        parent_uuid: formUuid,
+        slot: "children",
+        inputs: {
+          type: field.type,
+          label: field.label,
+          placeholder: `Enter your ${field.label.toLowerCase()}`,
+          label_display: "before",
+        },
+        label: field.label,
       });
     }
   }

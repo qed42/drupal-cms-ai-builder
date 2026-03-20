@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import StepIcon from "@/components/onboarding/StepIcon";
 import ProgressDots from "@/components/onboarding/ProgressDots";
+import { INDUSTRY_LABELS } from "@/lib/ai/prompts";
 
 interface SessionData {
   name?: string;
@@ -99,7 +100,7 @@ export default function ReviewSettingsPage() {
         </SummarySection>
 
         <SummarySection label="Industry">
-          {data.industry?.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) || <span className="text-white/30">Auto-detected</span>}
+          {data.industry ? (INDUSTRY_LABELS[data.industry] || data.industry.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())) : <span className="text-white/30">Auto-detected</span>}
         </SummarySection>
 
         <SummarySection label="Pages">

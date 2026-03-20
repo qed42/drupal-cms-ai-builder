@@ -50,5 +50,13 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  // Persist the project name to the Site record so the dashboard shows it
+  if (step === "name" && data?.name && onboarding.siteId) {
+    await prisma.site.update({
+      where: { id: onboarding.siteId },
+      data: { name: data.name },
+    });
+  }
+
   return NextResponse.json({ ok: true, step, data: mergedData });
 }
