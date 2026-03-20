@@ -35,6 +35,12 @@ export function buildSectionRegenerationPrompt(ctx: SectionRegenerationContext):
     .filter((p) => p.type === "string" && !p.enum)
     .map((p) => p.name) ?? [];
 
+  // Get slots for this component (compositional model) — cast to access slot data from manifest
+  const compAny = comp as unknown as { slots?: Array<{ name: string }> } | undefined;
+  const validSlots = compAny?.slots
+    ?.filter((s) => s.name)
+    .map((s) => s.name) ?? [];
+
   const lines: string[] = [
     `You are a professional website copywriter. Regenerate the content for a single section on a website page.`,
     ``,
@@ -84,8 +90,23 @@ export function buildSectionRegenerationPrompt(ctx: SectionRegenerationContext):
     `Return a JSON object with:`,
     `- "component_id": "${ctx.currentSection.component_id}"`,
     `- "props_json": A JSON-encoded STRING of the component props.`,
+  );
+
+  if (validSlots.length > 0) {
+    lines.push(
+      `- "children": (optional) array of child components for slots, each with:`,
+      `  - "component_id": child component ID`,
+      `  - "slot": one of [${validSlots.join(", ")}]`,
+      `  - "props_json": JSON-encoded STRING of child props`,
+    );
+  }
+
+  lines.push(
     ``,
     `Valid props for ${compName}: ${validProps.length > 0 ? validProps.join(", ") : "none (layout-only)"}`,
+    validSlots.length > 0
+      ? `Valid slots for ${compName}: ${validSlots.join(", ")}`
+      : "",
     ``,
     `CRITICAL: Only use props listed above. Do NOT add props that don't exist on this component.`,
     `Write REAL, specific content that matches the tone and is consistent with surrounding sections.`,

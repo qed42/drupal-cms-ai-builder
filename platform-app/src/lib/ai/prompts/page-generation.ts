@@ -14,34 +14,35 @@ type ContentPlanPage = z.infer<typeof ContentPlanPageSchema>;
  */
 function buildComponentPropReference(): string[] {
   const commonComponents = [
-    "space_ds:space-hero-banner-style-01",
+    // Heroes
     "space_ds:space-hero-banner-style-02",
-    "space_ds:space-hero-banner-style-03",
-    "space_ds:space-hero-banner-style-04",
-    "space_ds:space-hero-banner-style-05",
-    "space_ds:space-hero-banner-style-06",
-    "space_ds:space-hero-banner-style-07",
-    "space_ds:space-hero-banner-style-08",
-    "space_ds:space-hero-banner-style-09",
-    "space_ds:space-hero-banner-style-10",
-    "space_ds:space-hero-banner-style-11",
-    "space_ds:space-text-media-default",
-    "space_ds:space-text-media-with-checklist",
-    "space_ds:space-text-media-with-link",
-    "space_ds:space-text-media-with-stats",
-    "space_ds:space-text-media-with-images",
+    "space_ds:space-hero-banner-with-media",
+    "space_ds:space-detail-page-hero-banner",
+    "space_ds:space-video-banner",
+    // CTA
     "space_ds:space-cta-banner-type-1",
-    "space_ds:space-cta-banner-type-2",
-    "space_ds:space-cta-banner-type-3",
+    // Organisms
     "space_ds:space-accordion",
-    "space_ds:space-team-section-image-card-1",
-    "space_ds:space-team-section-simple-1",
-    "space_ds:space-people-card-testimony-with-avatar",
+    "space_ds:space-slider",
+    // Molecules (used as section content)
+    "space_ds:space-section-heading",
     "space_ds:space-testimony-card",
     "space_ds:space-stats-kpi",
-    "space_ds:space-pricing-card",
-    "space_ds:space-pricing-featured-card",
-    "space_ds:space-icon-card",
+    "space_ds:space-user-card",
+    "space_ds:space-imagecard",
+    "space_ds:space-dark-bg-imagecard",
+    "space_ds:space-contact-card",
+    "space_ds:space-content-detail",
+    "space_ds:space-logo-section",
+    "space_ds:space-videocard",
+    "space_ds:space-accordion-item",
+    // Atoms (for content within flexi grids)
+    "space_ds:space-heading",
+    "space_ds:space-text",
+    "space_ds:space-button",
+    "space_ds:space-image",
+    "space_ds:space-icon",
+    "space_ds:space-link",
   ];
 
   const lines: string[] = [];
@@ -49,17 +50,30 @@ function buildComponentPropReference(): string[] {
     const comp = getManifestComponent(compId);
     if (!comp) continue;
 
-    // Only show string props (content props the AI should fill)
+    // Show string/HTML props (content props the AI should fill)
     const stringProps = comp.props
       .filter((p) => p.type === "string" && !p.enum)
       .map((p) => p.name);
 
+    // Show slots (where child components go) — cast to access slot data from manifest
+    const compAny = comp as unknown as { slots?: Array<{ name: string }> };
+    const slots = compAny.slots
+      ?.filter((s) => s.name)
+      .map((s) => s.name) ?? [];
+
+    const parts: string[] = [];
     if (stringProps.length > 0) {
       const example = stringProps.map((p) => `"${p}":"..."`).join(", ");
-      lines.push(`- ${compId}: string props = [${stringProps.join(", ")}] → props_json: '{${example}}'`);
+      parts.push(`string props = [${stringProps.join(", ")}] → props_json: '{${example}}'`);
     } else {
-      lines.push(`- ${compId}: no string content props (layout-only component)`);
+      parts.push(`no string content props (layout-only)`);
     }
+
+    if (slots.length > 0) {
+      parts.push(`slots = [${slots.join(", ")}]`);
+    }
+
+    lines.push(`- ${compId}: ${parts.join(" | ")}`);
   }
 
   return lines;
@@ -163,9 +177,25 @@ export function buildPageGenerationPrompt(
     `- "slug": "${page.slug}"`,
     `- "title": "${page.title}"`,
     `- "seo": { "meta_title": string (50-60 chars, include primary keyword), "meta_description": string (150-160 chars) }`,
-    `- "sections": Array matching the sections above. Each section:`,
-    `  - "component_id": Space DS component ID (e.g., "space_ds:space-hero-banner-style-01", "space_ds:space-text-media-default", "space_ds:space-cta-banner-type-1")`,
-    `  - "props_json": A JSON-encoded STRING of the component props object. You MUST stringify the props object.`,
+    `- "sections": Array. Each section is ONE of:`,
+    ``,
+    `  A. **Organism section** (hero, CTA, accordion, slider):`,
+    `     - "component_id": organism component ID (e.g., "space_ds:space-hero-banner-style-02", "space_ds:space-cta-banner-type-1")`,
+    `     - "props_json": JSON-encoded STRING of props`,
+    `     - "children": (optional) array of child components for slots, each with:`,
+    `       - "component_id": child component ID`,
+    `       - "slot": slot name (e.g., "slide_item", "content", "items")`,
+    `       - "props_json": JSON-encoded STRING of child props`,
+    ``,
+    `  B. **Composed section** (text+image, features, stats, team, cards):`,
+    `     - "pattern": composition pattern name (e.g., "text-image-split-50-50")`,
+    `     - "section_heading": { "label": string, "title": string, "description": string } (optional)`,
+    `     - "container_background": background color for container (transparent|white|black|base-brand|option-1..option-10)`,
+    `     - "children": array of child components, each with:`,
+    `       - "component_id": atom/molecule component ID`,
+    `       - "slot": target slot in flexi (column_one, column_two, column_three, column_four, content)`,
+    `       - "props_json": JSON-encoded STRING of props`,
+    ``,
     `    - IMPORTANT: props_json must be a valid JSON string, not an object`,
     `    - Use REAL, specific content — not placeholder text`,
     ``,
@@ -175,14 +205,14 @@ export function buildPageGenerationPrompt(
     ``,
     ...formatRulesForGeneration(page.slug, page.title),
     ``,
-    `IMPORTANT: Choose the most appropriate component for each section. Do NOT default everything to space-text-media-default — use specialized components when they match the content type.`,
+    `IMPORTANT: Choose the most appropriate component or composition pattern for each section. Use organisms (type A) for heroes, CTAs, accordions, sliders. Use composed sections (type B) for content areas with text, images, cards, stats.`,
     ``,
     `## Layout Rules`,
-    `- Hero banners and CTA banners are full-width — they handle their own container layout.`,
-    `- All other components will be automatically wrapped in a boxed-width container by the build system.`,
-    `- Do NOT use the same component type for two consecutive sections. Alternate between variants to create visual rhythm.`,
-    `  - Good: hero → text-media-default → cta → text-media-with-checklist → accordion`,
-    `  - Bad: text-media-default → text-media-default → text-media-default`,
+    `- Hero banners and CTA banners are full-width organisms — output them as type A sections`,
+    `- Content sections use composition patterns (type B) with flexi grids + atoms/molecules in slots`,
+    `- Every non-hero, non-CTA section should have a section_heading introducing it`,
+    `- Alternate container backgrounds for visual rhythm: transparent → option-1 → white → option-2`,
+    `- For text+image sections, alternate the column order (text-left/image-right then image-left/text-right)`,
     ``,
     `Guidelines:`,
     `- CRITICAL: Only use props that are listed in the Component Prop Reference above. Do NOT use props that don't exist on a component.`,

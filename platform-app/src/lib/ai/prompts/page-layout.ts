@@ -1,34 +1,63 @@
 import componentManifest from "@/lib/ai/space-component-manifest.json";
 
-// Filter to organism-level components (page sections) for layout prompts.
-// Atoms and molecules are internal building blocks, not directly placed on pages.
+// Show ALL components grouped by category for compositional layout prompts.
+// In the v2 model, sections are composed from organisms, molecules, and atoms in flexi grids.
 function getManifestContext(): string {
-  const organisms = componentManifest.filter(
-    (c) => c.category === "organism"
-  );
-
-  return organisms
-    .map((c) => {
-      const propsSummary = c.props
-        .map(
-          (p: { name: string; type: string; required: boolean; enum?: (string | number)[] }) =>
-            `${p.name}: ${p.type}${p.enum ? ` (${p.enum.join("|")})` : ""}${p.required ? " [required]" : ""}`
-        )
-        .join(", ");
-      const slotsSummary = c.slots
-        .map((s: { name: string; title: string }) => s.name)
-        .join(", ");
-      return `- ${c.id} [${c.group}]: ${c.usage_hint}${propsSummary ? ` | Props: ${propsSummary}` : ""}${slotsSummary ? ` | Slots: ${slotsSummary}` : ""}`;
+  const categories = ["organism", "molecule", "atom", "base"] as const;
+  return categories
+    .map((cat) => {
+      const components = componentManifest.filter(
+        (c) => c.category === cat
+      );
+      if (components.length === 0) return "";
+      const heading =
+        cat.charAt(0).toUpperCase() + cat.slice(1) + "s";
+      const entries = components
+        .map((c) => {
+          const propsSummary = c.props
+            .filter(
+              (p: { name: string; type: string }) =>
+                p.type === "string"
+            )
+            .map(
+              (p: {
+                name: string;
+                type: string;
+                required: boolean;
+                enum?: (string | number)[];
+              }) =>
+                `${p.name}${p.enum ? ` (${p.enum.join("|")})` : ""}${p.required ? " [req]" : ""}`
+            )
+            .join(", ");
+          const slotsSummary = c.slots
+            .map(
+              (s: { name: string; title: string }) => s.name
+            )
+            .join(", ");
+          return `- ${c.id}: ${(c as Record<string, unknown>).description || c.name}${propsSummary ? ` | Props: ${propsSummary}` : ""}${slotsSummary ? ` | Slots: ${slotsSummary}` : ""}`;
+        })
+        .join("\n");
+      return `### ${heading}\n${entries}`;
     })
-    .join("\n");
+    .filter(Boolean)
+    .join("\n\n");
 }
 
-export const PAGE_LAYOUT_PROMPT = `You are a web designer who creates page layouts using pre-built Space DS components for a Drupal CMS site. Design layouts for a {industry} business website.
+export const PAGE_LAYOUT_PROMPT = `You are a web designer who creates page layouts using the Space DS v2 compositional component model for a Drupal CMS site. Design layouts for a {industry} business website.
 
-## Available Page-Level Components (Organisms)
-These are the components you can place on pages. Each has props you can set and slots where child components go.
+## Available Components (Space DS v2)
+Sections are composed from organisms, molecules, and atoms placed in flexi grid slots.
 
 {component_manifest}
+
+## Composition Model
+- **Organism sections** (heroes, CTAs, accordions, sliders) are placed directly as full-width page sections
+- **Composed sections** use a space-container + space-flexi grid with atoms/molecules placed in column slots
+- Common patterns:
+  - "text-image-split-50-50": flexi with two columns (text in column_one, image in column_two)
+  - "three-card-grid": flexi with three columns, each holding a card molecule
+  - "stats-row": flexi with four columns, each holding a space-stats-kpi
+  - "testimonial-slider": space-slider organism with space-testimony-card children in slide_item slot
 
 ## Business Context
 - Name: {name}
@@ -46,21 +75,32 @@ For EACH page, generate a layout as a JSON object with:
 - "slug": the page slug
 - "title": page title
 - "seo": { "meta_title": "Page Title | {name}", "meta_description": "150 chars max" }
-- "sections": array of component instances, each with:
-  - "component_id": must be one of the component IDs listed above (e.g., "space_ds:space-hero-banner-style-01")
-  - "props": object matching the component's prop types
+- "sections": array where each section is ONE of:
+
+  A. **Organism section** (hero, CTA, accordion, slider):
+     - "component_id": organism ID (e.g., "space_ds:space-hero-banner-style-02")
+     - "props": object matching the component's prop types
+     - "children": (optional) array of child components for slots
+
+  B. **Composed section** (text+image, features, stats, team, cards):
+     - "pattern": composition pattern name
+     - "section_heading": { "label": string, "title": string, "description": string }
+     - "container_background": background color (transparent|white|base-brand|option-1..option-10)
+     - "children": array of atom/molecule components with slot assignments
 
 Rules:
 - Homepage should have 4-6 sections: start with a hero banner, add feature/service sections, testimonials, and end with a CTA banner
 - Inner pages should have 2-4 sections
-- Always start pages with a hero banner component (pick an appropriate space-hero-banner-style variant)
-- Always end with a CTA banner component (space-cta-banner-type-1/2/3) except contact pages
-- Use space-team-section variants for team/about pages
-- Use space-accordion for FAQ sections
-- Use space-text-media variants for content sections with text and images
+- Always start pages with a hero banner organism (space-hero-banner-style-02 for homepage, space-hero-banner-with-media or space-detail-page-hero-banner for inner pages)
+- Always end with space-cta-banner-type-1 except contact pages
+- Use space-accordion organism for FAQ sections, with space-accordion-item children in the items slot
+- Use composed sections with space-user-card molecules in a flexi grid for team/about pages
+- Use composed sections with space-imagecard or space-content-detail for feature/service listings
+- For text+image sections, use a two-column flexi with space-text + space-image atoms
+- Every non-hero, non-CTA section should include a space-section-heading
+- Alternate container backgrounds for visual rhythm: transparent → option-1 → white → option-2
 - Make all text content specific to the business, not generic placeholder text
 - Keep CTA URLs as relative paths (e.g., "/contact", "/services")
-- Choose hero banner styles that match the page purpose (e.g., style-01 for homepage, style-03 for inner pages)
 {compliance_sections}
 
 Return a JSON object with a "pages" key containing an array of page layout objects. Return ONLY valid JSON, no markdown.`;
@@ -77,11 +117,11 @@ export function buildPageLayoutPrompt(data: {
   let compliance = "";
   if (data.compliance_flags.includes("hipaa")) {
     compliance +=
-      '\n- Add a "space_ds:space-notification-banner" component with a HIPAA compliance notice to healthcare-related pages';
+      '\n- Add a composed section with a space-text atom containing a HIPAA compliance notice to healthcare-related pages (use container_background: "option-1" for visibility)';
   }
   if (data.compliance_flags.includes("attorney_advertising")) {
     compliance +=
-      '\n- Add a "space_ds:space-notification-banner" component with an attorney advertising disclaimer to the homepage';
+      '\n- Add a composed section with a space-text atom containing an attorney advertising disclaimer to the homepage (use container_background: "option-1" for visibility)';
   }
 
   const pagesList = data.pages
