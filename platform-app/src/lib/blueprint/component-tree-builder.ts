@@ -49,6 +49,18 @@ function getColumnCount(columnWidth: string): number {
 }
 
 /**
+ * Map column count to the no_of_columns enum value for space-flexi.
+ * The column_width prop controls widths, but no_of_columns must also
+ * be set to match — otherwise Canvas renders as "none" (single column).
+ */
+const COLUMN_COUNT_NAMES: Record<number, string> = {
+  1: "one",
+  2: "two",
+  3: "three",
+  4: "four",
+};
+
+/**
  * Slot names ordered by column index.
  */
 const COLUMN_SLOTS = ["column_one", "column_two", "column_three", "column_four"];
@@ -221,13 +233,16 @@ function wrapInContainer(
 
 /**
  * Create a space-section-heading item parented to the given UUID.
+ * Sets tag_name based on the heading hierarchy level.
  */
 function createSectionHeading(
   parentUuid: string,
-  heading: NonNullable<PageSection["section_heading"]>
+  heading: NonNullable<PageSection["section_heading"]>,
+  tagName: string = "h2"
 ): ComponentTreeItem {
   const inputs: Record<string, unknown> = {
     title: heading.title,
+    tag_name: tagName,
   };
   if (heading.label) inputs.label = heading.label;
   if (heading.description) inputs.description = heading.description;
@@ -268,11 +283,16 @@ function labelFromId(componentId: string): string {
  * Child components (e.g., slider slides, accordion items, CTA buttons) are
  * nested under the organism with their designated slot.
  */
-function buildOrganismSection(section: PageSection): ComponentTreeItem[] {
+function buildOrganismSection(section: PageSection, sectionTag: string = "h2"): ComponentTreeItem[] {
   const componentId = section.component_id;
   const isFullWidth = FULL_WIDTH_ORGANISMS.has(componentId);
   const label = labelFromId(componentId);
   const inputs = { ...section.props } as Record<string, unknown>;
+
+  // Set tag_name on organisms that have heading props (heroes, CTAs, etc.)
+  if ("tag_name" in inputs === false) {
+    inputs.tag_name = sectionTag;
+  }
 
   if (isFullWidth) {
     // Root-level organism
@@ -335,7 +355,8 @@ function buildOrganismSection(section: PageSection): ComponentTreeItem[] {
  */
 function buildComposedSection(
   section: PageSection,
-  bgIndex: number
+  bgIndex: number,
+  sectionTag: string = "h2"
 ): ComponentTreeItem[] {
   const patternName = section.pattern!;
   const bg =
@@ -371,18 +392,20 @@ function buildComposedSection(
 
   const items: ComponentTreeItem[] = [container];
 
-  // Add section heading if specified
+  // Add section heading if specified — uses section-level tag
   if (section.section_heading) {
-    items.push(createSectionHeading(container.uuid, section.section_heading));
+    items.push(createSectionHeading(container.uuid, section.section_heading, sectionTag));
   }
 
-  // Create flexi layout
+  // Create flexi layout — set both column_width and no_of_columns
+  const colCount = getColumnCount(columnWidth);
   const flexi = createItem(
     "space_ds:space-flexi",
     container.uuid,
     "content",
     {
       column_width: columnWidth,
+      no_of_columns: COLUMN_COUNT_NAMES[colCount] ?? "none",
       gap,
     },
     `Flexi: ${label}`
@@ -405,12 +428,24 @@ function buildComposedSection(
         }
       }
 
+      // Set tag_name on child heading components one level below the section heading
+      const childProps = { ...child.props };
+      if (
+        (child.component_id === "space_ds:space-heading" ||
+         child.component_id === "space_ds:space-section-heading") &&
+        !childProps.tag_name
+      ) {
+        // Children are one level below section heading (e.g., h2 section → h3 children)
+        const childTag = `h${Math.min(parseInt(sectionTag.replace("h", "")) + 1, 6)}`;
+        childProps.tag_name = childTag;
+      }
+
       items.push(
         createItem(
           child.component_id,
           flexi.uuid,
           slot,
-          { ...child.props },
+          childProps,
           labelFromId(child.component_id)
         )
       );
@@ -451,8 +486,13 @@ export function buildComponentTree(
     "image-text-split-33-66": "text-image-split-66-33",
   };
 
-  for (const section of sections) {
+  for (let sIdx = 0; sIdx < sections.length; sIdx++) {
+    const section = sections[sIdx];
     let currentPattern = section.pattern ?? section.component_id;
+
+    // Heading hierarchy: first section gets h1, all others get h2.
+    // Child components of h2 sections get h3 (handled in buildComposedSection).
+    const sectionTag = sIdx === 0 ? "h1" : "h2";
 
     // Anti-monotony: if this pattern matches the previous one, try to swap
     if (currentPattern && currentPattern === prevPattern && section.pattern) {
@@ -467,13 +507,13 @@ export function buildComponentTree(
     if (section.pattern && ORGANISM_PATTERNS.has(section.pattern)) {
       // Map organism patterns to their component_id if not already set
       const organismSection = mapOrganismPattern(section);
-      items.push(...buildOrganismSection(organismSection));
+      items.push(...buildOrganismSection(organismSection, sectionTag));
     } else if (section.pattern && section.children) {
       // Type B: Composed section with flexi grid
-      items.push(...buildComposedSection(section, bgIndex));
+      items.push(...buildComposedSection(section, bgIndex, sectionTag));
     } else {
       // Type A: Organism section
-      items.push(...buildOrganismSection(section));
+      items.push(...buildOrganismSection(section, sectionTag));
     }
 
     prevPattern = currentPattern;
