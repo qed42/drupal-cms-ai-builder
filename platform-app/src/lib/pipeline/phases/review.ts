@@ -20,6 +20,12 @@ import { classifyPageType, getRule } from "../../ai/page-design-rules";
 export interface ReviewPageSection {
   component_id: string;
   props: Record<string, unknown>;
+  pattern?: string;
+  children?: Array<{
+    component_id: string;
+    slot: string;
+    props: Record<string, unknown>;
+  }>;
 }
 
 /** Minimal page shape needed by the review agent. */
@@ -87,14 +93,33 @@ export function estimateWordCount(props: Record<string, unknown>): number {
   return words;
 }
 
-/** Concatenate all string prop values for text analysis. */
+/** Estimate total word count for a section including children. */
+function estimateSectionWordCount(section: ReviewPageSection): number {
+  let words = estimateWordCount(section.props);
+  if (section.children) {
+    for (const child of section.children) {
+      words += estimateWordCount(child.props);
+    }
+  }
+  return words;
+}
+
+/** Concatenate all string prop values for text analysis, including children. */
 function getAllText(sections: ReviewPageSection[]): string {
   return sections
-    .map((s) =>
-      Object.values(s.props)
+    .map((s) => {
+      const sectionText = Object.values(s.props)
         .filter((v): v is string => typeof v === "string")
-        .join(" ")
-    )
+        .join(" ");
+      const childrenText = (s.children ?? [])
+        .map((c) =>
+          Object.values(c.props)
+            .filter((v): v is string => typeof v === "string")
+            .join(" ")
+        )
+        .join(" ");
+      return `${sectionText} ${childrenText}`;
+    })
     .join(" ");
 }
 
@@ -143,7 +168,7 @@ function checkTotalWordCount(input: ReviewInput): ReviewCheck {
   const pageType = classifyPageType(input.page.slug, input.page.title);
   const minWords = getMinWordCount(pageType);
   const totalWords = input.page.sections.reduce(
-    (sum, s) => sum + estimateWordCount(s.props),
+    (sum, s) => sum + estimateSectionWordCount(s),
     0
   );
 
@@ -190,9 +215,14 @@ function checkVisualRhythm(input: ReviewInput): ReviewCheck {
   const sections = input.page.sections;
   const duplicates: string[] = [];
 
+  // Use pattern for composed sections (Type B), component_id for organisms (Type A)
+  const sectionIdentity = (s: ReviewPageSection) => s.pattern || s.component_id;
+
   for (let i = 1; i < sections.length; i++) {
-    if (sections[i].component_id === sections[i - 1].component_id) {
-      duplicates.push(sections[i].component_id);
+    const curr = sectionIdentity(sections[i]);
+    const prev = sectionIdentity(sections[i - 1]);
+    if (curr && prev && curr === prev) {
+      duplicates.push(curr);
     }
   }
 
@@ -215,10 +245,13 @@ function checkRequiredSections(input: ReviewInput): ReviewCheck {
   const rule = getRule(pageType);
   const requiredTypes = rule.sections.filter((s) => s.required).map((s) => s.type);
 
-  // Map component_id to section type heuristically
+  // Map component_id + pattern + children to section types heuristically
   const presentTypes = new Set<string>();
   for (const section of input.page.sections) {
     const cid = section.component_id.toLowerCase();
+    const pattern = (section.pattern ?? "").toLowerCase();
+
+    // Type A: organism component_id detection
     if (cid.includes("hero")) presentTypes.add("hero");
     if (cid.includes("cta")) presentTypes.add("cta");
     if (cid.includes("text-media")) presentTypes.add("text");
@@ -230,6 +263,26 @@ function checkRequiredSections(input: ReviewInput): ReviewCheck {
     if (cid.includes("icon-card")) presentTypes.add("features");
     if (cid.includes("checklist") || cid.includes("with-stats")) presentTypes.add("features");
     if (cid.includes("with-images")) presentTypes.add("gallery");
+
+    // Type B: pattern-based detection for composed sections
+    if (pattern.includes("text-image") || pattern.includes("image-text") || pattern === "full-width-text") presentTypes.add("text");
+    if (pattern.includes("features") || pattern.includes("card-grid")) presentTypes.add("features");
+    if (pattern.includes("stats")) presentTypes.add("stats");
+    if (pattern.includes("team")) presentTypes.add("team");
+    if (pattern.includes("contact")) presentTypes.add("contact-info");
+    if (pattern.includes("testimonial") || pattern.includes("carousel")) presentTypes.add("testimonials");
+    if (pattern.includes("faq") || pattern.includes("accordion")) presentTypes.add("faq");
+
+    // Type B: detect from children component IDs
+    for (const child of section.children ?? []) {
+      const childId = child.component_id.toLowerCase();
+      if (childId.includes("testimony")) presentTypes.add("testimonials");
+      if (childId.includes("stats") || childId.includes("kpi")) presentTypes.add("stats");
+      if (childId.includes("user-card")) presentTypes.add("team");
+      if (childId.includes("contact-card")) presentTypes.add("contact-info");
+      if (childId.includes("icon-card")) presentTypes.add("features");
+      if (childId.includes("accordion")) presentTypes.add("faq");
+    }
   }
 
   const missing = requiredTypes.filter((t) => !presentTypes.has(t));
@@ -255,7 +308,7 @@ function checkSectionWordCount(input: ReviewInput): ReviewCheck {
 
   for (let i = 0; i < input.page.sections.length; i++) {
     const section = input.page.sections[i];
-    const words = estimateWordCount(section.props);
+    const words = estimateSectionWordCount(section);
     // Find matching rule section by component type heuristic
     const cid = section.component_id.toLowerCase();
     const matchingRule = rule.sections.find((r) => {
@@ -363,10 +416,13 @@ function checkMetaDescKeyword(input: ReviewInput): ReviewCheck {
 }
 
 function checkHeroHeading(input: ReviewInput): ReviewCheck {
+  // First section is typically the hero — check both organism and composed
   const hero = input.page.sections.find((s) =>
     s.component_id.toLowerCase().includes("hero")
-  );
-  const title = hero?.props?.title;
+  ) ?? input.page.sections[0];
+  const title = hero?.props?.title
+    ?? (hero?.children?.[0]?.props?.title)
+    ?? (hero?.props?.heading);
   const hasHeading = typeof title === "string" && title.trim().length > 0;
 
   return {
@@ -388,10 +444,14 @@ function checkKeywordDistribution(input: ReviewInput): ReviewCheck {
   let sectionsWithKeywords = 0;
 
   for (const section of input.page.sections) {
-    const text = Object.values(section.props)
+    // Include both section-level and children props text
+    const sectionText = Object.values(section.props)
       .filter((v): v is string => typeof v === "string")
-      .join(" ")
-      .toLowerCase();
+      .join(" ");
+    const childrenText = (section.children ?? [])
+      .map((c) => Object.values(c.props).filter((v): v is string => typeof v === "string").join(" "))
+      .join(" ");
+    const text = `${sectionText} ${childrenText}`.toLowerCase();
     if (keywords.some((kw) => text.includes(kw))) {
       sectionsWithKeywords++;
     }
@@ -509,7 +569,11 @@ function checkStructuredClaims(input: ReviewInput): ReviewCheck {
 function checkFaqPresence(input: ReviewInput): ReviewCheck {
   const allPages = input.sitePages ?? [{ slug: input.page.slug, sections: input.page.sections }];
   const hasFaq = allPages.some((p) =>
-    p.sections.some((s) => s.component_id.toLowerCase().includes("accordion"))
+    p.sections.some((s) =>
+      s.component_id.toLowerCase().includes("accordion")
+      || (s.pattern ?? "").toLowerCase().includes("faq")
+      || (s.children ?? []).some((c) => c.component_id.toLowerCase().includes("accordion"))
+    )
   );
 
   return {
