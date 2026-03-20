@@ -82,6 +82,15 @@ export function validateSections(sections: PageSection[]): ValidationResult {
 
   for (let i = 0; i < sections.length; i++) {
     const section = sections[i];
+
+    // Composed sections (Type B) use pattern instead of component_id.
+    // Their component_id is intentionally empty — skip manifest validation.
+    // Children carry the actual component IDs and are validated downstream.
+    if (section.pattern && !section.component_id) {
+      sanitizedSections.push({ ...section });
+      continue;
+    }
+
     const comp = manifestIndex.get(section.component_id);
 
     // 1. Unknown component
