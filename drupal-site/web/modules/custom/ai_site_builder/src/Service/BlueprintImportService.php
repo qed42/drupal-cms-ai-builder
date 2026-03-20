@@ -546,12 +546,16 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
         ]);
         continue;
       }
-      if (is_array($value) && empty($value)) {
-        $this->logger->info('Stripped empty prop "@prop" from @component.', [
-          '@prop' => $key,
-          '@component' => $componentId,
-        ]);
-        continue;
+      if (is_array($value)) {
+        // Strip empty arrays and arrays where all values are NULL
+        // (e.g., image objects like { src: null, alt: null, width: null }).
+        if (empty($value) || count(array_filter($value, fn($v) => $v !== NULL)) === 0) {
+          $this->logger->info('Stripped empty/null-only prop "@prop" from @component.', [
+            '@prop' => $key,
+            '@component' => $componentId,
+          ]);
+          continue;
+        }
       }
       $filtered[$key] = $value;
     }

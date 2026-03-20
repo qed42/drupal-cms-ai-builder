@@ -183,12 +183,18 @@ function createItem(
   // Layer 3: user/AI-provided inputs take final precedence
   const mergedInputs = { ...manifestDefaults, ...overrides, ...inputs };
 
-  // Strip null/undefined/empty-object props so Canvas uses component defaults.
+  // Strip null/undefined/empty/invalid-object props so Canvas uses component defaults.
+  // This prevents Canvas template errors like "[canvas:image/src] NULL value found".
   for (const [key, value] of Object.entries(mergedInputs)) {
     if (value === null || value === undefined) {
       delete mergedInputs[key];
-    } else if (typeof value === "object" && !Array.isArray(value) && Object.keys(value as object).length === 0) {
-      delete mergedInputs[key];
+    } else if (typeof value === "object" && !Array.isArray(value)) {
+      const obj = value as Record<string, unknown>;
+      const keys = Object.keys(obj);
+      // Empty object or all-null-values object (e.g., { src: null, alt: null })
+      if (keys.length === 0 || keys.every((k) => obj[k] === null || obj[k] === undefined)) {
+        delete mergedInputs[key];
+      }
     }
   }
 
