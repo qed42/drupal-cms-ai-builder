@@ -636,16 +636,24 @@ export function reviewPage(input: ReviewInput): ReviewResult {
     checkAuthoritativeVoice(input),
   ];
 
-  const totalChecks = checks.length;
-  const passedChecks = checks.filter((c) => c.passed).length;
-  const score = totalChecks > 0 ? passedChecks / totalChecks : 1;
+  // Score weights: errors count fully, warnings count at 0.3 weight.
+  // This prevents warning-heavy pages from showing misleadingly low scores.
+  const errorChecks = checks.filter((c) => c.severity === "error");
+  const warningChecks = checks.filter((c) => c.severity === "warning");
+  const errorScore = errorChecks.length > 0
+    ? errorChecks.filter((c) => c.passed).length / errorChecks.length
+    : 1;
+  const warningScore = warningChecks.length > 0
+    ? warningChecks.filter((c) => c.passed).length / warningChecks.length
+    : 1;
+  const score = errorScore * 0.7 + warningScore * 0.3;
 
   // Page fails if any error-severity check fails
   const hasErrors = checks.some((c) => !c.passed && c.severity === "error");
   const passed = !hasErrors;
 
-  // Build feedback string for retry prompt (only include errors, not warnings)
-  const failedChecks = checks.filter((c) => !c.passed && c.severity === "error" && c.fix);
+  // Build feedback string for retry prompt — include errors and high-impact warnings
+  const failedChecks = checks.filter((c) => !c.passed && (c.severity === "error") && c.fix);
   const feedback = failedChecks.length > 0
     ? [
         `--- CONTENT REVIEW FAILED ---`,

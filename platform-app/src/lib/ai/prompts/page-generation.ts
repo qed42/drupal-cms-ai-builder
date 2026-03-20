@@ -3,7 +3,7 @@ import type { ResearchBrief, ContentPlan } from "@/lib/pipeline/schemas";
 import type { z } from "zod";
 import type { ContentPlanPageSchema } from "@/lib/pipeline/schemas";
 import { getManifestComponent } from "../../blueprint/component-validator";
-import { formatRulesForGeneration } from "../page-design-rules";
+import { formatRulesForGeneration, classifyPageType, getRule } from "../page-design-rules";
 
 type ContentPlanPage = z.infer<typeof ContentPlanPageSchema>;
 
@@ -118,12 +118,16 @@ export function buildPageGenerationPrompt(
     `- Example sentences: ${research.toneGuidance.examples.join(" | ") || "N/A"}`
   );
 
-  // Page-specific plan
+  // Page-specific plan with section count requirement
+  const pageType = classifyPageType(page.slug, page.title);
+  const designRule = getRule(pageType);
+
   sections.push(
     ``,
     `## Page: ${page.title} (/${page.slug})`,
     `- **Purpose:** ${page.purpose}`,
     `- **SEO Keywords:** ${page.targetKeywords.join(", ")}`,
+    `- **REQUIRED SECTION COUNT:** ${designRule.sectionCountRange[0]}-${designRule.sectionCountRange[1]} sections (you MUST generate at least ${designRule.sectionCountRange[0]} sections for this ${pageType} page)`,
     ``,
     `## Sections to Generate`
   );
