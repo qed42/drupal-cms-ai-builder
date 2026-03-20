@@ -41,9 +41,26 @@ export interface ComponentTreeItem {
   label?: string;
 }
 
+export interface PageSectionChild {
+  component_id: string;
+  slot: string;                        // Target slot name
+  props: Record<string, unknown>;
+}
+
 export interface PageSection {
+  // Type A: Organism section (hero, CTA, accordion, slider)
   component_id: string;
   props: Record<string, unknown>;
+  // Type B: Composed section (flexi grid with atoms in slots)
+  pattern?: string;                    // Composition pattern name
+  section_heading?: {
+    label?: string;
+    title: string;
+    description?: string;
+    alignment?: string;
+  };
+  container_background?: string;       // Container background color
+  children?: PageSectionChild[];       // Child components for slots
 }
 
 export interface ContentItems {

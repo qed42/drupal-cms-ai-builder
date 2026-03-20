@@ -108,10 +108,31 @@ export async function runGeneratePhase(
       pageSeo = generated.seo;
 
       // Parse props_json strings into props objects with robust error recovery.
-      sections = generated.sections.map((s) => ({
-        component_id: s.component_id,
-        props: safeParsePropsJson(s.props_json, s.component_id),
-      }));
+      // Supports both organism sections (Type A) and composed sections (Type B).
+      sections = generated.sections.map((s) => {
+        const section: PageSection = {
+          component_id: s.component_id,
+          props: safeParsePropsJson(s.props_json || "{}", s.component_id),
+        };
+        // Type B composed section fields
+        if (s.pattern) section.pattern = s.pattern;
+        if (s.section_heading && s.section_heading.title) {
+          section.section_heading = {
+            title: s.section_heading.title,
+            ...(s.section_heading.label ? { label: s.section_heading.label } : {}),
+            ...(s.section_heading.description ? { description: s.section_heading.description } : {}),
+          };
+        }
+        if (s.container_background) section.container_background = s.container_background;
+        if (s.children?.length) {
+          section.children = s.children.map((c) => ({
+            component_id: c.component_id,
+            slot: c.slot,
+            props: safeParsePropsJson(c.props_json || "{}", c.component_id),
+          }));
+        }
+        return section;
+      });
 
       // Validate component props against manifest
       const validation = validateSections(sections);
@@ -196,10 +217,29 @@ export async function runGeneratePhase(
           { phase: "generate", temperature: 0.4, maxTokens }
         );
 
-        const newSections = regenerated.sections.map((s) => ({
-          component_id: s.component_id,
-          props: safeParsePropsJson(s.props_json, s.component_id),
-        }));
+        const newSections: PageSection[] = regenerated.sections.map((s) => {
+          const section: PageSection = {
+            component_id: s.component_id,
+            props: safeParsePropsJson(s.props_json || "{}", s.component_id),
+          };
+          if (s.pattern) section.pattern = s.pattern;
+          if (s.section_heading && s.section_heading.title) {
+            section.section_heading = {
+              title: s.section_heading.title,
+              ...(s.section_heading.label ? { label: s.section_heading.label } : {}),
+              ...(s.section_heading.description ? { description: s.section_heading.description } : {}),
+            };
+          }
+          if (s.container_background) section.container_background = s.container_background;
+          if (s.children?.length) {
+            section.children = s.children.map((c) => ({
+              component_id: c.component_id,
+              slot: c.slot,
+              props: safeParsePropsJson(c.props_json || "{}", c.component_id),
+            }));
+          }
+          return section;
+        });
 
         const revalidation = validateSections(newSections);
         sections = revalidation.sanitizedSections;

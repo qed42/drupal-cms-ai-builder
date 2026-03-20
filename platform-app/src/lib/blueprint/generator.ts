@@ -4,7 +4,7 @@ import { getAIProvider } from "@/lib/ai/factory";
 import { buildContentPrompt } from "@/lib/ai/prompts/content-generation";
 import { buildPageLayoutPrompt } from "@/lib/ai/prompts/page-layout";
 import { buildFormPrompt } from "@/lib/ai/prompts/form-generation";
-import { buildComponentTree, buildFormTree } from "./component-tree-builder";
+import { buildComponentTree } from "./component-tree-builder";
 import type {
   BlueprintBundle,
   ContentItems,
@@ -306,43 +306,10 @@ export async function generateBlueprint(
     formFields = getFallbackFormFields();
   }
 
-  // Inject form component tree into contact page
-  const contactPage = pages.find((p) => p.slug === "contact");
-  if (contactPage && contactPage.component_tree) {
-    // Find the placeholder space-form item that buildComponentTree created
-    // (it will have no children — just a container + empty form).
-    const formPlaceholderIdx = contactPage.component_tree.findIndex(
-      (item) => item.component_id === "sdc.space_ds.space-form"
-    );
-    let insertIdx: number;
-    if (formPlaceholderIdx !== -1) {
-      const formItem = contactPage.component_tree[formPlaceholderIdx];
-      // Find the container that wraps this placeholder
-      const containerIdx =
-        formItem.parent_uuid != null
-          ? contactPage.component_tree.findIndex(
-              (item) => item.uuid === formItem.parent_uuid
-            )
-          : -1;
-      // Determine the earliest index to use as insertion point
-      insertIdx =
-        containerIdx !== -1
-          ? Math.min(containerIdx, formPlaceholderIdx)
-          : formPlaceholderIdx;
-      // Remove placeholder items (descending order to preserve indices)
-      const indicesToRemove = [formPlaceholderIdx];
-      if (containerIdx !== -1) indicesToRemove.push(containerIdx);
-      indicesToRemove.sort((a, b) => b - a);
-      for (const idx of indicesToRemove) {
-        contactPage.component_tree.splice(idx, 1);
-      }
-    } else {
-      // No placeholder found — append before the last item (CTA) if possible
-      insertIdx = contactPage.component_tree.length;
-    }
-    const formTree = buildFormTree(formFields);
-    contactPage.component_tree.splice(insertIdx, 0, ...formTree);
-  }
+  // Note: In Space DS v2, contact pages use space-contact-card molecules
+  // composed in flexi grids instead of form atoms. The contact form injection
+  // via buildFormTree has been removed — contact sections are now handled
+  // entirely through composition patterns in buildComponentTree.
 
   // Assemble blueprint
   const blueprint: BlueprintBundle = {

@@ -1,248 +1,403 @@
 import { randomUUID } from "crypto";
-import type { PageSection, ComponentTreeItem, FormField } from "./types";
-import { toCanvasComponentId, getComponentVersion } from "./canvas-component-versions";
+import type { PageSection, PageSectionChild, ComponentTreeItem } from "./types";
+import {
+  toCanvasComponentId,
+  getComponentVersion,
+} from "./canvas-component-versions";
+import { COMPOSITION_PATTERNS } from "../ai/page-design-rules";
 
-// Components that are full-width by design and do NOT need a space-container wrapper.
-// Hero banners have internal `container mx-auto` for content centering.
-// CTA banners have their own `width` prop for boxed vs full-width control.
-const SKIP_CONTAINER = new Set([
-  "space_ds:space-hero-banner-style-01",
-  "space_ds:space-hero-banner-style-02",
-  "space_ds:space-hero-banner-style-03",
-  "space_ds:space-hero-banner-style-04",
-  "space_ds:space-hero-banner-style-05",
-  "space_ds:space-hero-banner-style-06",
-  "space_ds:space-hero-banner-style-07",
-  "space_ds:space-hero-banner-style-08",
-  "space_ds:space-hero-banner-style-09",
-  "space_ds:space-hero-banner-style-10",
-  "space_ds:space-hero-banner-style-11",
-  "space_ds:space-cta-banner-type-1",
-  "space_ds:space-cta-banner-type-2",
-  "space_ds:space-cta-banner-type-3",
-]);
-
-// Component variant families for anti-monotony substitution.
-// When two consecutive sections use the same component_id, the second
-// is swapped to an alternate variant from the same family.
-const VARIANT_FAMILIES: Record<string, string[]> = {
-  "space_ds:space-text-media-default": [
-    "space_ds:space-text-media-with-checklist",
-    "space_ds:space-text-media-with-link",
-    "space_ds:space-text-media-with-stats",
-    "space_ds:space-text-media-with-images",
-  ],
-  "space_ds:space-text-media-with-checklist": [
-    "space_ds:space-text-media-default",
-    "space_ds:space-text-media-with-link",
-  ],
-  "space_ds:space-text-media-with-link": [
-    "space_ds:space-text-media-default",
-    "space_ds:space-text-media-with-checklist",
-  ],
-  "space_ds:space-text-media-with-stats": [
-    "space_ds:space-text-media-default",
-    "space_ds:space-text-media-with-link",
-  ],
-  "space_ds:space-text-media-with-images": [
-    "space_ds:space-text-media-default",
-    "space_ds:space-text-media-with-checklist",
-  ],
-  "space_ds:space-team-section-simple-1": [
-    "space_ds:space-team-section-simple-2",
-    "space_ds:space-team-section-image-card-1",
-  ],
-  "space_ds:space-team-section-simple-2": [
-    "space_ds:space-team-section-simple-1",
-    "space_ds:space-team-section-image-card-1",
-  ],
-  "space_ds:space-team-section-image-card-1": [
-    "space_ds:space-team-section-image-card-2",
-    "space_ds:space-team-section-simple-1",
-  ],
-  "space_ds:space-team-section-image-card-2": [
-    "space_ds:space-team-section-image-card-1",
-    "space_ds:space-team-section-image-card-3",
-  ],
-};
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
 
 /**
- * Build a Canvas-ready flat component tree from a page's sections array.
- *
- * - Non-hero/CTA organisms are wrapped in a `space-container` with `boxed-width`.
- * - Consecutive identical component_ids are substituted with an alternate variant.
+ * Full-width organisms that render at root level without a container wrapper.
+ * Heroes and CTA banners have their own internal width control.
  */
-export function buildComponentTree(
-  sections: PageSection[]
-): ComponentTreeItem[] {
-  const items: ComponentTreeItem[] = [];
-  let prevComponentId: string | null = null;
+const FULL_WIDTH_ORGANISMS = new Set([
+  "space_ds:space-hero-banner-style-02",
+  "space_ds:space-hero-banner-with-media",
+  "space_ds:space-detail-page-hero-banner",
+  "space_ds:space-video-banner",
+  "space_ds:space-cta-banner-type-1",
+]);
 
-  for (const section of sections) {
-    let componentId = section.component_id;
+/**
+ * Patterns that map to organism-level components (no flexi grid).
+ * These route to buildOrganismSection instead of buildComposedSection.
+ */
+const ORGANISM_PATTERNS = new Set([
+  "testimonials-carousel",
+  "card-carousel",
+  "faq-accordion",
+  "logo-showcase",
+]);
 
-    // Anti-monotony: swap duplicate consecutive component IDs to a variant.
-    if (componentId === prevComponentId && VARIANT_FAMILIES[componentId]) {
-      const alternatives = VARIANT_FAMILIES[componentId];
-      componentId = alternatives[0];
-    }
+/**
+ * Background colors cycled for visual rhythm across composed sections.
+ * Can be overridden per-section via container_background.
+ */
+const SECTION_BACKGROUNDS = ["transparent", "option-1", "white", "option-2"];
 
-    prevComponentId = componentId;
+/**
+ * Pattern name to flexi column_width mapping.
+ */
+const PATTERN_COLUMN_WIDTHS: Record<string, string> = {
+  "text-image-split-50-50": "50-50",
+  "text-image-split-66-33": "66-33",
+  "image-text-split-33-66": "33-66",
+  "features-grid-3col": "33-33-33",
+  "features-grid-4col": "25-25-25-25",
+  "stats-row": "25-25-25-25",
+  "team-grid-4col": "25-25-25-25",
+  "team-grid-3col": "33-33-33",
+  "card-grid-3col": "33-33-33",
+  "contact-info": "33-33-33",
+  "full-width-text": "100",
+};
 
-    const canvasId = toCanvasComponentId(componentId);
-    const version = getComponentVersion(componentId);
-    const needsContainer = !SKIP_CONTAINER.has(componentId);
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-    // Derive a human-readable label from the component ID.
-    const label = componentId
+/**
+ * Create a single ComponentTreeItem with Canvas-format IDs and version hash.
+ */
+function createItem(
+  componentId: string,
+  parentUuid: string | null,
+  slot: string | null,
+  inputs: Record<string, unknown>,
+  label?: string
+): ComponentTreeItem {
+  const canvasId = toCanvasComponentId(componentId);
+  const version = getComponentVersion(componentId);
+  const autoLabel =
+    label ??
+    componentId
       .split(":")[1]
       ?.replace(/^space-/, "")
       .replace(/-/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase())
-      ?? canvasId;
+      .replace(/\b\w/g, (c) => c.toUpperCase()) ??
+    canvasId;
 
-    const inputs = { ...section.props } as Record<string, unknown>;
+  return {
+    uuid: randomUUID(),
+    component_id: canvasId,
+    component_version: version,
+    parent_uuid: parentUuid,
+    slot,
+    inputs,
+    label: autoLabel,
+  };
+}
 
-    if (needsContainer) {
-      // Create a space-container wrapper as the parent.
-      const containerUuid = randomUUID();
-      const containerCanvasId = toCanvasComponentId("space_ds:space-container");
-      const containerVersion = getComponentVersion("space_ds:space-container");
+/**
+ * Wrap child ComponentTreeItems inside a space-container at root level.
+ * Returns [container, ...children] with parent_uuid wired up.
+ */
+function wrapInContainer(
+  children: ComponentTreeItem[],
+  background?: string,
+  label?: string
+): ComponentTreeItem[] {
+  const container = createItem(
+    "space_ds:space-container",
+    null,
+    null,
+    {
+      width: "boxed-width",
+      padding_top: "large",
+      padding_bottom: "large",
+      ...(background && background !== "transparent"
+        ? { background }
+        : {}),
+    },
+    label ? `Container: ${label}` : "Container"
+  );
 
-      items.push({
-        uuid: containerUuid,
-        component_id: containerCanvasId,
-        component_version: containerVersion,
-        parent_uuid: null,
-        slot: null,
-        inputs: {
-          width: "boxed-width",
-          padding_top: "large",
-          padding_bottom: "large",
-        },
-        label: `Container: ${label}`,
-      });
+  // Re-parent all children to this container
+  const reparented = children.map((child) => ({
+    ...child,
+    parent_uuid: child.parent_uuid === null ? container.uuid : child.parent_uuid,
+  }));
 
-      // Add the organism as a child of the container in the "content" slot.
-      items.push({
-        uuid: randomUUID(),
-        component_id: canvasId,
-        component_version: version,
-        parent_uuid: containerUuid,
-        slot: "content",
-        inputs,
-        label,
-      });
-    } else {
-      // Full-width component — add directly at root level.
-      items.push({
-        uuid: randomUUID(),
-        component_id: canvasId,
-        component_version: version,
-        parent_uuid: null,
-        slot: null,
-        inputs,
-        label,
-      });
+  return [container, ...reparented];
+}
+
+/**
+ * Create a space-section-heading item parented to the given UUID.
+ */
+function createSectionHeading(
+  parentUuid: string,
+  heading: NonNullable<PageSection["section_heading"]>
+): ComponentTreeItem {
+  const inputs: Record<string, unknown> = {
+    title: heading.title,
+  };
+  if (heading.label) inputs.label = heading.label;
+  if (heading.description) inputs.description = heading.description;
+  if (heading.alignment) inputs.alignment = heading.alignment;
+
+  return createItem(
+    "space_ds:space-section-heading",
+    parentUuid,
+    "content",
+    inputs,
+    `Section Heading: ${heading.title}`
+  );
+}
+
+/**
+ * Derive a human-readable label from a component ID.
+ */
+function labelFromId(componentId: string): string {
+  return (
+    componentId
+      .split(":")[1]
+      ?.replace(/^space-/, "")
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase()) ?? componentId
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Organism Sections (Type A)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build tree items for an organism section (hero, CTA, accordion, slider).
+ *
+ * Full-width organisms (heroes, CTA, video-banner) are placed at root level.
+ * Container-wrapped organisms (accordion, slider) get a space-container parent.
+ *
+ * Child components (e.g., slider slides, accordion items, CTA buttons) are
+ * nested under the organism with their designated slot.
+ */
+function buildOrganismSection(section: PageSection): ComponentTreeItem[] {
+  const componentId = section.component_id;
+  const isFullWidth = FULL_WIDTH_ORGANISMS.has(componentId);
+  const label = labelFromId(componentId);
+  const inputs = { ...section.props } as Record<string, unknown>;
+
+  if (isFullWidth) {
+    // Root-level organism
+    const organism = createItem(componentId, null, null, inputs, label);
+    const items: ComponentTreeItem[] = [organism];
+
+    // Add children (e.g., CTA button)
+    if (section.children?.length) {
+      for (const child of section.children) {
+        items.push(
+          createItem(
+            child.component_id,
+            organism.uuid,
+            child.slot,
+            { ...child.props },
+            labelFromId(child.component_id)
+          )
+        );
+      }
+    }
+
+    return items;
+  }
+
+  // Container-wrapped organism (accordion, slider, etc.)
+  const organism = createItem(componentId, null, "content", inputs, label);
+  const childItems: ComponentTreeItem[] = [organism];
+
+  if (section.children?.length) {
+    for (const child of section.children) {
+      childItems.push(
+        createItem(
+          child.component_id,
+          organism.uuid,
+          child.slot,
+          { ...child.props },
+          labelFromId(child.component_id)
+        )
+      );
+    }
+  }
+
+  return wrapInContainer(childItems, undefined, label);
+}
+
+// ---------------------------------------------------------------------------
+// Composed Sections (Type B)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build tree items for a composed section using flexi grid + atoms/molecules.
+ *
+ * Structure:
+ *   container (root, background alternation)
+ *     section-heading (slot="content", if section_heading exists)
+ *     flexi (slot="content", column_width from pattern)
+ *       child1 (slot="column_one")
+ *       child2 (slot="column_two")
+ *       ...
+ */
+function buildComposedSection(
+  section: PageSection,
+  bgIndex: number
+): ComponentTreeItem[] {
+  const patternName = section.pattern!;
+  const bg =
+    section.container_background ||
+    SECTION_BACKGROUNDS[bgIndex % SECTION_BACKGROUNDS.length];
+
+  // Resolve column_width from pattern name
+  const columnWidth =
+    PATTERN_COLUMN_WIDTHS[patternName] ??
+    COMPOSITION_PATTERNS[patternName]?.layout?.column_width ??
+    "100";
+
+  const gap =
+    COMPOSITION_PATTERNS[patternName]?.layout?.gap ?? "medium";
+
+  const label = patternName
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  // Build the container first to get its UUID
+  const container = createItem(
+    "space_ds:space-container",
+    null,
+    null,
+    {
+      width: "boxed-width",
+      padding_top: "large",
+      padding_bottom: "large",
+      ...(bg && bg !== "transparent" ? { background: bg } : {}),
+    },
+    `Container: ${label}`
+  );
+
+  const items: ComponentTreeItem[] = [container];
+
+  // Add section heading if specified
+  if (section.section_heading) {
+    items.push(createSectionHeading(container.uuid, section.section_heading));
+  }
+
+  // Create flexi layout
+  const flexi = createItem(
+    "space_ds:space-flexi",
+    container.uuid,
+    "content",
+    {
+      column_width: columnWidth,
+      gap,
+    },
+    `Flexi: ${label}`
+  );
+  items.push(flexi);
+
+  // Add children into flexi slots
+  if (section.children?.length) {
+    for (const child of section.children) {
+      items.push(
+        createItem(
+          child.component_id,
+          flexi.uuid,
+          child.slot,
+          { ...child.props },
+          labelFromId(child.component_id)
+        )
+      );
     }
   }
 
   return items;
 }
 
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
 /**
- * Build a Canvas-ready component tree for a contact form section.
+ * Build a Canvas-ready flat component tree from a page's sections array.
  *
- * Creates a space-container > space-form > [space-input | space-textarea | space-select]
- * hierarchy from the blueprint's form field definitions.
+ * Handles two section types:
+ *   A. Organism sections — heroes, CTA banners, accordions, sliders
+ *   B. Composed sections — flexi grid layouts with atoms/molecules in slots
+ *
+ * The output is a flat array of ComponentTreeItems linked by parent_uuid/slot
+ * relationships, ready for BlueprintImportService.php's prepareComponentTree().
  */
-export function buildFormTree(fields: FormField[]): ComponentTreeItem[] {
+export function buildComponentTree(
+  sections: PageSection[]
+): ComponentTreeItem[] {
   const items: ComponentTreeItem[] = [];
+  let bgIndex = 0;
 
-  // 1. Container wrapper
-  const containerUuid = randomUUID();
-  const containerCanvasId = toCanvasComponentId("space_ds:space-container");
-  const containerVersion = getComponentVersion("space_ds:space-container");
-
-  items.push({
-    uuid: containerUuid,
-    component_id: containerCanvasId,
-    component_version: containerVersion,
-    parent_uuid: null,
-    slot: null,
-    inputs: {
-      width: "boxed-width",
-      padding_top: "large",
-      padding_bottom: "large",
-    },
-    label: "Container: Contact Form",
-  });
-
-  // 2. Form wrapper inside the container
-  const formUuid = randomUUID();
-  const formCanvasId = toCanvasComponentId("space_ds:space-form");
-  const formVersion = getComponentVersion("space_ds:space-form");
-
-  items.push({
-    uuid: formUuid,
-    component_id: formCanvasId,
-    component_version: formVersion,
-    parent_uuid: containerUuid,
-    slot: "content",
-    inputs: {},
-    label: "Contact Form",
-  });
-
-  // 3. Individual form fields inside the form's "children" slot
-  for (const field of fields) {
-    if (field.type === "textarea") {
-      const canvasId = toCanvasComponentId("space_ds:space-textarea");
-      const version = getComponentVersion("space_ds:space-textarea");
-      items.push({
-        uuid: randomUUID(),
-        component_id: canvasId,
-        component_version: version,
-        parent_uuid: formUuid,
-        slot: "children",
-        inputs: {
-          placeholder: `Enter your ${field.label.toLowerCase()}`,
-          rows: 5,
-          resizable: "vertical",
-        },
-        label: field.label,
-      });
-    } else if (field.type === "select") {
-      const canvasId = toCanvasComponentId("space_ds:space-select");
-      const version = getComponentVersion("space_ds:space-select");
-      items.push({
-        uuid: randomUUID(),
-        component_id: canvasId,
-        component_version: version,
-        parent_uuid: formUuid,
-        slot: "children",
-        inputs: {},
-        label: field.label,
-      });
+  for (const section of sections) {
+    // Check if this is a pattern that routes to organism handling
+    if (section.pattern && ORGANISM_PATTERNS.has(section.pattern)) {
+      // Map organism patterns to their component_id if not already set
+      const organismSection = mapOrganismPattern(section);
+      items.push(...buildOrganismSection(organismSection));
+    } else if (section.pattern && section.children) {
+      // Type B: Composed section with flexi grid
+      items.push(...buildComposedSection(section, bgIndex));
     } else {
-      // text, email, tel, and other input types
-      const canvasId = toCanvasComponentId("space_ds:space-input");
-      const version = getComponentVersion("space_ds:space-input");
-      items.push({
-        uuid: randomUUID(),
-        component_id: canvasId,
-        component_version: version,
-        parent_uuid: formUuid,
-        slot: "children",
-        inputs: {
-          type: field.type,
-          label: field.label,
-          placeholder: `Enter your ${field.label.toLowerCase()}`,
-          label_display: "before",
-        },
-        label: field.label,
-      });
+      // Type A: Organism section
+      items.push(...buildOrganismSection(section));
     }
+    bgIndex++;
   }
 
   return items;
+}
+
+/**
+ * Map an organism-level pattern to a proper organism section.
+ * Converts pattern-based sections (testimonials-carousel, faq-accordion, etc.)
+ * into organism sections with the correct component_id and children.
+ */
+function mapOrganismPattern(section: PageSection): PageSection {
+  const patternName = section.pattern!;
+
+  const patternToOrganism: Record<
+    string,
+    { component_id: string; childSlot: string }
+  > = {
+    "testimonials-carousel": {
+      component_id: "space_ds:space-slider",
+      childSlot: "slide_item",
+    },
+    "card-carousel": {
+      component_id: "space_ds:space-slider",
+      childSlot: "slide_item",
+    },
+    "faq-accordion": {
+      component_id: "space_ds:space-accordion",
+      childSlot: "content",
+    },
+    "logo-showcase": {
+      component_id: "space_ds:space-logo-section",
+      childSlot: "content",
+    },
+  };
+
+  const mapping = patternToOrganism[patternName];
+  if (!mapping) return section;
+
+  // Remap children to use the organism's slot if they don't already have one
+  const children: PageSectionChild[] = (section.children ?? []).map(
+    (child) => ({
+      ...child,
+      slot: child.slot || mapping.childSlot,
+    })
+  );
+
+  return {
+    ...section,
+    component_id: mapping.component_id,
+    props: section.props ?? {},
+    children,
+    pattern: undefined, // Clear pattern so it routes through organism path
+  };
 }

@@ -79,9 +79,25 @@ export type ContentPlan = z.infer<typeof ContentPlanSchema>;
 
 // --- Generate Phase Output (enhanced PageLayout) ---
 
-export const PageSectionSchema = z.object({
+const PageSectionChildSchema = z.object({
   component_id: z.string(),
-  props_json: z.string().describe("JSON-encoded object of component props (key-value pairs). Must be valid JSON."),
+  slot: z.string().describe("Target slot name (e.g., column_one, slide_item, content)"),
+  props_json: z.string().describe("JSON-encoded object of child component props. Must be valid JSON."),
+});
+
+export const PageSectionSchema = z.object({
+  // Type A: Organism section (hero, CTA, accordion, slider)
+  component_id: z.string().describe("Component ID for organism sections, empty string for composed sections"),
+  props_json: z.string().describe("JSON-encoded object of component props. Must be valid JSON. Empty string for composed sections."),
+  // Type B: Composed section (flexi grid with atoms in slots)
+  pattern: z.string().describe("Composition pattern name (e.g., text-image-split-50-50). Empty string for organism sections."),
+  section_heading: z.object({
+    label: z.string().describe("Short label above the title, empty string if none"),
+    title: z.string(),
+    description: z.string().describe("Description text, empty string if none"),
+  }).describe("Section heading config. Use empty strings for organism sections."),
+  container_background: z.string().describe("Background color for container (transparent|white|base-brand|option-1..option-10). Empty string for organism sections."),
+  children: z.array(PageSectionChildSchema).describe("Child components for slots. Empty array if none."),
 });
 
 export const PageLayoutSchema = z.object({
