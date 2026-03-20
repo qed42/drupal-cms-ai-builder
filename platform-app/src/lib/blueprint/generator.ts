@@ -438,11 +438,25 @@ export async function generateBlueprint(
     { title: "Terms of Service", url: "/terms" },
   ];
 
+  const footerNavLinks = (data.pages || []).map((p) => ({
+    title: p.title,
+    url: `/${p.slug}`,
+  }));
+
+  const defaultSocialLinks = [
+    { platform: "Facebook", url: "https://facebook.com", icon: "facebook-logo" },
+    { platform: "Twitter", url: "https://twitter.com", icon: "twitter-logo" },
+    { platform: "Instagram", url: "https://instagram.com", icon: "instagram-logo" },
+    { platform: "LinkedIn", url: "https://linkedin.com", icon: "linkedin-logo" },
+  ];
+
   const footerTree = buildFooterTree(
     { name: data.name!, tagline: siteTagline },
     {
       brandDescription: footerDescription || siteDescription,
       disclaimer: footerDisclaimer || undefined,
+      navLinks: footerNavLinks,
+      socialLinks: defaultSocialLinks,
       legalLinks: defaultLegalLinks,
     }
   );
