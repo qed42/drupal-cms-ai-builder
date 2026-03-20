@@ -392,8 +392,23 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
   /**
    * Prepares a component tree array for canvas_page entity creation.
    *
-   * Validates component versions against the Canvas component registry
-   * and ensures the tree structure is in the expected format.
+   * The v2 component tree uses slot-based composition with nested structures:
+   * - container -> content slot -> section-heading, flexi
+   * - flexi -> column_one/two/three/four slots -> atoms (heading, text, image)
+   * - slider -> slide_item slot -> testimony-card, imagecard, etc.
+   * - accordion -> content slot -> accordion-item children
+   *
+   * The tree is stored as a flat array with parent_uuid/slot references,
+   * supporting arbitrary nesting depth. Each item is processed independently:
+   * - N-level nesting works because the loop is flat (no recursion needed).
+   * - Multiple children in the same slot are supported (same parent_uuid+slot).
+   * - Image resolution works per-component via resolveImageInputs().
+   * - HTML content in text props (contentMediaType: text/html) is preserved
+   *   as-is since inputs are passed through to Canvas without sanitization.
+   *
+   * Component versions are resolved from the Drupal Canvas registry at import
+   * time via getActiveVersion(), so placeholder hashes from the blueprint are
+   * replaced with the actual installed version.
    *
    * @param array $tree
    *   The component tree array from the blueprint JSON.
