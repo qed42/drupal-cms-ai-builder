@@ -1,5 +1,6 @@
 /**
  * Tests for Page Design Rules — classification, formatting, and data integrity.
+ * Updated for Space DS v2 compositional model.
  */
 import { describe, it, expect } from "vitest";
 import {
@@ -8,7 +9,45 @@ import {
   formatRulesForPlan,
   formatRulesForGeneration,
   PAGE_DESIGN_RULES,
+  COMPOSITION_PATTERNS,
 } from "../src/lib/ai/page-design-rules";
+
+// ============================================================================
+// V2 component whitelist — only these component IDs are valid
+// ============================================================================
+const V2_COMPONENT_IDS = new Set([
+  "space_ds:space-container",
+  "space_ds:space-flexi",
+  "space_ds:space-button",
+  "space_ds:space-heading",
+  "space_ds:space-icon",
+  "space_ds:space-image",
+  "space_ds:space-input-submit",
+  "space_ds:space-link",
+  "space_ds:space-text",
+  "space_ds:space-accordion-item",
+  "space_ds:space-breadcrumb",
+  "space_ds:space-contact-card",
+  "space_ds:space-content-detail",
+  "space_ds:space-dark-bg-imagecard",
+  "space_ds:space-imagecard",
+  "space_ds:space-logo-section",
+  "space_ds:space-pagination",
+  "space_ds:space-section-heading",
+  "space_ds:space-stats-kpi",
+  "space_ds:space-testimony-card",
+  "space_ds:space-user-card",
+  "space_ds:space-videocard",
+  "space_ds:space-accordion",
+  "space_ds:space-cta-banner-type-1",
+  "space_ds:space-detail-page-hero-banner",
+  "space_ds:space-footer",
+  "space_ds:space-header",
+  "space_ds:space-hero-banner-style-02",
+  "space_ds:space-hero-banner-with-media",
+  "space_ds:space-slider",
+  "space_ds:space-video-banner",
+]);
 
 // ============================================================================
 // classifyPageType
@@ -49,11 +88,6 @@ describe("classifyPageType", () => {
     expect(classifyPageType("case-studies", "Case Studies")).toBe("portfolio");
   });
 
-  it("classifies pricing pages", () => {
-    expect(classifyPageType("pricing", "Pricing")).toBe("pricing");
-    expect(classifyPageType("plans", "Our Plans")).toBe("pricing");
-  });
-
   it("classifies FAQ pages", () => {
     expect(classifyPageType("faq", "FAQ")).toBe("faq");
     expect(classifyPageType("frequently-asked-questions", "Common Questions")).toBe("faq");
@@ -74,7 +108,47 @@ describe("classifyPageType", () => {
   it("matches by title when slug is custom", () => {
     expect(classifyPageType("custom-slug", "About Our Company")).toBe("about");
     expect(classifyPageType("info", "Get in Touch")).toBe("contact");
-    expect(classifyPageType("rates", "Pricing Plans")).toBe("pricing");
+  });
+
+  it("no longer classifies pricing pages (removed in v2)", () => {
+    // pricing slug/title should fall through to generic
+    expect(classifyPageType("pricing", "Pricing")).toBe("generic");
+    expect(classifyPageType("plans", "Our Plans")).toBe("generic");
+  });
+});
+
+// ============================================================================
+// COMPOSITION_PATTERNS integrity
+// ============================================================================
+describe("COMPOSITION_PATTERNS", () => {
+  it("all pattern children reference valid v2 component IDs", () => {
+    for (const [name, pattern] of Object.entries(COMPOSITION_PATTERNS)) {
+      for (const child of pattern.children) {
+        expect(V2_COMPONENT_IDS.has(child), `Pattern "${name}" child "${child}" is not a valid v2 component`).toBe(true);
+      }
+    }
+  });
+
+  it("all layout patterns use space-flexi", () => {
+    for (const [name, pattern] of Object.entries(COMPOSITION_PATTERNS)) {
+      if (pattern.layout) {
+        expect(pattern.layout.component, `Pattern "${name}" layout must use space-flexi`).toBe("space_ds:space-flexi");
+      }
+    }
+  });
+
+  it("includes all expected patterns", () => {
+    const names = Object.keys(COMPOSITION_PATTERNS);
+    expect(names).toContain("text-image-split-50-50");
+    expect(names).toContain("features-grid-3col");
+    expect(names).toContain("stats-row");
+    expect(names).toContain("testimonials-carousel");
+    expect(names).toContain("team-grid-4col");
+    expect(names).toContain("card-grid-3col");
+    expect(names).toContain("contact-info");
+    expect(names).toContain("faq-accordion");
+    expect(names).toContain("logo-showcase");
+    expect(names).toContain("full-width-text");
   });
 });
 
@@ -109,20 +183,45 @@ describe("PAGE_DESIGN_RULES data integrity", () => {
     }
   });
 
-  it("all component IDs follow the space_ds: namespace pattern", () => {
+  it("all hero style IDs reference valid v2 hero components", () => {
+    const validHeroes = new Set([
+      "space_ds:space-hero-banner-style-02",
+      "space_ds:space-hero-banner-with-media",
+      "space_ds:space-detail-page-hero-banner",
+      "space_ds:space-video-banner",
+    ]);
     for (const rule of PAGE_DESIGN_RULES) {
-      for (const section of rule.sections) {
-        for (const comp of section.preferredComponents) {
-          expect(comp).toMatch(/^space_ds:space-/);
-        }
-      }
       for (const style of rule.heroRule.preferredStyles) {
-        expect(style).toMatch(/^space_ds:space-hero-banner-style-\d+$/);
-      }
-      for (const avoid of rule.avoidComponents) {
-        expect(avoid).toMatch(/^space_ds:space-/);
+        expect(validHeroes.has(style), `${rule.pageType} hero style "${style}" is not a valid v2 hero`).toBe(true);
       }
     }
+  });
+
+  it("all component IDs in preferredPatterns and avoidComponents are valid v2 or composition pattern names", () => {
+    const patternNames = new Set(Object.keys(COMPOSITION_PATTERNS));
+    for (const rule of PAGE_DESIGN_RULES) {
+      for (const section of rule.sections) {
+        for (const pattern of section.preferredPatterns) {
+          const isComponentId = pattern.startsWith("space_ds:");
+          const isPatternName = patternNames.has(pattern);
+          expect(
+            isComponentId || isPatternName,
+            `${rule.pageType}.${section.type} pattern "${pattern}" is neither a v2 component nor a composition pattern`
+          ).toBe(true);
+          if (isComponentId) {
+            expect(V2_COMPONENT_IDS.has(pattern), `${rule.pageType}.${section.type} pattern "${pattern}" is not in v2 manifest`).toBe(true);
+          }
+        }
+      }
+      for (const avoid of rule.avoidComponents) {
+        expect(V2_COMPONENT_IDS.has(avoid), `${rule.pageType} avoidComponent "${avoid}" is not in v2 manifest`).toBe(true);
+      }
+    }
+  });
+
+  it("does NOT include pricing page type", () => {
+    const types = PAGE_DESIGN_RULES.map((r) => r.pageType);
+    expect(types).not.toContain("pricing");
   });
 
   it("includes a generic fallback rule", () => {
@@ -130,18 +229,33 @@ describe("PAGE_DESIGN_RULES data integrity", () => {
     expect(generic).toBeDefined();
   });
 
-  it("covers all 10 page types", () => {
+  it("covers all 9 page types (pricing removed)", () => {
     const types = PAGE_DESIGN_RULES.map((r) => r.pageType);
     expect(types).toContain("home");
     expect(types).toContain("about");
     expect(types).toContain("services");
     expect(types).toContain("contact");
     expect(types).toContain("portfolio");
-    expect(types).toContain("pricing");
     expect(types).toContain("faq");
     expect(types).toContain("team");
     expect(types).toContain("landing");
     expect(types).toContain("generic");
+  });
+
+  it("has no references to deleted v1 components", () => {
+    const deletedPatterns = [
+      "text-media", "hero-banner-style-01", "hero-banner-style-03",
+      "hero-banner-style-04", "hero-banner-style-05", "hero-banner-style-06",
+      "hero-banner-style-07", "hero-banner-style-08", "hero-banner-style-09",
+      "hero-banner-style-10", "hero-banner-style-11",
+      "team-section", "pricing-card", "pricing-featured",
+      "people-card", "cta-banner-type-2", "cta-banner-type-3",
+      "accordion-with-image",
+    ];
+    const serialized = JSON.stringify(PAGE_DESIGN_RULES);
+    for (const pattern of deletedPatterns) {
+      expect(serialized).not.toContain(pattern);
+    }
   });
 });
 
@@ -193,8 +307,15 @@ describe("formatRulesForPlan", () => {
     const lines = formatRulesForPlan([{ slug: "contact", title: "Contact" }]);
     const joined = lines.join("\n");
     expect(joined).toContain("hero");
-    expect(joined).toContain("text");
+    expect(joined).toContain("contact");
     expect(joined).toContain("words");
+  });
+
+  it("includes composition pattern references in output", () => {
+    const lines = formatRulesForPlan([{ slug: "home", title: "Home" }]);
+    const joined = lines.join("\n");
+    expect(joined).toContain("Space DS v2 Compositional Model");
+    expect(joined).toContain("space-section-heading");
   });
 });
 
@@ -209,12 +330,28 @@ describe("formatRulesForGeneration", () => {
     expect(joined).toContain("home page");
   });
 
-  it("includes hero style selection", () => {
+  it("includes hero style selection with v2 heroes", () => {
     const lines = formatRulesForGeneration("home", "Home");
     const joined = lines.join("\n");
     expect(joined).toContain("## Hero Style Selection");
-    expect(joined).toContain("space-hero-banner-style-01");
-    expect(joined).toContain("space-hero-banner-style-05");
+    expect(joined).toContain("space-hero-banner-style-02");
+    expect(joined).toContain("space-hero-banner-with-media");
+  });
+
+  it("includes composition patterns reference", () => {
+    const lines = formatRulesForGeneration("home", "Home");
+    const joined = lines.join("\n");
+    expect(joined).toContain("## Composition Patterns Reference");
+    expect(joined).toContain("features-grid-3col");
+    expect(joined).toContain("space-flexi");
+  });
+
+  it("includes section composition rules", () => {
+    const lines = formatRulesForGeneration("home", "Home");
+    const joined = lines.join("\n");
+    expect(joined).toContain("## Section Composition Rules");
+    expect(joined).toContain("space-container");
+    expect(joined).toContain("space-section-heading");
   });
 
   it("includes visual rhythm guidance", () => {
@@ -228,15 +365,15 @@ describe("formatRulesForGeneration", () => {
     const lines = formatRulesForGeneration("contact", "Contact");
     const joined = lines.join("\n");
     expect(joined).toContain("AVOID");
-    expect(joined).toContain("space-accordion");
+    expect(joined).toContain("space-stats-kpi");
   });
 
   it("includes component mapping", () => {
     const lines = formatRulesForGeneration("services", "Services");
     const joined = lines.join("\n");
-    expect(joined).toContain("Component ID mapping");
-    expect(joined).toContain("hero →");
-    expect(joined).toContain("cta →");
+    expect(joined).toContain("Component ID Mapping");
+    expect(joined).toContain("hero ->");
+    expect(joined).toContain("cta ->");
   });
 
   it("falls back to generic for unknown pages", () => {

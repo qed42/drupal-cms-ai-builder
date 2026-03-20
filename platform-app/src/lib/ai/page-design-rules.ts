@@ -2,8 +2,19 @@
  * Page Design Rules — declarative composition constraints per page type.
  *
  * Guides the AI to produce design-consistent pages by injecting page-type-specific
- * rules into the plan and generation prompts. Based on modern UI design patterns
- * and the Space DS component library.
+ * rules into the plan and generation prompts. Based on the Space DS v2 compositional
+ * model where sections are built from layout primitives (flexi/container) + atoms/molecules
+ * placed in slots.
+ *
+ * Space DS v2 components (31 total):
+ *   Base:      space-container, space-flexi
+ *   Atoms:     space-button, space-heading, space-icon, space-image, space-input-submit, space-link, space-text
+ *   Molecules: space-accordion-item, space-breadcrumb, space-contact-card, space-content-detail,
+ *              space-dark-bg-imagecard, space-imagecard, space-logo-section, space-pagination,
+ *              space-section-heading, space-stats-kpi, space-testimony-card, space-user-card, space-videocard
+ *   Organisms: space-accordion, space-cta-banner-type-1, space-detail-page-hero-banner,
+ *              space-footer, space-header, space-hero-banner-style-02, space-hero-banner-with-media,
+ *              space-slider, space-video-banner
  */
 
 // ---------------------------------------------------------------------------
@@ -16,18 +27,28 @@ export type PageType =
   | "services"
   | "contact"
   | "portfolio"
-  | "pricing"
   | "faq"
   | "team"
   | "landing"
   | "generic";
+
+export interface CompositionPattern {
+  name: string;
+  description: string;
+  layout: {
+    component: "space_ds:space-flexi";
+    column_width: string;
+    gap?: string;
+  } | null;
+  children: string[];
+}
 
 export interface SectionRule {
   type: string;
   required: boolean;
   position: "opening" | "middle" | "closing" | "any";
   visualWeight: "heavy" | "medium" | "light";
-  preferredComponents: string[];
+  preferredPatterns: string[];
   wordCountRange: [number, number];
 }
 
@@ -52,11 +73,108 @@ export interface PageDesignRule {
 }
 
 // ---------------------------------------------------------------------------
+// Composition Patterns
+// ---------------------------------------------------------------------------
+
+export const COMPOSITION_PATTERNS: Record<string, CompositionPattern> = {
+  "text-image-split-50-50": {
+    name: "text-image-split-50-50",
+    description: "Text content with image, evenly split",
+    layout: { component: "space_ds:space-flexi", column_width: "50-50", gap: "large" },
+    children: ["space_ds:space-heading", "space_ds:space-text", "space_ds:space-button", "space_ds:space-image"],
+  },
+  "text-image-split-66-33": {
+    name: "text-image-split-66-33",
+    description: "Wider text column with narrow image",
+    layout: { component: "space_ds:space-flexi", column_width: "66-33", gap: "large" },
+    children: ["space_ds:space-heading", "space_ds:space-text", "space_ds:space-button", "space_ds:space-image"],
+  },
+  "image-text-split-33-66": {
+    name: "image-text-split-33-66",
+    description: "Image first, then wider text (reversed layout)",
+    layout: { component: "space_ds:space-flexi", column_width: "33-66", gap: "large" },
+    children: ["space_ds:space-image", "space_ds:space-heading", "space_ds:space-text", "space_ds:space-button"],
+  },
+  "features-grid-3col": {
+    name: "features-grid-3col",
+    description: "Three feature columns with icon, heading, and text each",
+    layout: { component: "space_ds:space-flexi", column_width: "33-33-33", gap: "medium" },
+    children: ["space_ds:space-icon", "space_ds:space-heading", "space_ds:space-text"],
+  },
+  "features-grid-4col": {
+    name: "features-grid-4col",
+    description: "Four feature columns for compact display",
+    layout: { component: "space_ds:space-flexi", column_width: "25-25-25-25", gap: "medium" },
+    children: ["space_ds:space-icon", "space_ds:space-heading", "space_ds:space-text"],
+  },
+  "stats-row": {
+    name: "stats-row",
+    description: "Row of 3-4 key statistics/KPIs",
+    layout: { component: "space_ds:space-flexi", column_width: "25-25-25-25", gap: "medium" },
+    children: ["space_ds:space-stats-kpi"],
+  },
+  "testimonials-carousel": {
+    name: "testimonials-carousel",
+    description: "Sliding carousel of testimonial cards",
+    layout: null,
+    children: ["space_ds:space-slider", "space_ds:space-testimony-card"],
+  },
+  "team-grid-4col": {
+    name: "team-grid-4col",
+    description: "Grid of team member cards, 4 columns",
+    layout: { component: "space_ds:space-flexi", column_width: "25-25-25-25", gap: "medium" },
+    children: ["space_ds:space-user-card"],
+  },
+  "team-grid-3col": {
+    name: "team-grid-3col",
+    description: "Grid of team member cards, 3 columns",
+    layout: { component: "space_ds:space-flexi", column_width: "33-33-33", gap: "medium" },
+    children: ["space_ds:space-user-card"],
+  },
+  "card-grid-3col": {
+    name: "card-grid-3col",
+    description: "Grid of image cards (blog, portfolio, etc.)",
+    layout: { component: "space_ds:space-flexi", column_width: "33-33-33", gap: "medium" },
+    children: ["space_ds:space-imagecard"],
+  },
+  "card-carousel": {
+    name: "card-carousel",
+    description: "Sliding carousel of image cards",
+    layout: null,
+    children: ["space_ds:space-slider", "space_ds:space-imagecard"],
+  },
+  "contact-info": {
+    name: "contact-info",
+    description: "Contact cards with email, phone, and FAQ link",
+    layout: { component: "space_ds:space-flexi", column_width: "33-33-33", gap: "medium" },
+    children: ["space_ds:space-contact-card"],
+  },
+  "faq-accordion": {
+    name: "faq-accordion",
+    description: "Collapsible FAQ section",
+    layout: null,
+    children: ["space_ds:space-accordion", "space_ds:space-accordion-item"],
+  },
+  "logo-showcase": {
+    name: "logo-showcase",
+    description: "Logo/partner/client showcase",
+    layout: null,
+    children: ["space_ds:space-logo-section"],
+  },
+  "full-width-text": {
+    name: "full-width-text",
+    description: "Full-width text content section",
+    layout: { component: "space_ds:space-flexi", column_width: "100" },
+    children: ["space_ds:space-heading", "space_ds:space-text"],
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Rules Data
 // ---------------------------------------------------------------------------
 
 export const PAGE_DESIGN_RULES: PageDesignRule[] = [
-  // ── Home ──────────────────────────────────────────────────────────────
+  // -- Home -----------------------------------------------------------------
   {
     pageType: "home",
     slugPatterns: ["home", ""],
@@ -70,11 +188,9 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "opening",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-hero-banner-style-01",
-          "space_ds:space-hero-banner-style-05",
-          "space_ds:space-hero-banner-style-10",
-          "space_ds:space-hero-banner-style-11",
+        preferredPatterns: [
+          "space_ds:space-hero-banner-style-02",
+          "space_ds:space-hero-banner-with-media",
         ],
         wordCountRange: [30, 60],
       },
@@ -83,10 +199,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "middle",
         visualWeight: "medium",
-        preferredComponents: [
-          "space_ds:space-text-media-with-checklist",
-          "space_ds:space-text-media-with-stats",
-        ],
+        preferredPatterns: ["features-grid-3col", "features-grid-4col"],
         wordCountRange: [100, 200],
       },
       {
@@ -94,10 +207,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: false,
         position: "middle",
         visualWeight: "light",
-        preferredComponents: [
-          "space_ds:space-text-media-default",
-          "space_ds:space-text-media-with-images",
-        ],
+        preferredPatterns: ["text-image-split-50-50", "text-image-split-66-33"],
         wordCountRange: [150, 250],
       },
       {
@@ -105,10 +215,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "middle",
         visualWeight: "medium",
-        preferredComponents: [
-          "space_ds:space-testimony-card",
-          "space_ds:space-people-card-testimony-with-avatar",
-        ],
+        preferredPatterns: ["testimonials-carousel"],
         wordCountRange: [80, 150],
       },
       {
@@ -116,7 +223,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: false,
         position: "middle",
         visualWeight: "medium",
-        preferredComponents: ["space_ds:space-stats-kpi"],
+        preferredPatterns: ["stats-row"],
         wordCountRange: [40, 80],
       },
       {
@@ -124,22 +231,17 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "closing",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-cta-banner-type-1",
-          "space_ds:space-cta-banner-type-2",
-        ],
+        preferredPatterns: ["space_ds:space-cta-banner-type-1"],
         wordCountRange: [20, 50],
       },
     ],
     heroRule: {
       preferredStyles: [
-        "space_ds:space-hero-banner-style-01",
-        "space_ds:space-hero-banner-style-05",
-        "space_ds:space-hero-banner-style-10",
-        "space_ds:space-hero-banner-style-11",
+        "space_ds:space-hero-banner-style-02",
+        "space_ds:space-hero-banner-with-media",
       ],
       selectionGuidance:
-        "Home heroes need maximum visual impact. Use style-01 (full-width background image) for dramatic imagery, style-05 (split 50/50) for balanced text+image, style-10 (dual images) for creative/agency sites, style-11 (gradient split) for modern tech brands.",
+        "Home heroes need maximum visual impact. Use hero-banner-style-02 (full-width bg image with title, sub-headline, and stats slot) for dramatic imagery. Use hero-banner-with-media (split with featured image) for balanced text+image layouts.",
     },
     rhythm: {
       pattern: "heavy-medium-light-medium-heavy",
@@ -150,13 +252,15 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     closingPattern:
       "End with a CTA banner. Optionally precede it with testimonials or stats for social proof before the ask.",
     compositionGuidance: [
-      "TESTIMONIALS: MUST use a SINGLE \"space_ds:space-testimony-card\" organism component for testimonials — do NOT stack multiple individual testimony cards as separate sections. If multiple testimonials are available, use one testimony-card per testimonial but group them within a single testimonial section.",
-      "FEATURES: PREFER \"space_ds:space-text-media-with-checklist\" or \"space_ds:space-text-media-with-stats\" for feature sections — these are organism-level containers that present features in a structured layout. Do NOT create separate text-media-default sections for each feature.",
-      "TEAM (if used): MUST use a \"space_ds:space-team-section-image-card-1\" or \"space_ds:space-team-section-simple-1\" organism — these are grid containers with slots for individual team member cards. Do NOT stack individual people-cards as separate sections.",
+      "Every content section should start with a space-section-heading (label, title, description) before the content grid.",
+      "Use flexi column layouts rather than stacking individual components as separate sections.",
+      "TESTIMONIALS: Use slider organism with testimony-cards in the slide_item slot for a carousel effect.",
+      "FEATURES: Use a flexi grid (33-33-33 or 25-25-25-25) with icon + heading + text per column.",
+      "STATS: Use a flexi grid (25-25-25-25) with stats-kpi components, or place stats in the hero items slot.",
     ].join("\n"),
   },
 
-  // ── About ─────────────────────────────────────────────────────────────
+  // -- About ----------------------------------------------------------------
   {
     pageType: "about",
     slugPatterns: ["about", "about-us", "our-story", "who-we-are"],
@@ -170,10 +274,9 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "opening",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-hero-banner-style-03",
-          "space_ds:space-hero-banner-style-09",
-          "space_ds:space-hero-banner-style-06",
+        preferredPatterns: [
+          "space_ds:space-hero-banner-style-02",
+          "space_ds:space-hero-banner-with-media",
         ],
         wordCountRange: [40, 80],
       },
@@ -182,10 +285,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "middle",
         visualWeight: "light",
-        preferredComponents: [
-          "space_ds:space-text-media-default",
-          "space_ds:space-text-media-with-images",
-        ],
+        preferredPatterns: ["text-image-split-50-50", "text-image-split-66-33", "full-width-text"],
         wordCountRange: [200, 350],
       },
       {
@@ -193,10 +293,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: false,
         position: "middle",
         visualWeight: "medium",
-        preferredComponents: [
-          "space_ds:space-team-section-image-card-1",
-          "space_ds:space-team-section-simple-1",
-        ],
+        preferredPatterns: ["team-grid-4col", "team-grid-3col"],
         wordCountRange: [50, 100],
       },
       {
@@ -204,10 +301,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: false,
         position: "middle",
         visualWeight: "medium",
-        preferredComponents: [
-          "space_ds:space-stats-kpi",
-          "space_ds:space-text-media-with-stats",
-        ],
+        preferredPatterns: ["stats-row"],
         wordCountRange: [40, 80],
       },
       {
@@ -215,41 +309,36 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "closing",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-cta-banner-type-1",
-          "space_ds:space-cta-banner-type-3",
-        ],
+        preferredPatterns: ["space_ds:space-cta-banner-type-1"],
         wordCountRange: [20, 50],
       },
     ],
     heroRule: {
       preferredStyles: [
-        "space_ds:space-hero-banner-style-03",
-        "space_ds:space-hero-banner-style-09",
-        "space_ds:space-hero-banner-style-08",
+        "space_ds:space-hero-banner-style-02",
+        "space_ds:space-hero-banner-with-media",
       ],
       selectionGuidance:
-        "About page heroes should support narrative. Style-03 (split with description) tells your story. Style-09 (text-only) works when imagery is secondary. Style-08 (bold uppercase) suits mission-forward brands.",
+        "About page heroes should support narrative. Use hero-banner-style-02 (bg image with title/sub-headline) for a mission-forward feel. Use hero-banner-with-media (split with image) for a balanced story intro.",
     },
     rhythm: {
       pattern: "heavy-light-medium-light-heavy",
       guidance:
         "Open with a narrative hero, follow with the core story (text-heavy), break up with a visual team or stats section, close with a warm CTA. The page should feel personal and flowing.",
     },
-    avoidComponents: [
-      "space_ds:space-pricing-card",
-      "space_ds:space-pricing-featured-card",
-    ],
+    avoidComponents: [],
     closingPattern:
       "End with a warm CTA (e.g., 'Let's work together' or 'Get to know us better').",
     compositionGuidance: [
-      "TEAM: MUST use a \"space_ds:space-team-section-image-card-1\" or \"space_ds:space-team-section-simple-1\" organism — these are grid containers with slots for individual team member cards. Do NOT create separate people-card sections for each team member.",
-      "TESTIMONIALS (if used): MUST use a SINGLE \"space_ds:space-testimony-card\" organism component — do NOT stack multiple individual testimony cards as separate sections.",
-      "FEATURES: PREFER \"space_ds:space-text-media-with-checklist\" to present values/capabilities in a structured layout rather than flat text blocks.",
+      "Every content section should start with a space-section-heading (label, title, description) before the content grid.",
+      "Use flexi column layouts rather than stacking individual components as separate sections.",
+      "TEAM: Use a flexi grid (25-25-25-25 or 33-33-33) with user-card components in column slots.",
+      "TESTIMONIALS (if used): Use slider organism with testimony-cards in the slide_item slot.",
+      "TEXT SECTIONS: Alternate text-image-split-50-50 and image-text-split-33-66 for visual variety.",
     ].join("\n"),
   },
 
-  // ── Services ──────────────────────────────────────────────────────────
+  // -- Services -------------------------------------------------------------
   {
     pageType: "services",
     slugPatterns: [
@@ -275,10 +364,9 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "opening",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-hero-banner-style-04",
-          "space_ds:space-hero-banner-style-05",
-          "space_ds:space-hero-banner-style-03",
+        preferredPatterns: [
+          "space_ds:space-hero-banner-with-media",
+          "space_ds:space-hero-banner-style-02",
         ],
         wordCountRange: [30, 60],
       },
@@ -287,10 +375,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "middle",
         visualWeight: "medium",
-        preferredComponents: [
-          "space_ds:space-text-media-with-checklist",
-          "space_ds:space-text-media-with-stats",
-        ],
+        preferredPatterns: ["features-grid-3col", "features-grid-4col"],
         wordCountRange: [150, 300],
       },
       {
@@ -298,10 +383,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: false,
         position: "middle",
         visualWeight: "light",
-        preferredComponents: [
-          "space_ds:space-text-media-default",
-          "space_ds:space-text-media-with-images",
-        ],
+        preferredPatterns: ["text-image-split-50-50", "image-text-split-33-66"],
         wordCountRange: [100, 200],
       },
       {
@@ -309,10 +391,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: false,
         position: "middle",
         visualWeight: "medium",
-        preferredComponents: [
-          "space_ds:space-testimony-card",
-          "space_ds:space-people-card-testimony-with-avatar",
-        ],
+        preferredPatterns: ["testimonials-carousel"],
         wordCountRange: [80, 150],
       },
       {
@@ -320,21 +399,17 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "closing",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-cta-banner-type-2",
-          "space_ds:space-cta-banner-type-1",
-        ],
+        preferredPatterns: ["space_ds:space-cta-banner-type-1"],
         wordCountRange: [20, 50],
       },
     ],
     heroRule: {
       preferredStyles: [
-        "space_ds:space-hero-banner-style-04",
-        "space_ds:space-hero-banner-style-05",
-        "space_ds:space-hero-banner-style-03",
+        "space_ds:space-hero-banner-with-media",
+        "space_ds:space-hero-banner-style-02",
       ],
       selectionGuidance:
-        "Services heroes should feel professional and action-oriented. Style-04 (centered with image below) for SaaS/tech. Style-05 (split 50/50) is versatile. Style-03 (split with description) adds narrative depth.",
+        "Services heroes should feel professional and action-oriented. Use hero-banner-with-media (split with featured image) for a versatile look. Use hero-banner-style-02 (full bg image) for dramatic service showcases.",
     },
     rhythm: {
       pattern: "heavy-medium-light-medium-heavy",
@@ -345,19 +420,21 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     closingPattern:
       "End with a CTA banner pushing consultation or inquiry. Consider testimonials just before the CTA for social proof.",
     compositionGuidance: [
-      "FEATURES: MUST use \"space_ds:space-text-media-with-checklist\" or \"space_ds:space-text-media-with-stats\" organisms for service/feature listings — these present multiple features within a single structured component. Do NOT create a separate text-media section for each individual service.",
-      "TESTIMONIALS (if used): MUST use a SINGLE \"space_ds:space-testimony-card\" or \"space_ds:space-people-card-testimony-with-avatar\" component — do NOT stack multiple individual testimony cards as separate sections.",
-      "FAQ (if used): MUST use \"space_ds:space-accordion\" organism with \"space_ds:space-accordion-item\" children — do NOT use separate text blocks for each Q&A pair.",
+      "Every content section should start with a space-section-heading (label, title, description) before the content grid.",
+      "FEATURES: Use flexi grid (33-33-33) with icon + heading + text per column for service highlights.",
+      "TEXT: Use text-image-split patterns to describe individual services in detail.",
+      "FAQ (if used): Use accordion organism with accordion-item children for service-related questions.",
+      "TESTIMONIALS (if used): Use slider organism with testimony-cards in the slide_item slot.",
     ].join("\n"),
   },
 
-  // ── Contact ───────────────────────────────────────────────────────────
+  // -- Contact --------------------------------------------------------------
   {
     pageType: "contact",
     slugPatterns: ["contact", "contact-us", "get-in-touch", "reach-us"],
     titlePatterns: ["contact", "get in touch", "reach us"],
     description:
-      "Utility page — minimal content, focused on contact info and form",
+      "Utility page — minimal content, focused on contact info cards",
     sectionCountRange: [4, 5],
     sections: [
       {
@@ -365,50 +442,50 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "opening",
         visualWeight: "medium",
-        preferredComponents: [
-          "space_ds:space-hero-banner-style-09",
-          "space_ds:space-hero-banner-style-06",
-        ],
+        preferredPatterns: ["space_ds:space-hero-banner-style-02"],
         wordCountRange: [20, 40],
       },
       {
-        type: "text",
+        type: "contact",
         required: true,
         position: "middle",
         visualWeight: "light",
-        preferredComponents: [
-          "space_ds:space-text-media-default",
-          "space_ds:space-text-media-with-link",
-        ],
+        preferredPatterns: ["contact-info"],
         wordCountRange: [50, 100],
+      },
+      {
+        type: "faq",
+        required: false,
+        position: "middle",
+        visualWeight: "light",
+        preferredPatterns: ["faq-accordion"],
+        wordCountRange: [100, 200],
       },
     ],
     heroRule: {
-      preferredStyles: [
-        "space_ds:space-hero-banner-style-09",
-        "space_ds:space-hero-banner-style-06",
-      ],
+      preferredStyles: ["space_ds:space-hero-banner-style-02"],
       selectionGuidance:
-        "Contact heroes should be understated. Style-09 (text-only) is cleanest. Style-06 (text-heavy split) works with a small supporting image.",
+        "Contact heroes should be understated. Use hero-banner-style-02 with a simple background image and minimal text to keep focus on the contact information below.",
     },
     rhythm: {
       pattern: "medium-light",
       guidance:
-        "Keep it brief. A simple hero followed by contact information. Do NOT pad with unnecessary sections.",
+        "Keep it brief. A simple hero followed by contact cards. Do NOT pad with unnecessary sections.",
     },
     avoidComponents: [
-      "space_ds:space-pricing-card",
       "space_ds:space-stats-kpi",
       "space_ds:space-testimony-card",
-      "space_ds:space-accordion",
     ],
     closingPattern:
-      "The contact info/form IS the closing. No separate CTA needed.",
-    compositionGuidance:
-      "Contact pages are minimal. No organism-level composition patterns needed — use simple text-media components for contact details.",
+      "The contact info IS the closing. No separate CTA needed.",
+    compositionGuidance: [
+      "CONTACT: Use flexi grid (33-33-33) with contact-card components for email, phone, and other channels.",
+      "FAQ (if used): Use accordion organism with accordion-item children for common contact questions.",
+      "Contact pages are minimal. Use space-section-heading before the contact cards grid.",
+    ].join("\n"),
   },
 
-  // ── Portfolio / Gallery ───────────────────────────────────────────────
+  // -- Portfolio / Gallery --------------------------------------------------
   {
     pageType: "portfolio",
     slugPatterns: ["portfolio", "gallery", "our-work", "projects", "case-studies"],
@@ -422,10 +499,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "opening",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-hero-banner-style-07",
-          "space_ds:space-hero-banner-style-04",
-        ],
+        preferredPatterns: ["space_ds:space-hero-banner-with-media"],
         wordCountRange: [20, 40],
       },
       {
@@ -433,10 +507,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "middle",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-text-media-with-images",
-          "space_ds:space-text-media-default",
-        ],
+        preferredPatterns: ["card-grid-3col", "card-carousel"],
         wordCountRange: [50, 100],
       },
       {
@@ -444,7 +515,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: false,
         position: "middle",
         visualWeight: "light",
-        preferredComponents: ["space_ds:space-text-media-default"],
+        preferredPatterns: ["text-image-split-50-50", "full-width-text"],
         wordCountRange: [80, 150],
       },
       {
@@ -452,107 +523,31 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "closing",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-cta-banner-type-2",
-          "space_ds:space-cta-banner-type-3",
-        ],
+        preferredPatterns: ["space_ds:space-cta-banner-type-1"],
         wordCountRange: [20, 40],
       },
     ],
     heroRule: {
-      preferredStyles: [
-        "space_ds:space-hero-banner-style-07",
-        "space_ds:space-hero-banner-style-04",
-      ],
+      preferredStyles: ["space_ds:space-hero-banner-with-media"],
       selectionGuidance:
-        "Portfolio heroes should be image-forward. Style-07 (centered with large image below) showcases work beautifully. Style-04 (centered text + image) also works well.",
+        "Portfolio heroes should be image-forward. Use hero-banner-with-media (split with featured image) to showcase a highlight project immediately.",
     },
     rhythm: {
       pattern: "heavy-heavy-light-heavy",
       guidance:
-        "Visual-first page. Open with a strong hero, showcase work in image-rich sections, optionally add a brief narrative, close with CTA.",
+        "Visual-first page. Open with a strong hero, showcase work in image-rich card grids, optionally add a brief narrative, close with CTA.",
     },
-    avoidComponents: ["space_ds:space-accordion", "space_ds:space-stats-kpi"],
+    avoidComponents: ["space_ds:space-accordion"],
     closingPattern:
       "End with a CTA to start a project or view more work.",
     compositionGuidance: [
-      "GALLERY: PREFER \"space_ds:space-text-media-with-images\" to showcase multiple portfolio items within a single structured section. Do NOT create separate text-media-default sections for each portfolio piece.",
-      "TESTIMONIALS (if used): MUST use a SINGLE \"space_ds:space-testimony-card\" organism — do NOT stack individual testimony cards as separate sections.",
+      "GALLERY: Use flexi grid (33-33-33) with imagecard components, or use a slider with imagecards in the slide_item slot for a carousel.",
+      "Every content section should start with a space-section-heading before the content grid.",
+      "TESTIMONIALS (if used): Use slider organism with testimony-cards in the slide_item slot.",
     ].join("\n"),
   },
 
-  // ── Pricing ───────────────────────────────────────────────────────────
-  {
-    pageType: "pricing",
-    slugPatterns: ["pricing", "plans", "packages"],
-    titlePatterns: ["pricing", "plans", "packages"],
-    description:
-      "Conversion page — clear pricing tiers, comparison, FAQ to remove objections",
-    sectionCountRange: [5, 7],
-    sections: [
-      {
-        type: "hero",
-        required: true,
-        position: "opening",
-        visualWeight: "medium",
-        preferredComponents: [
-          "space_ds:space-hero-banner-style-09",
-          "space_ds:space-hero-banner-style-05",
-        ],
-        wordCountRange: [20, 40],
-      },
-      {
-        type: "pricing",
-        required: true,
-        position: "middle",
-        visualWeight: "medium",
-        preferredComponents: [
-          "space_ds:space-pricing-card",
-          "space_ds:space-pricing-featured-card",
-        ],
-        wordCountRange: [100, 200],
-      },
-      {
-        type: "faq",
-        required: false,
-        position: "middle",
-        visualWeight: "light",
-        preferredComponents: ["space_ds:space-accordion"],
-        wordCountRange: [150, 300],
-      },
-      {
-        type: "cta",
-        required: true,
-        position: "closing",
-        visualWeight: "heavy",
-        preferredComponents: ["space_ds:space-cta-banner-type-1"],
-        wordCountRange: [20, 40],
-      },
-    ],
-    heroRule: {
-      preferredStyles: [
-        "space_ds:space-hero-banner-style-09",
-        "space_ds:space-hero-banner-style-05",
-      ],
-      selectionGuidance:
-        "Pricing heroes should be clean and not distract from the pricing table. Style-09 (text-only) is ideal. Style-05 works if you want a small visual element.",
-    },
-    rhythm: {
-      pattern: "medium-medium-light-heavy",
-      guidance:
-        "Clean hero, pricing tiers front and center, optional FAQ to remove objections, strong CTA to close.",
-    },
-    avoidComponents: ["space_ds:space-team-section-image-card-1"],
-    closingPattern:
-      "End with a CTA pushing the primary conversion action (sign up, start trial, contact sales).",
-    compositionGuidance: [
-      "FAQ: MUST use \"space_ds:space-accordion\" organism with \"space_ds:space-accordion-item\" children for the FAQ section — do NOT use separate text blocks or text-media-default sections for each question/answer pair. Alternatively, use \"space_ds:space-accordion-with-image-variation-2\" for a visually richer FAQ with section heading.",
-      "PRICING: Use \"space_ds:space-pricing-card\" and/or \"space_ds:space-pricing-featured-card\" as distinct tier cards — these are already self-contained organisms.",
-      "TESTIMONIALS (if used): MUST use a SINGLE \"space_ds:space-testimony-card\" organism — do NOT stack individual testimony cards as separate sections.",
-    ].join("\n"),
-  },
-
-  // ── FAQ ───────────────────────────────────────────────────────────────
+  // -- FAQ ------------------------------------------------------------------
   {
     pageType: "faq",
     slugPatterns: ["faq", "frequently-asked-questions", "help"],
@@ -566,7 +561,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "opening",
         visualWeight: "light",
-        preferredComponents: ["space_ds:space-hero-banner-style-09"],
+        preferredPatterns: ["space_ds:space-hero-banner-style-02"],
         wordCountRange: [15, 30],
       },
       {
@@ -574,7 +569,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "middle",
         visualWeight: "light",
-        preferredComponents: ["space_ds:space-accordion"],
+        preferredPatterns: ["faq-accordion"],
         wordCountRange: [300, 600],
       },
       {
@@ -582,14 +577,14 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: false,
         position: "closing",
         visualWeight: "medium",
-        preferredComponents: ["space_ds:space-cta-banner-type-1"],
+        preferredPatterns: ["space_ds:space-cta-banner-type-1"],
         wordCountRange: [20, 40],
       },
     ],
     heroRule: {
-      preferredStyles: ["space_ds:space-hero-banner-style-09"],
+      preferredStyles: ["space_ds:space-hero-banner-style-02"],
       selectionGuidance:
-        "FAQ heroes should be text-only and minimal. Style-09 (text-only split) is the clear choice.",
+        "FAQ heroes should be minimal. Use hero-banner-style-02 with a simple background and minimal text to keep focus on the accordion content.",
     },
     rhythm: {
       pattern: "light-light-medium",
@@ -597,16 +592,15 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         "Minimal hero, let the accordion do the work. Optionally add a CTA at the end.",
     },
     avoidComponents: [
-      "space_ds:space-text-media-with-images",
       "space_ds:space-stats-kpi",
     ],
     closingPattern:
       "Optionally end with a CTA pointing to contact for unanswered questions.",
     compositionGuidance:
-      "FAQ: MUST use \"space_ds:space-accordion\" organism with \"space_ds:space-accordion-item\" children — this is the ONLY correct pattern for FAQ content. Each Q&A pair becomes an accordion-item with title (question) and body (answer). Do NOT use separate text-media sections for individual questions. For a visually richer FAQ, use \"space_ds:space-accordion-with-image-variation-2\" which adds a section heading and image alongside the accordion.",
+      "FAQ: Use accordion organism with accordion-item children. Each Q&A pair becomes an accordion-item with title (question) and body (answer). Precede the accordion with a space-section-heading.",
   },
 
-  // ── Team ──────────────────────────────────────────────────────────────
+  // -- Team -----------------------------------------------------------------
   {
     pageType: "team",
     slugPatterns: ["team", "our-team", "staff", "people", "leadership"],
@@ -620,9 +614,9 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "opening",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-hero-banner-style-03",
-          "space_ds:space-hero-banner-style-09",
+        preferredPatterns: [
+          "space_ds:space-hero-banner-style-02",
+          "space_ds:space-hero-banner-with-media",
         ],
         wordCountRange: [30, 60],
       },
@@ -631,7 +625,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: false,
         position: "middle",
         visualWeight: "light",
-        preferredComponents: ["space_ds:space-text-media-default"],
+        preferredPatterns: ["full-width-text", "text-image-split-50-50"],
         wordCountRange: [100, 200],
       },
       {
@@ -639,11 +633,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "middle",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-team-section-image-card-1",
-          "space_ds:space-team-section-image-card-2",
-          "space_ds:space-team-section-simple-1",
-        ],
+        preferredPatterns: ["team-grid-4col", "team-grid-3col"],
         wordCountRange: [50, 100],
       },
       {
@@ -651,36 +641,34 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: false,
         position: "closing",
         visualWeight: "medium",
-        preferredComponents: ["space_ds:space-cta-banner-type-1"],
+        preferredPatterns: ["space_ds:space-cta-banner-type-1"],
         wordCountRange: [20, 40],
       },
     ],
     heroRule: {
       preferredStyles: [
-        "space_ds:space-hero-banner-style-03",
-        "space_ds:space-hero-banner-style-09",
+        "space_ds:space-hero-banner-style-02",
+        "space_ds:space-hero-banner-with-media",
       ],
       selectionGuidance:
-        "Team page heroes should set a welcoming tone. Style-03 (split with description) works for a narrative intro. Style-09 (text-only) keeps focus on the team grid below.",
+        "Team page heroes should set a welcoming tone. Use hero-banner-style-02 for a simple, mission-forward intro. Use hero-banner-with-media for a narrative intro with team photo.",
     },
     rhythm: {
       pattern: "heavy-light-heavy-medium",
       guidance:
-        "Hero → optional narrative intro → team grid as the centerpiece → optional CTA.",
+        "Hero -> optional narrative intro -> team grid as the centerpiece -> optional CTA.",
     },
-    avoidComponents: [
-      "space_ds:space-pricing-card",
-      "space_ds:space-pricing-featured-card",
-    ],
+    avoidComponents: [],
     closingPattern:
       "The team grid is the main content. Optionally close with a hiring CTA or contact CTA.",
     compositionGuidance: [
-      "TEAM: MUST use a \"space_ds:space-team-section-image-card-1\", \"space_ds:space-team-section-image-card-2\", or \"space_ds:space-team-section-simple-1\" organism — these are grid containers with slots for individual people cards. Do NOT create separate people-card sections for each team member. Choose image-card variants for visual-heavy pages and simple variants for text-focused pages.",
-      "TESTIMONIALS (if used): MUST use a SINGLE \"space_ds:space-testimony-card\" organism — do NOT stack individual testimony cards as separate sections.",
+      "TEAM: Use a flexi grid (25-25-25-25 or 33-33-33) with user-card components. Each user-card has name, role, image, and social links.",
+      "Every content section should start with a space-section-heading before the content grid.",
+      "TESTIMONIALS (if used): Use slider organism with testimony-cards in the slide_item slot.",
     ].join("\n"),
   },
 
-  // ── Landing ───────────────────────────────────────────────────────────
+  // -- Landing --------------------------------------------------------------
   {
     pageType: "landing",
     slugPatterns: ["landing", "promo", "campaign", "offer", "special"],
@@ -694,10 +682,10 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "opening",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-hero-banner-style-01",
-          "space_ds:space-hero-banner-style-05",
+        preferredPatterns: [
           "space_ds:space-hero-banner-style-02",
+          "space_ds:space-hero-banner-with-media",
+          "space_ds:space-video-banner",
         ],
         wordCountRange: [30, 60],
       },
@@ -706,10 +694,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "middle",
         visualWeight: "medium",
-        preferredComponents: [
-          "space_ds:space-text-media-with-checklist",
-          "space_ds:space-text-media-with-stats",
-        ],
+        preferredPatterns: ["features-grid-3col", "features-grid-4col"],
         wordCountRange: [100, 200],
       },
       {
@@ -717,32 +702,34 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "middle",
         visualWeight: "medium",
-        preferredComponents: [
-          "space_ds:space-testimony-card",
-          "space_ds:space-people-card-testimony-with-avatar",
-        ],
+        preferredPatterns: ["testimonials-carousel"],
         wordCountRange: [80, 150],
+      },
+      {
+        type: "logos",
+        required: false,
+        position: "middle",
+        visualWeight: "light",
+        preferredPatterns: ["logo-showcase"],
+        wordCountRange: [10, 30],
       },
       {
         type: "cta",
         required: true,
         position: "closing",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-cta-banner-type-2",
-          "space_ds:space-cta-banner-type-1",
-        ],
+        preferredPatterns: ["space_ds:space-cta-banner-type-1"],
         wordCountRange: [20, 50],
       },
     ],
     heroRule: {
       preferredStyles: [
-        "space_ds:space-hero-banner-style-01",
-        "space_ds:space-hero-banner-style-05",
         "space_ds:space-hero-banner-style-02",
+        "space_ds:space-hero-banner-with-media",
+        "space_ds:space-video-banner",
       ],
       selectionGuidance:
-        "Landing heroes need to capture attention immediately. Style-01 (full-bg image) for dramatic impact. Style-05 (split) for balanced copy+visual. Style-02 (with stats) if you have compelling numbers.",
+        "Landing heroes need to capture attention immediately. Use hero-banner-style-02 (full bg image) for dramatic impact. Use hero-banner-with-media (split with image) for balanced copy+visual. Use video-banner for video-ready campaigns.",
     },
     rhythm: {
       pattern: "heavy-medium-medium-heavy",
@@ -753,12 +740,14 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     closingPattern:
       "End with a strong, urgent CTA. The entire page should funnel toward this single action.",
     compositionGuidance: [
-      "TESTIMONIALS: MUST use a SINGLE \"space_ds:space-testimony-card\" organism component — do NOT stack multiple individual testimony cards as separate sections. Group all testimonials within one section.",
-      "FEATURES: MUST use \"space_ds:space-text-media-with-checklist\" or \"space_ds:space-text-media-with-stats\" organisms — these present multiple features within a single structured layout. Do NOT create separate text blocks for each benefit.",
+      "Every content section should start with a space-section-heading (label, title, description) before the content grid.",
+      "TESTIMONIALS: Use slider organism with testimony-cards in the slide_item slot for social proof.",
+      "FEATURES: Use a flexi grid (33-33-33) with icon + heading + text per column for benefit highlights.",
+      "LOGOS: Use logo-section organism for client/partner social proof.",
     ].join("\n"),
   },
 
-  // ── Generic (fallback) ────────────────────────────────────────────────
+  // -- Generic (fallback) ---------------------------------------------------
   {
     pageType: "generic",
     slugPatterns: [],
@@ -772,9 +761,9 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "opening",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-hero-banner-style-03",
-          "space_ds:space-hero-banner-style-01",
+        preferredPatterns: [
+          "space_ds:space-hero-banner-style-02",
+          "space_ds:space-hero-banner-with-media",
         ],
         wordCountRange: [30, 60],
       },
@@ -783,10 +772,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "middle",
         visualWeight: "light",
-        preferredComponents: [
-          "space_ds:space-text-media-default",
-          "space_ds:space-text-media-with-checklist",
-        ],
+        preferredPatterns: ["text-image-split-50-50", "full-width-text"],
         wordCountRange: [150, 300],
       },
       {
@@ -794,20 +780,17 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "closing",
         visualWeight: "heavy",
-        preferredComponents: [
-          "space_ds:space-cta-banner-type-1",
-          "space_ds:space-cta-banner-type-2",
-        ],
+        preferredPatterns: ["space_ds:space-cta-banner-type-1"],
         wordCountRange: [20, 50],
       },
     ],
     heroRule: {
       preferredStyles: [
-        "space_ds:space-hero-banner-style-03",
-        "space_ds:space-hero-banner-style-01",
+        "space_ds:space-hero-banner-style-02",
+        "space_ds:space-hero-banner-with-media",
       ],
       selectionGuidance:
-        "Default to style-03 (split with description) for a versatile, professional look. Style-01 (full-bg) if a strong image is available.",
+        "Default to hero-banner-style-02 (full bg image) for a professional look. Use hero-banner-with-media (split with image) for a versatile alternative.",
     },
     rhythm: {
       pattern: "heavy-light-heavy",
@@ -817,10 +800,11 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     avoidComponents: [],
     closingPattern: "End with a CTA banner.",
     compositionGuidance: [
-      "TESTIMONIALS (if used): MUST use a SINGLE \"space_ds:space-testimony-card\" organism — do NOT stack individual testimony cards as separate sections.",
-      "FAQ (if used): MUST use \"space_ds:space-accordion\" organism with \"space_ds:space-accordion-item\" children — do NOT use separate text blocks for each Q&A pair.",
-      "TEAM (if used): MUST use a \"space_ds:space-team-section-image-card-1\" or \"space_ds:space-team-section-simple-1\" organism — do NOT stack individual people-cards as separate sections.",
-      "FEATURES (if used): PREFER \"space_ds:space-text-media-with-checklist\" for structured feature presentation over flat text blocks.",
+      "Every content section should start with a space-section-heading (label, title, description) before the content grid.",
+      "Use flexi column layouts rather than stacking individual components as separate sections.",
+      "TESTIMONIALS (if used): Use slider organism with testimony-cards in the slide_item slot.",
+      "FAQ (if used): Use accordion organism with accordion-item children.",
+      "TEAM (if used): Use a flexi grid (25-25-25-25 or 33-33-33) with user-card components.",
     ].join("\n"),
   },
 ];
@@ -863,6 +847,23 @@ export function getRule(pageType: PageType): PageDesignRule {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve a preferred pattern name to a human-readable description.
+ * If the name is a component ID (starts with "space_ds:"), return it as-is.
+ * Otherwise, look up the composition pattern description.
+ */
+function resolvePatternLabel(patternName: string): string {
+  if (patternName.startsWith("space_ds:")) {
+    return patternName;
+  }
+  const pattern = COMPOSITION_PATTERNS[patternName];
+  return pattern ? `${patternName} (${pattern.description})` : patternName;
+}
+
+// ---------------------------------------------------------------------------
 // Prompt Formatters
 // ---------------------------------------------------------------------------
 
@@ -878,6 +879,9 @@ export function formatRulesForPlan(
     ``,
     `CRITICAL: Each page MUST meet the minimum section count specified below. This is a hard constraint, NOT a suggestion. Pages with fewer sections than the minimum will be REJECTED and regenerated.`,
     ``,
+    `### Space DS v2 Compositional Model`,
+    `Sections are composed from layout primitives (space-flexi for multi-column, space-container for full-width) with atoms/molecules placed in slots. Every content section should start with a space-section-heading.`,
+    ``,
   ];
 
   for (const page of pages) {
@@ -888,11 +892,15 @@ export function formatRulesForPlan(
       .map((s) => {
         const pos = s.position !== "any" ? ` (${s.position})` : "";
         const wordRange = `~${s.wordCountRange[0]}-${s.wordCountRange[1]} words`;
-        return `${s.type}${pos} [${wordRange}]`;
+        const patternLabel = resolvePatternLabel(s.preferredPatterns[0]);
+        return `${s.type}${pos} [${wordRange}] -> ${patternLabel}`;
       });
     const optional = rule.sections
       .filter((s) => !s.required)
-      .map((s) => s.type);
+      .map((s) => {
+        const patternLabel = resolvePatternLabel(s.preferredPatterns[0]);
+        return `${s.type} -> ${patternLabel}`;
+      });
     lines.push(
       `- **${page.title}** (/${page.slug}) [${pageType}]:`,
       `  - MINIMUM ${rule.sectionCountRange[0]} sections, up to ${rule.sectionCountRange[1]}`,
@@ -933,12 +941,13 @@ export function formatRulesForGeneration(
     ``
   );
 
-  // Required/optional sections
+  // Required/optional sections with composition patterns
   lines.push(`Required sections:`);
   for (const s of rule.sections.filter((s) => s.required)) {
     const pos = s.position !== "any" ? ` — position: ${s.position}` : "";
+    const patternLabel = resolvePatternLabel(s.preferredPatterns[0]);
     lines.push(
-      `- ${s.type}${pos} (~${s.wordCountRange[0]}-${s.wordCountRange[1]} words) → prefer: ${s.preferredComponents[0]}`
+      `- ${s.type}${pos} (~${s.wordCountRange[0]}-${s.wordCountRange[1]} words) -> prefer: ${patternLabel}`
     );
   }
 
@@ -946,8 +955,9 @@ export function formatRulesForGeneration(
   if (optional.length > 0) {
     lines.push(``, `Optional sections (use 1-2 as needed):`);
     for (const s of optional) {
+      const patternLabel = resolvePatternLabel(s.preferredPatterns[0]);
       lines.push(
-        `- ${s.type} (~${s.wordCountRange[0]}-${s.wordCountRange[1]} words) → prefer: ${s.preferredComponents[0]}`
+        `- ${s.type} (~${s.wordCountRange[0]}-${s.wordCountRange[1]} words) -> prefer: ${patternLabel}`
       );
     }
   }
@@ -961,53 +971,63 @@ export function formatRulesForGeneration(
     ``
   );
 
-  // Component mapping (page-type-aware)
+  // Composition pattern reference
   lines.push(
-    `Component ID mapping (ranked by suitability for this ${pageType} page):`
+    `## Composition Patterns Reference`,
+    `Sections are built by composing layout primitives with atoms/molecules:`,
+    ``
   );
 
-  // Build a section-type → components map from this rule
-  const typeMap = new Map<string, string[]>();
+  // Collect all patterns referenced by this page type's sections
+  const referencedPatterns = new Set<string>();
   for (const s of rule.sections) {
-    typeMap.set(s.type, s.preferredComponents);
+    for (const p of s.preferredPatterns) {
+      if (!p.startsWith("space_ds:")) {
+        referencedPatterns.add(p);
+      }
+    }
   }
 
-  // Always include the generic fallback mappings for types not in this rule
-  const fallbackMap: Record<string, string[]> = {
+  for (const patternName of referencedPatterns) {
+    const pattern = COMPOSITION_PATTERNS[patternName];
+    if (!pattern) continue;
+    const layoutStr = pattern.layout
+      ? `flexi(${pattern.layout.column_width}${pattern.layout.gap ? `, gap: ${pattern.layout.gap}` : ""})`
+      : "organism-level (no flexi wrapper)";
+    lines.push(
+      `- **${pattern.name}**: ${pattern.description}`,
+      `  Layout: ${layoutStr}`,
+      `  Children: ${pattern.children.map((c) => `"${c}"`).join(", ")}`,
+      ``
+    );
+  }
+
+  // Component mapping for this page type
+  lines.push(
+    `## Component ID Mapping (${pageType} page)`
+  );
+
+  const sectionTypeMap: Record<string, string[]> = {
     hero: rule.heroRule.preferredStyles,
-    "text/about": ["space_ds:space-text-media-default"],
-    features: [
-      "space_ds:space-text-media-with-checklist",
-      "space_ds:space-text-media-with-stats",
-    ],
-    cta: [
-      "space_ds:space-cta-banner-type-1",
-      "space_ds:space-cta-banner-type-2",
-      "space_ds:space-cta-banner-type-3",
-    ],
-    testimonials: [
-      "space_ds:space-testimony-card",
-      "space_ds:space-people-card-testimony-with-avatar",
-    ],
-    team: [
-      "space_ds:space-team-section-image-card-1",
-      "space_ds:space-team-section-simple-1",
-    ],
-    faq: ["space_ds:space-accordion"],
-    "stats/kpi": ["space_ds:space-stats-kpi"],
-    "gallery/images": ["space_ds:space-text-media-with-images"],
-    "links/resources": ["space_ds:space-text-media-with-link"],
-    pricing: [
-      "space_ds:space-pricing-card",
-      "space_ds:space-pricing-featured-card",
-    ],
+    cta: ["space_ds:space-cta-banner-type-1"],
+    "text/about": ["text-image-split-50-50", "text-image-split-66-33", "full-width-text"],
+    features: ["features-grid-3col", "features-grid-4col"],
+    testimonials: ["testimonials-carousel"],
+    team: ["team-grid-4col", "team-grid-3col"],
+    faq: ["faq-accordion"],
+    "stats/kpi": ["stats-row"],
+    "gallery/cards": ["card-grid-3col", "card-carousel"],
+    contact: ["contact-info"],
+    logos: ["logo-showcase"],
+    "section-heading": ["space_ds:space-section-heading"],
   };
 
-  // Merge rule-specific preferences with fallbacks
-  for (const [sectionType, components] of Object.entries(fallbackMap)) {
-    const ruleComponents = typeMap.get(sectionType) ?? components;
-    const compList = ruleComponents.map((c) => `"${c}"`).join(" or ");
-    lines.push(`- ${sectionType} → ${compList}`);
+  for (const [sectionType, patterns] of Object.entries(sectionTypeMap)) {
+    const labels = patterns.map((p) => {
+      if (p.startsWith("space_ds:")) return `"${p}"`;
+      return `"${p}"`;
+    }).join(" or ");
+    lines.push(`- ${sectionType} -> ${labels}`);
   }
 
   // Avoid list
@@ -1018,13 +1038,23 @@ export function formatRulesForGeneration(
     );
   }
 
-  // Organism composition rules
+  // Section heading + container guidance
+  lines.push(
+    ``,
+    `## Section Composition Rules (CRITICAL)`,
+    `Every content section should follow this structure:`,
+    `1. space-container (with background_color alternating between sections)`,
+    `2. space-section-heading (label, title, description) at the top of the container`,
+    `3. space-flexi layout OR organism component for the section content`,
+    ``,
+    `Background alternation: alternate between light (white/light-gray) and colored (brand accent) backgrounds to create visual rhythm.`,
+    ``
+  );
+
+  // Page-specific composition guidance
   if (rule.compositionGuidance) {
     lines.push(
-      ``,
-      `## Organism Composition Rules (CRITICAL)`,
-      `The following rules dictate how content MUST be composed into organism-level containers rather than flat, stacked components:`,
-      ``,
+      `## Composition Guidance`,
       rule.compositionGuidance
     );
   }
