@@ -110,7 +110,7 @@ function wrapInContainer(
       padding_top: "large",
       padding_bottom: "large",
       ...(background && background !== "transparent"
-        ? { background }
+        ? { background_color: background }
         : {}),
     },
     label ? `Container: ${label}` : "Container"
@@ -270,7 +270,7 @@ function buildComposedSection(
       width: "boxed-width",
       padding_top: "large",
       padding_bottom: "large",
-      ...(bg && bg !== "transparent" ? { background: bg } : {}),
+      ...(bg && bg !== "transparent" ? { background_color: bg } : {}),
     },
     `Container: ${label}`
   );
