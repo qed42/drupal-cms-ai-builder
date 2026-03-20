@@ -35,32 +35,3 @@ function ai_site_builder_toolbar_alter(array &$items): void {
   }
 }
 
-/**
- * Implements hook_page_attachments().
- *
- * Attaches brand token CSS to every page if the generated file exists.
- */
-function ai_site_builder_page_attachments(array &$attachments): void {
-  $css_uri = 'public://brand/brand-tokens.css';
-  /** @var \Drupal\Core\File\FileSystemInterface $file_system */
-  $file_system = \Drupal::service('file_system');
-  $real_path = $file_system->realpath($css_uri);
-
-  if ($real_path && file_exists($real_path)) {
-    /** @var \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator */
-    $file_url_generator = \Drupal::service('file_url_generator');
-    $css_url = $file_url_generator->generateAbsoluteString($css_uri);
-
-    $attachments['#attached']['html_head'][] = [
-      [
-        '#type' => 'html_tag',
-        '#tag' => 'link',
-        '#attributes' => [
-          'rel' => 'stylesheet',
-          'href' => $css_url,
-        ],
-      ],
-      'ai_site_builder_brand_tokens',
-    ];
-  }
-}

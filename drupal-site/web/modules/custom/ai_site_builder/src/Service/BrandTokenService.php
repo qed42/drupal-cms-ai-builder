@@ -6,15 +6,15 @@ namespace Drupal\ai_site_builder\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Service for generating CSS custom properties from brand tokens JSON.
+ * Service for applying brand tokens to Space DS theme settings.
  *
  * Reads a tokens.json file containing colors, fonts, logo, and custom font
- * definitions, and generates CSS that maps to Space DS theme variables.
+ * definitions, and writes them to the space_ds.settings Drupal config so
+ * the theme can generate CSS variables at runtime.
  */
 class BrandTokenService implements BrandTokenServiceInterface {
 
@@ -22,16 +22,6 @@ class BrandTokenService implements BrandTokenServiceInterface {
    * The logger channel.
    */
   protected LoggerInterface $logger;
-
-  /**
-   * Common font weights used for Google Fonts imports.
-   */
-  protected const GOOGLE_FONT_WEIGHTS = '400;600;700';
-
-  /**
-   * The URI where generated brand token CSS is stored.
-   */
-  protected const CSS_OUTPUT_URI = 'public://brand/brand-tokens.css';
 
   /**
    * The URI where the site logo is stored.
@@ -44,15 +34,22 @@ class BrandTokenService implements BrandTokenServiceInterface {
   protected const FONTS_OUTPUT_DIR = 'public://fonts';
 
   /**
-   * Mapping of font file extensions to CSS font format strings.
+   * Mapping of blueprint color token keys to Space DS theme setting keys.
    */
-  protected const FONT_FORMAT_MAP = [
-    'woff2' => 'woff2',
-    'woff' => 'woff',
-    'ttf' => 'truetype',
-    'otf' => 'opentype',
-    'eot' => 'embedded-opentype',
-    'svg' => 'svg',
+  protected const COLOR_MAP = [
+    'brand' => 'base_brand_color',
+    'base' => 'base_brand_color',
+    'primary' => 'accent_color_primary',
+    'secondary' => 'accent_color_secondary',
+    'neutral' => 'neutral_color',
+    'text' => 'neutral_color',
+    'heading' => 'heading_color',
+    'border' => 'border_color',
+    'gray' => 'gray_color',
+    'success' => 'success_color',
+    'danger' => 'danger_color',
+    'warning' => 'warning_color',
+    'info' => 'info_color',
   ];
 
   /**
@@ -62,15 +59,12 @@ class BrandTokenService implements BrandTokenServiceInterface {
    *   The file system service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory service.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file URL generator service.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory
    *   The logger channel factory.
    */
   public function __construct(
     protected FileSystemInterface $fileSystem,
     protected ConfigFactoryInterface $configFactory,
-    protected FileUrlGeneratorInterface $fileUrlGenerator,
     LoggerChannelFactoryInterface $loggerFactory,
   ) {
     $this->logger = $loggerFactory->get('ai_site_builder');
@@ -79,52 +73,11 @@ class BrandTokenService implements BrandTokenServiceInterface {
   /**
    * {@inheritdoc}
    */
-  public function generateTokenCss(string $tokensPath): string {
-    $tokens = $this->readTokensFile($tokensPath);
-    return $this->generateTokenCssFromData($tokens);
-  }
-
-  /**
-   * Generates CSS from an already-parsed tokens array.
-   *
-   * @param array $tokens
-   *   The parsed tokens array.
-   *
-   * @return string
-   *   The generated CSS string.
-   */
-  protected function generateTokenCssFromData(array $tokens): string {
-    $css_parts = [];
-
-    $colors = $tokens['colors'] ?? [];
-    $fonts = $tokens['fonts'] ?? [];
-    $customFonts = $tokens['custom_fonts'] ?? [];
-
-    // Generate font imports or @font-face declarations.
-    if (!empty($customFonts)) {
-      $css_parts[] = $this->generateFontFaceDeclarations($customFonts);
-    }
-    elseif (!empty($fonts)) {
-      $css_parts[] = $this->generateGoogleFontsImport($fonts);
-    }
-
-    // Generate :root custom properties.
-    $css_parts[] = $this->generateRootBlock($colors, $fonts, $customFonts);
-
-    return implode("\n\n", array_filter($css_parts)) . "\n";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function applyTokens(string $tokensPath): void {
     $tokens = $this->readTokensFile($tokensPath);
 
-    // Generate CSS from already-parsed tokens to avoid double file read.
-    $css = $this->generateTokenCssFromData($tokens);
-    $this->ensureDirectoryExists('public://brand');
-    $this->fileSystem->saveData($css, self::CSS_OUTPUT_URI, FileSystemInterface::EXISTS_REPLACE);
-    $this->logger->info('Brand token CSS written to @path.', ['@path' => self::CSS_OUTPUT_URI]);
+    // Write brand colors and typography to theme settings.
+    $this->applyBrandSettings($tokens);
 
     // Handle logo.
     if (!empty($tokens['logo_url'])) {
@@ -135,6 +88,74 @@ class BrandTokenService implements BrandTokenServiceInterface {
     if (!empty($tokens['custom_fonts'])) {
       $this->copyCustomFontFiles($tokens['custom_fonts']);
     }
+  }
+
+  /**
+   * Writes brand colors and typography to space_ds.settings config.
+   *
+   * Maps blueprint token keys to Space DS theme setting keys and persists
+   * them so the theme's preprocess_page hook can generate CSS variables.
+   *
+   * @param array $tokens
+   *   The parsed tokens array containing 'colors' and 'fonts' keys.
+   */
+  protected function applyBrandSettings(array $tokens): void {
+    $config = $this->configFactory->getEditable('space_ds.settings');
+    $colors = $tokens['colors'] ?? [];
+    $fonts = $tokens['fonts'] ?? [];
+
+    // Map named color tokens to theme settings.
+    foreach (self::COLOR_MAP as $tokenKey => $settingKey) {
+      if (!empty($colors[$tokenKey])) {
+        $config->set($settingKey, $colors[$tokenKey]);
+      }
+    }
+
+    // Background colors (1-10).
+    for ($i = 1; $i <= 10; $i++) {
+      $bgKey = "background_{$i}";
+      if (!empty($colors[$bgKey])) {
+        $config->set("background_color_{$i}", $colors[$bgKey]);
+      }
+    }
+
+    // Typography: font family.
+    $bodyFont = $fonts['body'] ?? $fonts['primary'] ?? '';
+    if ($bodyFont) {
+      $config->set('font_family', $this->mapToThemeFont($bodyFont));
+    }
+
+    // Typography: base font size.
+    $fontSize = $fonts['size'] ?? $fonts['base_size'] ?? NULL;
+    if ($fontSize) {
+      $config->set('base_font_size', (int) $fontSize);
+    }
+
+    $config->save();
+    $this->logger->info('Brand settings written to space_ds.settings config.');
+  }
+
+  /**
+   * Maps a font name to one of the Space DS theme's supported font families.
+   *
+   * The Space DS theme supports three font family options: Geist, sans-serif,
+   * and serif. This method maps arbitrary font names to the closest match.
+   *
+   * @param string $fontName
+   *   The font family name from the blueprint tokens.
+   *
+   * @return string
+   *   One of 'Geist', 'sans-serif', or 'serif'.
+   */
+  protected function mapToThemeFont(string $fontName): string {
+    $fontLower = strtolower($fontName);
+    if (str_contains($fontLower, 'geist')) {
+      return 'Geist';
+    }
+    if (str_contains($fontLower, 'serif') && !str_contains($fontLower, 'sans')) {
+      return 'serif';
+    }
+    return 'sans-serif';
   }
 
   /**
@@ -165,143 +186,6 @@ class BrandTokenService implements BrandTokenServiceInterface {
     }
 
     return $tokens;
-  }
-
-  /**
-   * Generates a Google Fonts @import URL from font definitions.
-   *
-   * @param array $fonts
-   *   Associative array with keys like 'heading' and 'body' mapping to font
-   *   family names (e.g., 'Nunito Sans', 'Open Sans').
-   *
-   * @return string
-   *   The CSS @import statement for Google Fonts.
-   */
-  protected function generateGoogleFontsImport(array $fonts): string {
-    $families = [];
-
-    foreach ($fonts as $fontName) {
-      if (empty($fontName) || !is_string($fontName)) {
-        continue;
-      }
-      // Google Fonts URL uses + for spaces and :wght@ for weights.
-      $encoded = str_replace(' ', '+', $fontName);
-      $families[] = 'family=' . $encoded . ':wght@' . self::GOOGLE_FONT_WEIGHTS;
-    }
-
-    if (empty($families)) {
-      return '';
-    }
-
-    // Remove duplicate font families.
-    $families = array_unique($families);
-
-    $url = 'https://fonts.googleapis.com/css2?' . implode('&', $families) . '&display=swap';
-    return "@import url('" . $url . "');";
-  }
-
-  /**
-   * Generates @font-face declarations for custom fonts.
-   *
-   * @param array $customFonts
-   *   Array of custom font definitions. Each entry should contain:
-   *   - family: The font family name.
-   *   - src: The URL or path to the font file.
-   *   - weight: (optional) Font weight, defaults to '400'.
-   *   - style: (optional) Font style, defaults to 'normal'.
-   *
-   * @return string
-   *   The CSS @font-face declarations.
-   */
-  protected function generateFontFaceDeclarations(array $customFonts): string {
-    $declarations = [];
-
-    foreach ($customFonts as $font) {
-      if (empty($font['family']) || empty($font['src'])) {
-        continue;
-      }
-
-      $family = $font['family'];
-      $src = $font['src'];
-      $weight = $font['weight'] ?? '400';
-      $style = $font['style'] ?? 'normal';
-
-      // Determine font format from file extension.
-      $extension = strtolower(pathinfo($src, PATHINFO_EXTENSION));
-      $format = self::FONT_FORMAT_MAP[$extension] ?? '';
-
-      // Build the src value with format hint if available.
-      $srcValue = "url('{$src}')";
-      if ($format) {
-        $srcValue .= " format('{$format}')";
-      }
-
-      $declarations[] = <<<CSS
-@font-face {
-  font-family: '{$family}';
-  src: {$srcValue};
-  font-weight: {$weight};
-  font-style: {$style};
-  font-display: swap;
-}
-CSS;
-    }
-
-    return implode("\n\n", $declarations);
-  }
-
-  /**
-   * Generates the :root CSS block with custom properties.
-   *
-   * @param array $colors
-   *   Associative array of color tokens (e.g., ['primary' => '#2563eb']).
-   * @param array $fonts
-   *   Associative array of font tokens (e.g., ['heading' => 'Nunito Sans']).
-   * @param array $customFonts
-   *   Array of custom font definitions (used for font family references).
-   *
-   * @return string
-   *   The :root CSS block.
-   */
-  protected function generateRootBlock(array $colors, array $fonts, array $customFonts): string {
-    $properties = [];
-
-    // Map color keys to --space-color-{key} custom properties.
-    foreach ($colors as $key => $value) {
-      if (!is_string($value) || empty($value)) {
-        continue;
-      }
-      $sanitizedKey = preg_replace('/[^a-z0-9-]/', '-', strtolower((string) $key));
-      $properties[] = "  --space-color-{$sanitizedKey}: {$value};";
-    }
-
-    // Map font keys to --space-font-{key} custom properties.
-    // If custom fonts are provided, use those family names.
-    $fontFamilies = [];
-    if (!empty($customFonts)) {
-      foreach ($customFonts as $font) {
-        if (!empty($font['family']) && !empty($font['role'])) {
-          $fontFamilies[$font['role']] = $font['family'];
-        }
-      }
-    }
-
-    foreach ($fonts as $key => $fontName) {
-      if (empty($fontName) || !is_string($fontName)) {
-        continue;
-      }
-      // Use custom font family name if available for this role.
-      $family = $fontFamilies[$key] ?? $fontName;
-      $sanitizedKey = preg_replace('/[^a-z0-9-]/', '-', strtolower((string) $key));
-      $fallback = ($key === 'heading') ? 'sans-serif' : 'serif';
-      $properties[] = "  --space-font-{$sanitizedKey}: '{$family}', {$fallback};";
-    }
-
-    if (empty($properties)) {
-      return '';
-    }
-
-    return ":root {\n" . implode("\n", $properties) . "\n}";
   }
 
   /**

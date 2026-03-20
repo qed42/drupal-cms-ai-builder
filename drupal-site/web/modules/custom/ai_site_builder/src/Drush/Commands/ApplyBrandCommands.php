@@ -30,8 +30,8 @@ final class ApplyBrandCommands extends DrushCommands {
   /**
    * Apply brand tokens from a JSON file.
    *
-   * Generates CSS custom properties for Space DS theme variables,
-   * copies logo and custom fonts, and writes brand-tokens.css.
+   * Writes brand colors and typography to space_ds.settings config,
+   * copies logo and custom fonts.
    */
   #[CLI\Command(name: 'ai-site-builder:apply-brand', aliases: ['aisb:ab'])]
   #[CLI\Option(name: 'tokens', description: 'Path to the tokens.json file.')]
@@ -45,7 +45,7 @@ final class ApplyBrandCommands extends DrushCommands {
 
     $this->logger()->notice(dt('Applying brand tokens from @path...', ['@path' => $tokensPath]));
     $this->brandTokenService->applyTokens($tokensPath);
-    $this->logger()->success(dt('Brand tokens applied successfully. CSS written to public://css/brand-tokens.css'));
+    $this->logger()->success(dt('Brand tokens applied successfully. Settings written to space_ds.settings config.'));
   }
 
 }
