@@ -159,6 +159,8 @@ function componentHasProp(componentId: string, propName: string): boolean {
  */
 const PROP_OVERRIDES: Record<string, Record<string, unknown>> = {
   "space_ds:space-container": { width: "boxed-width" },
+  "space_ds:space-heading": { alignment: "left" },
+  "space_ds:space-section-heading": { alignment: "center" },
 };
 
 /**
@@ -465,6 +467,11 @@ function buildComposedSection(
         // Children are one level below section heading (e.g., h2 section → h3 children)
         const childTag = `h${Math.min(parseInt(sectionTag.replace("h", "")) + 1, 6)}`;
         childProps.tag_name = childTag;
+      }
+
+      // Ensure spacing between stacked children in column/content slots
+      if (!childProps.spacing_bottom && componentHasProp(child.component_id, "spacing_bottom")) {
+        childProps.spacing_bottom = "small";
       }
 
       items.push(
