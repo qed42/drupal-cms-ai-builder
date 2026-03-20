@@ -333,6 +333,7 @@
         "required": true,
         "title": "Button text",
         "description": "The text displayed on the button.",
+        "default": "Learn More",
         "examples": ["Contact Us"]
       },
       {
@@ -341,6 +342,7 @@
         "required": true,
         "title": "URL",
         "description": "The action URL that the button links to when clicked.",
+        "default": "#",
         "examples": ["https://www.qed42.com/contact"]
       },
       {
@@ -740,6 +742,7 @@
         "title": "Rich text",
         "description": "Use this component when you need to display rich text content.",
         "contentMediaType": "text/html",
+        "default": "<p></p>",
         "examples": [
           "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Tristique pretium pellentesque semper enim aliquam.</p>"
         ]
@@ -750,6 +753,7 @@
         "required": true,
         "title": "Text size",
         "description": "Select the text size for the rich text content.",
+        "default": "normal",
         "enum": [
           "text-xs",
           "text-sm",
@@ -1453,6 +1457,7 @@
         "required": true,
         "title": "Title",
         "description": "The title of the section.",
+        "default": "Section Title",
         "examples": ["Curabitur suscipit suscipit tellus"]
       },
       {
@@ -1481,6 +1486,7 @@
         "title": "Description",
         "description": "The description of the section.",
         "contentMediaType": "text/html",
+        "default": "",
         "examples": [
           "We understand human needs through empathy to design experiences that improve conversion through practical strategies. We create integrated design-driven digital solutions where form follows function across an entire web product or through individual products and services."
         ]
@@ -1529,6 +1535,7 @@
         "required": true,
         "title": "Sub headline",
         "description": "Sub headline",
+        "default": "Metric",
         "examples": ["Projects completed"]
       },
       {
@@ -1907,6 +1914,7 @@
         "required": true,
         "title": "Title",
         "description": "The title of the CTA Banner.",
+        "default": "Get Started Today",
         "examples": ["Vivamus aliquet elit"]
       },
       {
@@ -1916,6 +1924,7 @@
         "title": "Description",
         "description": "The description of the CTA Banner.",
         "contentMediaType": "text/html",
+        "default": "",
         "examples": [
           "Maecenas vestibulum mollis diam. In ac felis quis tortor malesuada pretium."
         ]
@@ -2001,6 +2010,7 @@
         "required": true,
         "title": "Title",
         "description": "Title of the banner.",
+        "default": "",
         "examples": [
           "Understanding Common Medicines: What They Do and How to Use Them Safely"
         ]
@@ -2046,6 +2056,7 @@
         "required": true,
         "title": "Brand Name",
         "description": "Name of the brand",
+        "default": "",
         "examples": ["Plus"]
       },
       {
@@ -2054,6 +2065,7 @@
         "required": true,
         "title": "Brand Slogan",
         "description": "Slogan for the brand",
+        "default": "",
         "examples": ["Healthcare, made clear"]
       },
       {
@@ -2063,6 +2075,7 @@
         "title": "Brand Description",
         "description": "Description for the brand",
         "contentMediaType": "text/html",
+        "default": "",
         "examples": [
           "A modern healthcare platform to understand healthcare clearly and securely."
         ]
@@ -2084,6 +2097,7 @@
         "required": true,
         "title": "Copyright Text",
         "description": "Copyright text for the brand",
+        "default": "",
         "examples": ["2026 Pulse Health Technologies"]
       }
     ],
@@ -2185,6 +2199,7 @@
         "required": true,
         "title": "Title",
         "description": "title",
+        "default": "Welcome",
         "examples": ["Curabitur suscipit suscipit tellus"]
       },
       {
@@ -2194,6 +2209,7 @@
         "title": "Sub Headline",
         "description": "Sub Headline",
         "contentMediaType": "text/html",
+        "default": "",
         "examples": [
           "Nous travaillons avec des clients du monde entier pour des utilisateurs du monde entier. Tout xE7a depuis la belle ville de Lyon, en France."
         ]
@@ -2250,6 +2266,7 @@
         "required": true,
         "title": "Title",
         "description": "Title of the banner.",
+        "default": "",
         "examples": [
           "Understanding Common Medicines: What They Do and How to Use Them Safely"
         ]
@@ -2474,6 +2491,7 @@
         "required": true,
         "title": "Title",
         "description": "Title of the banner.",
+        "default": "",
         "examples": [
           "Understanding Common Medicines: What They Do and How to Use Them Safely"
         ]

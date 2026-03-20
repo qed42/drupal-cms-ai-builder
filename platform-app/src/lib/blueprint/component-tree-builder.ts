@@ -5,6 +5,7 @@ import {
   getComponentVersion,
 } from "./canvas-component-versions";
 import { COMPOSITION_PATTERNS } from "../ai/page-design-rules";
+import componentManifest from "../ai/space-component-manifest.json";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -61,17 +62,71 @@ const PATTERN_COLUMN_WIDTHS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 /**
- * Required prop defaults for components where Canvas enforces required fields.
- * Prevents import failures when AI omits required props.
+ * Build a map of required prop defaults for every component in the manifest.
+ * This is computed once at module load and used by createItem() to ensure
+ * all required props have values, preventing Canvas validation failures.
  */
-const REQUIRED_PROP_DEFAULTS: Record<string, Record<string, unknown>> = {
-  "space_ds:space-heading": { tag_name: "h2" },
+interface ManifestProp {
+  name: string;
+  type: string;
+  required: boolean;
+  default?: unknown;
+  enum?: (string | number | boolean)[];
+  examples?: unknown[];
+}
+
+interface ManifestComponent {
+  id: string;
+  props: ManifestProp[];
+}
+
+function buildRequiredPropDefaults(): Map<string, Record<string, unknown>> {
+  const map = new Map<string, Record<string, unknown>>();
+
+  for (const comp of componentManifest as ManifestComponent[]) {
+    const defaults: Record<string, unknown> = {};
+
+    for (const prop of comp.props) {
+      if (!prop.required) continue;
+
+      // Use manifest default, then first enum value, then type-based fallback
+      if (prop.default !== undefined) {
+        defaults[prop.name] = prop.default;
+      } else if (prop.enum && prop.enum.length > 0) {
+        defaults[prop.name] = prop.enum[0];
+      } else if (prop.type === "string") {
+        defaults[prop.name] = "";
+      } else if (prop.type === "integer" || prop.type === "number") {
+        defaults[prop.name] = 0;
+      } else if (prop.type === "boolean") {
+        defaults[prop.name] = false;
+      }
+    }
+
+    if (Object.keys(defaults).length > 0) {
+      map.set(comp.id, defaults);
+    }
+  }
+
+  return map;
+}
+
+/** Required prop defaults derived from manifest — computed once at import. */
+const MANIFEST_REQUIRED_DEFAULTS = buildRequiredPropDefaults();
+
+/**
+ * Intentional overrides where our desired default differs from the manifest.
+ * These take precedence over manifest defaults but are overridden by user input.
+ */
+const PROP_OVERRIDES: Record<string, Record<string, unknown>> = {
   "space_ds:space-container": { width: "boxed-width" },
-  "space_ds:space-section-heading": { tag_name: "h2" },
 };
 
 /**
  * Create a single ComponentTreeItem with Canvas-format IDs and version hash.
+ *
+ * Merges required prop defaults from the manifest as a safety net:
+ *   manifest defaults → intentional overrides → user-provided inputs
  */
 function createItem(
   componentId: string,
@@ -80,9 +135,12 @@ function createItem(
   inputs: Record<string, unknown>,
   label?: string
 ): ComponentTreeItem {
-  // Merge required prop defaults (inputs take precedence)
-  const defaults = REQUIRED_PROP_DEFAULTS[componentId] ?? {};
-  const mergedInputs = { ...defaults, ...inputs };
+  // Layer 1: manifest-derived required prop defaults
+  const manifestDefaults = MANIFEST_REQUIRED_DEFAULTS.get(componentId) ?? {};
+  // Layer 2: intentional overrides (e.g., container width)
+  const overrides = PROP_OVERRIDES[componentId] ?? {};
+  // Layer 3: user/AI-provided inputs take final precedence
+  const mergedInputs = { ...manifestDefaults, ...overrides, ...inputs };
 
   const canvasId = toCanvasComponentId(componentId);
   const version = getComponentVersion(componentId);
