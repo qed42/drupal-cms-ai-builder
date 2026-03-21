@@ -609,6 +609,122 @@ function checkAuthoritativeVoice(input: ReviewInput): ReviewCheck {
 }
 
 // ---------------------------------------------------------------------------
+// Interlinking Checks (TASK-338)
+// ---------------------------------------------------------------------------
+
+const GENERIC_CTA_PATTERNS = [
+  /^learn more$/i,
+  /^click here$/i,
+  /^read more$/i,
+  /^find out more$/i,
+  /^get started$/i,
+  /^submit$/i,
+];
+
+function checkInterlinkDensity(input: ReviewInput): ReviewCheck {
+  let internalLinks = 0;
+
+  for (const section of input.page.sections) {
+    // Check section-level URL props (CTA banners, organisms)
+    for (const value of Object.values(section.props)) {
+      if (typeof value === "string" && /^\/[a-z]/.test(value)) {
+        internalLinks++;
+      }
+    }
+    // Check children URL props (buttons, cards, links)
+    for (const child of section.children ?? []) {
+      for (const value of Object.values(child.props)) {
+        if (typeof value === "string" && /^\/[a-z]/.test(value)) {
+          internalLinks++;
+        }
+      }
+    }
+    // Check inline <a> tags in text content
+    const allText = [
+      ...Object.values(section.props),
+      ...(section.children ?? []).flatMap((c) => Object.values(c.props)),
+    ]
+      .filter((v): v is string => typeof v === "string")
+      .join(" ");
+    const inlineLinks = allText.match(/<a\s+href="\/[^"]+"/g);
+    if (inlineLinks) internalLinks += inlineLinks.length;
+  }
+
+  // Contact pages are destinations — lower threshold
+  const pageType = classifyPageType(input.page.slug, input.page.title);
+  const minLinks = pageType === "contact" ? 1 : 2;
+
+  return {
+    name: "interlink-density",
+    dimension: "seo",
+    passed: internalLinks >= minLinks,
+    severity: "warning",
+    message: internalLinks >= minLinks
+      ? `Found ${internalLinks} internal links (minimum: ${minLinks})`
+      : `Only ${internalLinks} internal link(s), need at least ${minLinks}`,
+    fix: internalLinks < minLinks
+      ? `Add internal links to sibling pages using space-button url, space-imagecard url, or <a> tags in space-text content.`
+      : undefined,
+  };
+}
+
+function checkGenericCtaText(input: ReviewInput): ReviewCheck {
+  const genericCtas: string[] = [];
+
+  for (const section of input.page.sections) {
+    for (const child of section.children ?? []) {
+      if (!child.component_id.includes("button") && !child.component_id.includes("link")) continue;
+      const text = child.props.text;
+      if (typeof text === "string" && GENERIC_CTA_PATTERNS.some((p) => p.test(text.trim()))) {
+        genericCtas.push(text.trim());
+      }
+    }
+  }
+
+  return {
+    name: "generic-cta-text",
+    dimension: "seo",
+    passed: genericCtas.length === 0,
+    severity: "warning",
+    message: genericCtas.length === 0
+      ? "All CTA text is descriptive"
+      : `Generic CTA text found: "${genericCtas.join('", "')}"`,
+    fix: genericCtas.length > 0
+      ? `Replace generic CTA text with descriptive labels that hint at the destination (e.g., "Explore Our Services →" instead of "Learn More").`
+      : undefined,
+  };
+}
+
+function checkSelfLinks(input: ReviewInput): ReviewCheck {
+  const selfPath = `/${input.page.slug}`;
+  let selfLinks = 0;
+
+  for (const section of input.page.sections) {
+    for (const value of Object.values(section.props)) {
+      if (value === selfPath) selfLinks++;
+    }
+    for (const child of section.children ?? []) {
+      for (const value of Object.values(child.props)) {
+        if (value === selfPath) selfLinks++;
+      }
+    }
+  }
+
+  return {
+    name: "no-self-links",
+    dimension: "seo",
+    passed: selfLinks === 0,
+    severity: "warning",
+    message: selfLinks === 0
+      ? "No self-referencing links"
+      : `${selfLinks} self-referencing link(s) to /${input.page.slug}`,
+    fix: selfLinks > 0
+      ? `Remove links pointing to the current page (/${input.page.slug}). Link to other relevant pages instead.`
+      : undefined,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Main Review Function
 // ---------------------------------------------------------------------------
 
@@ -634,6 +750,10 @@ export function reviewPage(input: ReviewInput): ReviewResult {
     checkStructuredClaims(input),
     checkFaqPresence(input),
     checkAuthoritativeVoice(input),
+    // Interlinking checks (TASK-338)
+    checkInterlinkDensity(input),
+    checkGenericCtaText(input),
+    checkSelfLinks(input),
   ];
 
   // Score weights: errors count fully, warnings count at 0.3 weight.

@@ -80,6 +80,65 @@ function buildComponentPropReference(): string[] {
 }
 
 /**
+ * Generate page-type-specific interlinking hints.
+ * Guides the AI on which pages to link from CTAs, cards, and inline text.
+ */
+function getInterlinkingHints(
+  pageType: string,
+  allPages: Array<{ slug: string; title: string }>,
+  currentSlug: string
+): string[] {
+  const slugs = new Set(allPages.map((p) => p.slug));
+  const otherPages = allPages.filter((p) => p.slug !== currentSlug);
+  if (otherPages.length === 0) return [];
+
+  const hints: string[] = [];
+  const findPage = (...candidates: string[]) =>
+    otherPages.find((p) => candidates.some((c) => p.slug.includes(c)));
+
+  const contactPage = findPage("contact");
+  const servicesPage = findPage("services", "service");
+  const aboutPage = findPage("about");
+  const teamPage = findPage("team");
+  const portfolioPage = findPage("portfolio", "work", "case");
+  const faqPage = findPage("faq");
+
+  switch (pageType) {
+    case "home":
+      hints.push(`- **Home page linking**: CTA banner → ${contactPage ? `/${contactPage.slug}` : servicesPage ? `/${servicesPage.slug}` : "conversion page"}`);
+      if (servicesPage) hints.push(`  - Feature/service cards → /${servicesPage.slug}`);
+      if (aboutPage) hints.push(`  - About teaser → /${aboutPage.slug}`);
+      if (teamPage) hints.push(`  - Team mention → /${teamPage.slug}`);
+      break;
+    case "services":
+      hints.push(`- **Services page linking**: CTA banner → ${contactPage ? `/${contactPage.slug}` : "conversion page"}`);
+      if (portfolioPage) hints.push(`  - Service cards → /${portfolioPage.slug}`);
+      if (aboutPage) hints.push(`  - Trust section → /${aboutPage.slug}`);
+      break;
+    case "about":
+      hints.push(`- **About page linking**: CTA banner → ${contactPage ? `/${contactPage.slug}` : servicesPage ? `/${servicesPage.slug}` : "conversion page"}`);
+      if (servicesPage) hints.push(`  - Value props → /${servicesPage.slug}`);
+      if (teamPage) hints.push(`  - Team mention → /${teamPage.slug}`);
+      break;
+    case "contact":
+      hints.push(`- **Contact page linking**: No closing CTA banner needed (this IS the conversion page)`);
+      if (servicesPage) hints.push(`  - Supporting text → /${servicesPage.slug}`);
+      if (faqPage) hints.push(`  - FAQ reference → /${faqPage.slug}`);
+      break;
+    case "faq":
+      hints.push(`- **FAQ page linking**: CTA banner → ${contactPage ? `/${contactPage.slug}` : "conversion page"}`);
+      if (servicesPage) hints.push(`  - Answer links → /${servicesPage.slug}`);
+      break;
+    default:
+      if (contactPage) hints.push(`- CTA banner → /${contactPage.slug}`);
+      else if (servicesPage) hints.push(`- CTA banner → /${servicesPage.slug}`);
+      break;
+  }
+
+  return hints;
+}
+
+/**
  * Build a per-page generation prompt using the research brief, content plan,
  * and onboarding context. Each page gets its own AI call with full context.
  */
@@ -87,7 +146,8 @@ export function buildPageGenerationPrompt(
   page: ContentPlanPage,
   data: OnboardingData,
   research: ResearchBrief,
-  plan: ContentPlan
+  plan: ContentPlan,
+  allPages?: Array<{ slug: string; title: string; purpose?: string }>
 ): string {
   const sections: string[] = [
     `You are a professional website copywriter generating content for a specific page.`,
@@ -117,6 +177,20 @@ export function buildPageGenerationPrompt(
     `- Avoid: ${research.toneGuidance.avoid.join(", ") || "N/A"}`,
     `- Example sentences: ${research.toneGuidance.examples.join(" | ") || "N/A"}`
   );
+
+  // Site pages available for interlinking (TASK-335)
+  if (allPages && allPages.length > 0) {
+    sections.push(
+      ``,
+      `## Site Pages (available for interlinking)`,
+      ...allPages.map((p) =>
+        p.slug === page.slug
+          ? `- /${p.slug} — ${p.title} ← THIS PAGE (do not self-link)`
+          : `- /${p.slug} — ${p.title}${p.purpose ? `: ${p.purpose}` : ""}`
+      ),
+      ``
+    );
+  }
 
   // Page-specific plan with section count requirement
   const pageType = classifyPageType(page.slug, page.title);
@@ -250,6 +324,18 @@ export function buildPageGenerationPrompt(
     `- **Space Heading**: Always set "align" prop (use "none" if no preference).`,
     `- **Multi-column layouts**: Every column slot MUST have at least one child component. Never leave a column empty.`,
     `- **Images**: Each component that accepts an image prop should describe a unique, contextually relevant image. Use different images for different sections — never reuse the same image description across sections.`,
+    ``,
+    `### Internal Linking Strategy (SEO/GEO Critical)`,
+    `- Every CTA banner MUST set its child space-button "url" to a real page from the Site Pages list above`,
+    `- Every composed section with a space-button SHOULD link to a relevant sibling page`,
+    `- Use descriptive CTA text that hints at the destination — not generic "Learn More" or "Click Here"`,
+    `  Good: "Explore Our Services →", "Meet the Team →", "Get a Free Quote →"`,
+    `  Bad: "Learn More", "Click Here", "Read More"`,
+    `- space-imagecard and space-content-detail: set "url" to link cards to relevant pages, and "full_box_link": true`,
+    `- In space-text HTML content, embed internal links naturally: <a href="/services">our services</a>`,
+    `- Do NOT link to the current page (self-link)`,
+    `- All internal URLs must use relative format: /{slug} (matching a page from the Site Pages list)`,
+    ...getInterlinkingHints(pageType, allPages ?? [], page.slug),
     ``,
     `Guidelines:`,
     `- CRITICAL: Only use props that are listed in the Component Prop Reference above. Do NOT use props that don't exist on a component.`,

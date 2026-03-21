@@ -4,6 +4,7 @@ import { generateValidatedJSON } from "@/lib/ai/validation";
 import { PageLayoutSchema } from "@/lib/pipeline/schemas";
 import { buildPageGenerationPrompt } from "@/lib/ai/prompts/page-generation";
 import { buildComponentTree, buildHeaderTree, buildFooterTree } from "@/lib/blueprint/component-tree-builder";
+import { validateAndRewriteUrls } from "@/lib/blueprint/url-validator";
 import { validateSections, formatValidationFeedback } from "@/lib/blueprint/component-validator";
 import { safeParsePropsJson } from "@/lib/ai/safe-parse-props";
 import { reviewPage, formatReviewLog } from "./review";
@@ -60,7 +61,14 @@ export async function runGeneratePhase(
       await onProgress(planPage.title, i, plan.pages.length);
     }
 
-    const basePrompt = buildPageGenerationPrompt(planPage, data, research, plan);
+    // Build sitemap context for interlinking (TASK-335)
+    const allPages = plan.pages.map((p) => ({
+      slug: p.slug,
+      title: p.title,
+      purpose: p.purpose,
+    }));
+
+    const basePrompt = buildPageGenerationPrompt(planPage, data, research, plan, allPages);
 
     // Scale token budget based on planned section count (TASK-289)
     const maxTokens = calculateTokenBudget(planPage.sections.length);
@@ -256,6 +264,13 @@ export async function runGeneratePhase(
     // Use the best attempt
     const finalPage = reviewResult?.passed ? bestAttempt.page : bestAttempt.page;
     const componentTree = buildComponentTree(finalPage.sections);
+
+    // Post-generation URL validation (TASK-337)
+    const allSlugs = plan.pages.map((p) => p.slug);
+    const urlRewrites = validateAndRewriteUrls(componentTree, allSlugs);
+    if (urlRewrites.length > 0) {
+      console.log(`[generate] URL rewrites for "${planPage.title}":`, urlRewrites.join("; "));
+    }
 
     // Store review metadata (TASK-294)
     const reviewMeta = reviewResult ? {
