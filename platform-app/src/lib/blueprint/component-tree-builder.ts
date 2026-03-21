@@ -263,7 +263,7 @@ function createItem(
            (val as Record<string, unknown>).src === null));
       if (needsFill) {
         mergedInputs[propName] = {
-          src: "/images/placeholder.webp",
+          src: "/placeholder.png",
           alt: label || "Image",
           width: propName === "background_image" ? 1920 : 800,
           height: propName === "background_image" ? 1080 : 600,
