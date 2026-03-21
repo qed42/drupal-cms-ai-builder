@@ -1,0 +1,2518 @@
+[
+  {
+    "id": "space_ds:space-container",
+    "name": "Space Container",
+    "description": "",
+    "status": "stable",
+    "group": "Base",
+    "category": "base",
+    "props": [
+      {
+        "name": "background_color",
+        "type": "string",
+        "required": false,
+        "title": "Background color",
+        "description": "The background color of the container.",
+        "enum": [
+          "transparent",
+          "white",
+          "black",
+          "base-brand",
+          "option-1",
+          "option-2",
+          "option-3",
+          "option-4",
+          "option-5",
+          "option-6",
+          "option-7",
+          "option-8",
+          "option-9",
+          "option-10"
+        ],
+        "metaEnum": {
+          "transparent": "Transparent",
+          "white": "White",
+          "black": "Black",
+          "base-brand": "Base Brand",
+          "option-1": "Option 1",
+          "option-2": "Option 2",
+          "option-3": "Option 3",
+          "option-4": "Option 4",
+          "option-5": "Option 5",
+          "option-6": "Option 6",
+          "option-7": "Option 7",
+          "option-8": "Option 8",
+          "option-9": "Option 9",
+          "option-10": "Option 10"
+        },
+        "default": "transparent",
+        "examples": ["transparent"]
+      },
+      {
+        "name": "width",
+        "type": "string",
+        "required": true,
+        "title": "Width",
+        "description": "The width of the container.",
+        "enum": [
+          "boxed-width",
+          "full-width",
+          "width-4xl",
+          "width-5xl"
+        ],
+        "metaEnum": {
+          "boxed-width": "Box Width",
+          "full-width": "Full Width",
+          "width-4xl": "4xl Width - 896px",
+          "width-5xl": "5xl Width - 1024px"
+        },
+        "default": "full-width",
+        "examples": ["full-width"]
+      },
+      {
+        "name": "padding_left",
+        "type": "string",
+        "required": false,
+        "title": "Padding left",
+        "description": "The left padding of the container.",
+        "enum": ["none", "small", "medium", "large", "x-large"],
+        "default": "none",
+        "examples": ["none"]
+      },
+      {
+        "name": "padding_right",
+        "type": "string",
+        "required": false,
+        "title": "Padding right",
+        "description": "The right padding of the container.",
+        "enum": ["none", "small", "medium", "large", "x-large"],
+        "default": "none",
+        "examples": ["none"]
+      },
+      {
+        "name": "padding_top",
+        "type": "string",
+        "required": false,
+        "title": "Padding top",
+        "description": "The top padding of the container.",
+        "enum": ["none", "small", "medium", "large", "x-large"],
+        "default": "none",
+        "examples": ["none"]
+      },
+      {
+        "name": "padding_bottom",
+        "type": "string",
+        "required": false,
+        "title": "Padding bottom",
+        "description": "The bottom padding of the container.",
+        "enum": ["none", "small", "medium", "large", "x-large"],
+        "default": "none",
+        "examples": ["none"]
+      },
+      {
+        "name": "margin_top",
+        "type": "string",
+        "required": false,
+        "title": "Margin top",
+        "description": "The top margin of the container.",
+        "enum": ["none", "small", "medium", "large", "x-large"],
+        "default": "none",
+        "examples": ["none"]
+      },
+      {
+        "name": "margin_bottom",
+        "type": "string",
+        "required": false,
+        "title": "Margin bottom",
+        "description": "The bottom margin of the container.",
+        "enum": ["none", "small", "medium", "large", "x-large"],
+        "default": "none",
+        "examples": ["none"]
+      },
+      {
+        "name": "background_pattern",
+        "type": "boolean",
+        "required": false,
+        "title": "Background pattern",
+        "description": "Whether the pattern is showing or not.",
+        "default": false,
+        "examples": [false]
+      },
+      {
+        "name": "pattern_image_position",
+        "type": "string",
+        "required": false,
+        "title": "Background pattern position",
+        "description": "Defines the position of the background pattern within the container (e.g., bottom-left, bottom-right, both corners, full width, or none).",
+        "enum": [
+          "bottom-right",
+          "bottom-left",
+          "bottom-center",
+          "both-bottom-right-left"
+        ],
+        "metaEnum": {
+          "bottom-right": "Bottom Right",
+          "bottom-left": "Bottom Left",
+          "bottom-center": "Bottom Center",
+          "both-bottom-right-left": "Both - Bottom right & left"
+        },
+        "default": "bottom-right",
+        "examples": ["bottom-right"]
+      }
+    ],
+    "slots": [
+      {
+        "name": "content",
+        "title": "Content",
+        "description": "Content slot."
+      }
+    ]
+  },
+  {
+    "id": "space_ds:space-flexi",
+    "name": "Space Flexible Slot",
+    "description": "",
+    "status": "stable",
+    "group": "Base",
+    "category": "base",
+    "props": [
+      {
+        "name": "no_of_columns",
+        "type": "string",
+        "required": false,
+        "title": "Columns",
+        "description": "Number of inline columns: none, one, two, three, four.",
+        "enum": ["none", "one", "two", "three", "four"],
+        "default": "none",
+        "examples": ["none"]
+      },
+      {
+        "name": "column_width",
+        "type": "string",
+        "required": false,
+        "title": "Column Width",
+        "description": "Adjust column width based on number of columns.",
+        "enum": [
+          "100",
+          "50-50",
+          "33-66",
+          "66-33",
+          "25-75",
+          "75-25",
+          "25-50-25",
+          "50-25-25",
+          "25-25-50",
+          "33-33-33",
+          "25-25-25-25"
+        ],
+        "metaEnum": {
+          "100": "1 Col - 100%",
+          "50-50": "2 Col - 50%/50%",
+          "33-66": "2 Col - 33%/66%",
+          "66-33": "2 Col - 66%/33%",
+          "25-75": "2 Col - 25%/75%",
+          "75-25": "2 Col - 75%/25%",
+          "25-50-25": "3 Col - 25%/50%/25%",
+          "50-25-25": "3 Col - 50%/25%/25%",
+          "25-25-50": "3 Col - 25%/25%/50%",
+          "33-33-33": "3 Col - 33%/33%/33%",
+          "25-25-25-25": "4 Col - 25%/25%/25%/25%"
+        },
+        "default": "100",
+        "examples": ["100"]
+      },
+      {
+        "name": "vertical",
+        "type": "string",
+        "required": false,
+        "title": "Align items",
+        "description": "Vertical alignment: top, center, bottom.",
+        "enum": ["top", "center", "bottom"],
+        "default": "top",
+        "examples": ["top"]
+      },
+      {
+        "name": "horizontal",
+        "type": "string",
+        "required": false,
+        "title": "Justify items",
+        "description": "Horizontal alignment: left, center, right, space-between. Note: space-between only works with col: none.",
+        "enum": ["left", "center", "right", "space-between"],
+        "default": "left",
+        "examples": ["left"]
+      },
+      {
+        "name": "direction",
+        "type": "string",
+        "required": false,
+        "title": "Direction of items",
+        "description": "Place items: Across the page, Down the page.",
+        "enum": ["across", "down"],
+        "default": "across",
+        "examples": ["across"]
+      },
+      {
+        "name": "gap",
+        "type": "string",
+        "required": false,
+        "title": "Gap between items",
+        "description": "The space between columns or content.",
+        "enum": ["none", "small", "medium", "large"],
+        "default": "medium",
+        "examples": ["medium"]
+      },
+      {
+        "name": "wrap",
+        "type": "string",
+        "required": false,
+        "title": "Wrap",
+        "description": "When using col: none, this will allow components to wrap.",
+        "enum": ["wrap", "nowrap"],
+        "examples": ["wrap"]
+      },
+      {
+        "name": "margin_top",
+        "type": "string",
+        "required": false,
+        "title": "Margin top",
+        "description": "The top margin of the container.",
+        "enum": ["none", "x-small", "small", "medium", "large", "x-large"],
+        "default": "none",
+        "examples": ["none"]
+      },
+      {
+        "name": "margin_bottom",
+        "type": "string",
+        "required": false,
+        "title": "Margin bottom",
+        "description": "The bottom margin of the container.",
+        "enum": ["none", "x-small", "small", "medium", "large", "x-large"],
+        "default": "none",
+        "examples": ["none"]
+      }
+    ],
+    "slots": [
+      {
+        "name": "content",
+        "title": "Content",
+        "description": "Flexible content slot."
+      },
+      {
+        "name": "column_one",
+        "title": "Column one",
+        "description": "First column slot."
+      },
+      {
+        "name": "column_two",
+        "title": "Column two",
+        "description": "Second column slot."
+      },
+      {
+        "name": "column_three",
+        "title": "Column three",
+        "description": "Third column slot."
+      },
+      {
+        "name": "column_four",
+        "title": "Column four",
+        "description": "Fourth column slot."
+      }
+    ]
+  },
+  {
+    "id": "space_ds:space-button",
+    "name": "Space Button",
+    "description": "A customizable button with options for icon, text, size, style, and state to fit different interactions.",
+    "status": "stable",
+    "group": "Atoms",
+    "category": "atom",
+    "props": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "title": "Button text",
+        "description": "The text displayed on the button.",
+        "default": "Learn More",
+        "examples": ["Contact Us"]
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": true,
+        "title": "URL",
+        "description": "The action URL that the button links to when clicked.",
+        "default": "#",
+        "examples": ["https://www.qed42.com/contact"]
+      },
+      {
+        "name": "variant",
+        "type": "string",
+        "required": false,
+        "title": "Variants",
+        "description": "The visual style of the button (e.g., primary, secondary).",
+        "enum": ["primary", "secondary"],
+        "default": "primary",
+        "examples": ["primary"]
+      },
+      {
+        "name": "size",
+        "type": "string",
+        "required": true,
+        "title": "Size",
+        "description": "The size of the button (e.g., small, medium, large).",
+        "enum": ["small", "medium", "large", "xlarge", "xxlarge", "xxxlarge"],
+        "default": "small",
+        "examples": ["small"]
+      },
+      {
+        "name": "button_corners",
+        "type": "string",
+        "required": false,
+        "title": "Corners",
+        "description": "The style of the button corners (e.g., rounded or square).",
+        "enum": ["rectangle_corner", "rounded_half_circle"],
+        "default": "rounded_half_circle",
+        "examples": ["rounded_half_circle"]
+      },
+      {
+        "name": "button_type",
+        "type": "string",
+        "required": false,
+        "title": "Type",
+        "description": "The type of button, determining whether it shows only an icon, only text, or both.",
+        "enum": ["only_icon", "text_with_icon", "only_text"],
+        "default": "only_text",
+        "examples": ["only_text"]
+      },
+      {
+        "name": "icon",
+        "type": "string",
+        "required": false,
+        "title": "Icon name",
+        "description": "The ID of an icon from the Phosphor Icons library.",
+        "default": "rocket",
+        "examples": ["rocket"]
+      },
+      {
+        "name": "icon_size",
+        "type": "string",
+        "required": false,
+        "title": "Icon size",
+        "description": "",
+        "enum": ["small", "medium", "large", "extra-large"],
+        "metaEnum": {
+          "small": "Small",
+          "medium": "Medium",
+          "large": "Large",
+          "extra-large": "Extra large"
+        },
+        "examples": ["medium"]
+      },
+      {
+        "name": "icon_alignment",
+        "type": "string",
+        "required": false,
+        "title": "Icon alignment",
+        "description": "The alignment of the icon relative to the button text (left or right).",
+        "enum": ["left", "right"],
+        "default": "right",
+        "examples": ["right"]
+      },
+      {
+        "name": "expanded",
+        "type": "string",
+        "required": false,
+        "title": "Expanded",
+        "description": "Whether the button should be full width or auto width.",
+        "enum": ["yes", "no"],
+        "default": "no",
+        "examples": ["no"]
+      },
+      {
+        "name": "button_state",
+        "type": "string",
+        "required": false,
+        "title": "State",
+        "description": "The state of the button (e.g., focused or disabled).",
+        "enum": ["focused", "disabled"],
+        "default": "focused",
+        "examples": ["focused"]
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-heading",
+    "name": "Space Heading",
+    "description": "A customizable heading component with configurable text, color, tag, font, and alignment options.",
+    "status": "stable",
+    "group": "Atoms",
+    "category": "atom",
+    "props": [
+      {
+        "name": "content",
+        "type": "string",
+        "required": true,
+        "title": "Heading",
+        "description": "The text displayed in the heading.",
+        "default": "Add Heading",
+        "examples": ["SPACE is the Complete Team Collaboration Solution."]
+      },
+      {
+        "name": "title_color",
+        "type": "string",
+        "required": false,
+        "title": "Heading color",
+        "description": "The color of the heading text.",
+        "enum": ["text-sds-heading", "text-sds-neutral"],
+        "metaEnum": {
+          "text-sds-heading": "Heading",
+          "text-sds-neutral": "Neutral"
+        },
+        "default": "text-sds-heading",
+        "examples": ["text-sds-heading"]
+      },
+      {
+        "name": "tag_name",
+        "type": "string",
+        "required": false,
+        "title": "Tag",
+        "description": "The HTML tag to be used for the heading (e.g., h1, h2).",
+        "enum": ["h1", "h2", "h3", "h4", "h5", "h6", "div"],
+        "metaEnum": {
+          "h1": "Heading 1",
+          "h2": "Heading 2",
+          "h3": "Heading 3",
+          "h4": "Heading 4",
+          "h5": "Heading 5",
+          "h6": "Heading 6",
+          "div": "Div"
+        },
+        "default": "h1",
+        "examples": ["h1"]
+      },
+      {
+        "name": "spacing_bottom",
+        "type": "string",
+        "required": false,
+        "title": "Spacing bottom",
+        "description": "The bottom spacing for the heading.",
+        "enum": ["none", "small", "medium", "large"],
+        "default": "none",
+        "examples": ["none"]
+      },
+      {
+        "name": "align",
+        "type": "string",
+        "required": false,
+        "title": "Align",
+        "description": "The alignment of the heading (e.g., left, right, center).",
+        "enum": ["none", "left", "right", "center"],
+        "default": "left",
+        "examples": ["left"]
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "URL",
+        "description": "The URL that the heading links to.",
+        "default": "Add link"
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-icon",
+    "name": "Space Icon",
+    "description": "",
+    "status": "stable",
+    "group": "Atoms",
+    "category": "atom",
+    "props": [
+      {
+        "name": "icon",
+        "type": "string",
+        "required": true,
+        "title": "Icon name",
+        "description": "The ID of an icon from the Phosphor Icons library.",
+        "default": "rocket",
+        "examples": ["rocket"]
+      },
+      {
+        "name": "icon_size",
+        "type": "string",
+        "required": true,
+        "title": "Icon size",
+        "description": "",
+        "enum": ["extra-small", "small", "medium", "large", "extra-large"],
+        "metaEnum": {
+          "extra-extra-small": "Extra extra small - 16px",
+          "extra-small": "Extra small - 20px",
+          "small": "Small - 24px",
+          "medium": "Medium - 28px",
+          "large": "Large - 32px",
+          "extra-large": "Extra large - 36px"
+        },
+        "default": "medium",
+        "examples": ["medium"]
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-image",
+    "name": "Space Image",
+    "description": "An image component with customizable corners, captions, and additional styling options.",
+    "status": "stable",
+    "group": "Atoms",
+    "category": "atom",
+    "props": [
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "description": "The image file or URL to be displayed.",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [
+          {
+            "src": "images/city.jpeg",
+            "alt": "Boring placeholder",
+            "width": 600,
+            "height": 400
+          }
+        ]
+      },
+      {
+        "name": "corners",
+        "type": "string",
+        "required": false,
+        "title": "Image corners",
+        "description": "The style of the image corners (e.g., rounded or sharp).",
+        "enum": [
+          "none",
+          "round",
+          "round-md",
+          "round-lg",
+          "round-xl",
+          "round-2xl",
+          "round-3xl",
+          "round-full"
+        ],
+        "default": "none",
+        "examples": ["none"]
+      },
+      {
+        "name": "image_caption",
+        "type": "string",
+        "required": false,
+        "title": "Caption",
+        "description": "The caption text displayed below the image."
+      },
+      {
+        "name": "loading",
+        "type": "string",
+        "required": false,
+        "title": "Image loading",
+        "description": "Keep this set to \"lazy\" unless you are absolutely sure this will always appear \"Above the fold\" on page load.",
+        "enum": ["eager", "lazy"],
+        "metaEnum": {
+          "eager": "Eager",
+          "lazy": "Lazy (recommended)"
+        },
+        "examples": ["lazy"]
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-input-submit",
+    "name": "Space Form - Submit",
+    "description": "A generic submit component for various HTML input types (submit).",
+    "status": "obsolete",
+    "group": "Atoms",
+    "category": "atom",
+    "props": [
+      {
+        "name": "attributes",
+        "type": "Drupal\\Core\\Template\\Attribute",
+        "required": false,
+        "title": "Attributes",
+        "description": "HTML attributes for the input element."
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "title": "Type",
+        "description": "The HTML input type (e.g., submit)."
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-link",
+    "name": "Space Link",
+    "description": "A customizable link component with options for text, URL, target behavior, and custom styling.",
+    "status": "stable",
+    "group": "Atoms",
+    "category": "atom",
+    "props": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": false,
+        "title": "Link text",
+        "description": "The visible text of the link.",
+        "examples": ["Learn more"]
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "Url",
+        "description": "The destination URL the link points to.",
+        "examples": ["https://google.com"]
+      },
+      {
+        "name": "title_text",
+        "type": "string",
+        "required": false,
+        "title": "Title text",
+        "description": "Additional information displayed when hovering over the link (tooltip)."
+      },
+      {
+        "name": "target",
+        "type": "string",
+        "required": false,
+        "title": "Target",
+        "description": "Defines where to open the link (e.g., same window, new tab).",
+        "enum": ["self", "blank", "parent", "top"],
+        "default": "self",
+        "examples": ["self"]
+      },
+      {
+        "name": "custom_style",
+        "type": "boolean",
+        "required": false,
+        "title": "Custom Style",
+        "description": "Enables or disables custom styling for the link.",
+        "default": false
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-text",
+    "name": "Space Text",
+    "description": "",
+    "status": "stable",
+    "group": "Atoms",
+    "category": "atom",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": false,
+        "title": "Title",
+        "description": "Enter the title content."
+      },
+      {
+        "name": "heading_level",
+        "type": "string",
+        "required": false,
+        "title": "Heading level",
+        "description": "Select the heading level for the title content.",
+        "enum": ["h1", "h2", "h3", "h4", "h5", "h6"],
+        "metaEnum": {
+          "h1": "H1",
+          "h2": "H2",
+          "h3": "H3",
+          "h4": "H4",
+          "h5": "H5",
+          "h6": "H6"
+        }
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "title": "Rich text",
+        "description": "Use this component when you need to display rich text content.",
+        "contentMediaType": "text/html",
+        "default": "<p></p>",
+        "examples": [
+          "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Tristique pretium pellentesque semper enim aliquam.</p>"
+        ]
+      },
+      {
+        "name": "text_size",
+        "type": "string",
+        "required": true,
+        "title": "Text size",
+        "description": "Select the text size for the rich text content.",
+        "default": "normal",
+        "enum": [
+          "text-xs",
+          "text-sm",
+          "normal",
+          "text-lg",
+          "text-xl",
+          "text-2xl",
+          "text-3xl"
+        ],
+        "metaEnum": {
+          "text-xs": "12px",
+          "text-sm": "14px",
+          "normal": "16px (default)",
+          "text-lg": "18px",
+          "text-xl": "20px",
+          "text-2xl": "24px",
+          "text-3xl": "32px"
+        },
+        "examples": ["normal"]
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-accordion-item",
+    "name": "Space Accordion Item",
+    "description": "",
+    "status": "stable",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "required": false,
+        "title": "Accordion title",
+        "description": "Accordion title.",
+        "examples": ["Accordion title"]
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "required": false,
+        "title": "Accordion content",
+        "description": "Accordion content.",
+        "contentMediaType": "text/html",
+        "examples": ["Accordion content"]
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-breadcrumb",
+    "name": "Space Breadcrumb",
+    "description": "",
+    "status": "obsolete",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "items",
+        "type": "array",
+        "required": false,
+        "title": "Breadcrumb items",
+        "description": "An array of breadcrumb items with text and URL."
+      },
+      {
+        "name": "breadcrumb_style_options",
+        "type": "string",
+        "required": false,
+        "title": "Breadcrumb Styles",
+        "description": "Breadcrumb Styles",
+        "enum": ["no-fill", "primary-fill", "edge-lines"],
+        "default": "primary-fill",
+        "examples": ["no-fill"]
+      },
+      {
+        "name": "breadcrumb_variation_options",
+        "type": "string",
+        "required": false,
+        "title": "Breadcrumb Variation",
+        "description": "Breadcrumb Variation",
+        "default": "expanded"
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-contact-card",
+    "name": "Space Contact Card",
+    "description": "Email contact card component with heading, button, and description text",
+    "status": "stable",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "heading",
+        "type": "string",
+        "required": false,
+        "title": "Card Heading",
+        "description": "Main heading text for the contact card",
+        "examples": ["Email us"]
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "required": false,
+        "title": "Email Address",
+        "description": "Email address to display and link to",
+        "examples": ["business@qed42.com"]
+      },
+      {
+        "name": "phone",
+        "type": "string",
+        "required": false,
+        "title": "Phone Number",
+        "description": "Phone number to display"
+      },
+      {
+        "name": "help_faq_link",
+        "type": "string",
+        "required": false,
+        "title": "Help FAQ Link",
+        "description": "Link to help FAQ page"
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "title": "Description",
+        "description": "Supporting text explaining the contact method",
+        "contentMediaType": "text/html",
+        "examples": ["For general queries and guidance"]
+      },
+      {
+        "name": "icon_align",
+        "type": "string",
+        "required": false,
+        "title": "Icon alignment",
+        "description": "",
+        "enum": ["left", "right"],
+        "default": "left",
+        "examples": ["left"]
+      },
+      {
+        "name": "alignment",
+        "type": "string",
+        "required": false,
+        "title": "Alignment",
+        "description": "Alignment of the contact card content",
+        "enum": ["left", "right", "center"],
+        "default": "left",
+        "examples": ["left"]
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-content-detail",
+    "name": "Space Content Details",
+    "description": "",
+    "status": "stable",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": false,
+        "title": "Rich text",
+        "description": "",
+        "contentMediaType": "text/html",
+        "examples": [
+          "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Tristique pretium pellentesque semper enim aliquam.</p>"
+        ]
+      },
+      {
+        "name": "date",
+        "type": "string",
+        "required": false,
+        "title": "Date",
+        "description": "A date to be displayed in the card.",
+        "examples": ["20 Jan 2026"]
+      },
+      {
+        "name": "tag_label1",
+        "type": "string",
+        "required": false,
+        "title": "Tag Label 1",
+        "description": "A label for the first tag to be displayed in the content.",
+        "examples": ["Category"]
+      },
+      {
+        "name": "tag_data1",
+        "type": "string",
+        "required": false,
+        "title": "Tag Data 1",
+        "description": "Data for the first tag to be displayed in the content, corresponding to Tag Label 1.",
+        "examples": ["Pain & Inflammation"]
+      },
+      {
+        "name": "tag_label2",
+        "type": "string",
+        "required": false,
+        "title": "Tag Label 2",
+        "description": "A label for the second tag to be displayed in the content.",
+        "examples": ["Prescription Required"]
+      },
+      {
+        "name": "tag_data2",
+        "type": "string",
+        "required": false,
+        "title": "Tag Data 2",
+        "description": "Data for the second tag to be displayed in the content, corresponding to Tag Label 2.",
+        "examples": ["No"]
+      },
+      {
+        "name": "tag_label3",
+        "type": "string",
+        "required": false,
+        "title": "Tag Label 3",
+        "description": "A label for the third tag to be displayed in the content.",
+        "examples": ["Typical Forms"]
+      },
+      {
+        "name": "tag_data3",
+        "type": "string",
+        "required": false,
+        "title": "Tag Data 3",
+        "description": "Data for the third tag to be displayed in the content, corresponding to Tag Label 3.",
+        "examples": ["Capsules"]
+      },
+      {
+        "name": "conclusion",
+        "type": "string",
+        "required": false,
+        "title": "Conclusion",
+        "description": "A conclusion text to be displayed in the content.",
+        "contentMediaType": "text/html",
+        "examples": [
+          "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Tristique pretium pellentesque semper enim aliquam.</p>"
+        ]
+      },
+      {
+        "name": "content_overlap",
+        "type": "boolean",
+        "required": false,
+        "title": "Content Overlap Top",
+        "description": "Whether the content overlaps the top of the box",
+        "default": true,
+        "examples": [true]
+      }
+    ],
+    "slots": [
+      {
+        "name": "content",
+        "title": "Content",
+        "description": "Add the **User Card** component into this slot."
+      },
+      {
+        "name": "image",
+        "title": "Image",
+        "description": "Add the **Image** component into this slot."
+      }
+    ]
+  },
+  {
+    "id": "space_ds:space-dark-bg-imagecard",
+    "name": "Space Dark bg Image Card",
+    "description": "",
+    "status": "stable",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": false,
+        "title": "Title",
+        "description": "Title",
+        "examples": ["Explore Nutrition"]
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "Link URL",
+        "description": "URL where the card should link.",
+        "examples": ["/event/building-sustainable-workout"]
+      },
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "description": "",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [
+          {
+            "src": "images/city.jpg",
+            "alt": "Boring placeholder",
+            "width": 336,
+            "height": 392
+          }
+        ]
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "required": false,
+        "title": "Description",
+        "description": "Description text under the headline.",
+        "contentMediaType": "text/html",
+        "examples": [
+          "Explore the world of balanced eating, mindful choices, and science-backed advice—no fads, just facts."
+        ]
+      },
+      {
+        "name": "alignment",
+        "type": "string",
+        "required": false,
+        "title": "Alignment",
+        "description": "Alignment",
+        "enum": ["vertical", "horizontal"],
+        "default": "vertical",
+        "examples": ["vertical"]
+      },
+      {
+        "name": "horizontal_column_alignment",
+        "type": "string",
+        "required": false,
+        "title": "Horizontal column alignment",
+        "description": "Horizontal column alignment",
+        "enum": ["left-image", "right-image"],
+        "default": "left-image",
+        "examples": ["left-image"]
+      },
+      {
+        "name": "vertical_column_alignment",
+        "type": "string",
+        "required": false,
+        "title": "Vertical column alignment",
+        "description": "Vertical column alignment",
+        "enum": ["top-image", "bottom-image"],
+        "default": "top-image",
+        "examples": ["top-image"]
+      },
+      {
+        "name": "card_layout",
+        "type": "string",
+        "required": false,
+        "title": "Layout of card",
+        "description": "Layout of card",
+        "enum": ["default", "no-image"],
+        "default": "default",
+        "examples": ["default"]
+      },
+      {
+        "name": "card_size",
+        "type": "string",
+        "required": false,
+        "title": "Card size",
+        "description": "Card size",
+        "enum": ["large", "medium", "small"],
+        "default": "large",
+        "examples": ["large"]
+      },
+      {
+        "name": "full_box_link",
+        "type": "boolean",
+        "required": false,
+        "title": "Full box link",
+        "description": "Full box link",
+        "default": false,
+        "examples": [false]
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-imagecard",
+    "name": "Space Image Card",
+    "description": "",
+    "status": "stable",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": false,
+        "title": "Title",
+        "description": "Title",
+        "examples": [
+          "Building a sustainable workout plan Building a sustainable workout plan"
+        ]
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "Link URL",
+        "description": "URL where the card should link.",
+        "examples": ["/event/building-sustainable-workout"]
+      },
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "description": "",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [
+          {
+            "src": "/themes/contrib/space_ds/components/02-molecules/space-videocard/images/city.jpg",
+            "alt": "Boring placeholder",
+            "width": 336,
+            "height": 240
+          }
+        ]
+      },
+      {
+        "name": "date",
+        "type": "string",
+        "required": false,
+        "title": "date",
+        "description": "A date to be displayed in the card.",
+        "examples": ["20 Jan 2026"]
+      },
+      {
+        "name": "read_time",
+        "type": "string",
+        "required": false,
+        "title": "Read time",
+        "description": "Estimated read time to be displayed in the card.",
+        "examples": ["15 min"]
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "required": false,
+        "title": "Description",
+        "description": "Description text under the headline.",
+        "contentMediaType": "text/html",
+        "examples": [
+          "Integrating physical activity into daily routines Integrating physical activity into daily routinesIntegrating physical activity into daily routinesIntegrating physical activity into daily routines."
+        ]
+      },
+      {
+        "name": "primary_category",
+        "type": "string",
+        "required": false,
+        "title": "Primary Category",
+        "description": "Primary category of the card.",
+        "examples": ["Everyday health"]
+      },
+      {
+        "name": "secondary_category",
+        "type": "string",
+        "required": false,
+        "title": "Secondary Category",
+        "description": "Secondary category of the card.",
+        "examples": ["Care Decisions"]
+      },
+      {
+        "name": "show_download_link",
+        "type": "boolean",
+        "required": false,
+        "title": "Show download link",
+        "description": "Controls whether the download button is displayed.",
+        "default": false,
+        "examples": [false]
+      },
+      {
+        "name": "download_paper_link",
+        "type": "string",
+        "required": false,
+        "title": "Download Paper Link",
+        "description": "Link to Download Paper",
+        "default": "download",
+        "examples": ["download"]
+      },
+      {
+        "name": "alignment",
+        "type": "string",
+        "required": false,
+        "title": "Alignment",
+        "description": "Alignment",
+        "enum": ["vertical", "horizontal"],
+        "default": "vertical",
+        "examples": ["vertical"]
+      },
+      {
+        "name": "horizontal_column_alignment",
+        "type": "string",
+        "required": false,
+        "title": "Horizontal column alignment",
+        "description": "Horizontal column alignment",
+        "enum": ["left-image", "right-image"],
+        "default": "left-image",
+        "examples": ["left-image"]
+      },
+      {
+        "name": "vertical_column_alignment",
+        "type": "string",
+        "required": false,
+        "title": "Vertical column alignment",
+        "description": "Vertical column alignment",
+        "enum": ["top-image", "bottom-image"],
+        "default": "top-image",
+        "examples": ["top-image"]
+      },
+      {
+        "name": "card_layout",
+        "type": "string",
+        "required": false,
+        "title": "Layout of card",
+        "description": "Layout of card",
+        "enum": ["default", "no-image"],
+        "default": "default",
+        "examples": ["default"]
+      },
+      {
+        "name": "card_size",
+        "type": "string",
+        "required": false,
+        "title": "Card size",
+        "description": "Card size",
+        "enum": ["large", "medium", "small"],
+        "default": "large",
+        "examples": ["large"]
+      },
+      {
+        "name": "full_box_link",
+        "type": "boolean",
+        "required": false,
+        "title": "Full box link",
+        "description": "Full box link",
+        "default": false,
+        "examples": [false]
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-logo-section",
+    "name": "Space Logo Section",
+    "description": "",
+    "status": "stable",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "pre_heading",
+        "type": "string",
+        "required": false,
+        "title": "Pre Heading",
+        "description": "Pre heading content.",
+        "examples": ["Launch faster"]
+      },
+      {
+        "name": "heading",
+        "type": "string",
+        "required": false,
+        "title": "Heading",
+        "description": "The heading of the section.",
+        "examples": ["Curabitur suscipit suscipit tellus"]
+      },
+      {
+        "name": "tag_name",
+        "type": "string",
+        "required": false,
+        "title": "Tag",
+        "description": "The HTML tag to be used for the heading (e.g., h1, h2).",
+        "enum": ["h1", "h2", "h3", "h4", "h5", "h6"],
+        "metaEnum": {
+          "h1": "H1",
+          "h2": "H2",
+          "h3": "H3",
+          "h4": "H4",
+          "h5": "H5",
+          "h6": "H6"
+        },
+        "default": "h2",
+        "examples": ["h2"]
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "title": "Description",
+        "description": "Use this component when you need to display rich text content.",
+        "contentMediaType": "text/html",
+        "examples": [
+          "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Tristique pretium pellentesque semper enim aliquam.</p>"
+        ]
+      }
+    ],
+    "slots": [
+      {
+        "name": "content",
+        "title": "Content",
+        "description": "Content to be displayed in the section."
+      }
+    ]
+  },
+  {
+    "id": "space_ds:space-pagination",
+    "name": "Space Pagination",
+    "description": "Show pagination to indicate a series of related content exists across multiple pages.",
+    "status": "stable",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "items",
+        "type": "array",
+        "required": false,
+        "title": "List of pager items.",
+        "description": "The list is keyed by the following elements (first, previous, next, last, pages) which they have href, attributes, text)"
+      },
+      {
+        "name": "current",
+        "type": "number",
+        "required": false,
+        "title": "Current page",
+        "description": "The page number of the current page."
+      },
+      {
+        "name": "shapes",
+        "type": "string",
+        "required": false,
+        "title": "Shapes",
+        "description": "Shapes of pagination items.",
+        "enum": ["rounded-full", "rounded-lg"],
+        "examples": ["rounded-full"]
+      },
+      {
+        "name": "color",
+        "type": "string",
+        "required": false,
+        "title": "Color",
+        "description": "Color of the pagination.",
+        "enum": ["lightColor", "darkColor"],
+        "examples": ["lightColor", "darkColor"]
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "title": "Type",
+        "description": "Type of pagination.",
+        "enum": ["card-default", "card-minimal"],
+        "examples": ["card-default", "card-minimal"]
+      },
+      {
+        "name": "shape",
+        "type": "string",
+        "required": false,
+        "title": "Shape",
+        "description": "Shape of pagination items.",
+        "enum": ["rounded-full", "square"],
+        "examples": ["rounded-full"]
+      },
+      {
+        "name": "ellipses",
+        "type": "array",
+        "required": false,
+        "title": "Ellipses",
+        "description": "If there are more pages than the quantity allows, then an ellipsis before or after the listed pages may be present. (previous, next)"
+      },
+      {
+        "name": "attributes",
+        "type": "Drupal\\Core\\Template\\Attribute",
+        "required": false,
+        "title": "Title Attributes",
+        "description": "HTML attributes for the pagination element."
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-section-heading",
+    "name": "Space Section heading",
+    "description": "The **Space Section Heading** is a component used to introduce and provide context for a section of a webpage. It allows adding a label, a main title, and a descriptive text block, with configurable alignment options.",
+    "status": "stable",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "required": false,
+        "title": "Label",
+        "description": "The label of the section.",
+        "examples": ["Launch faster"]
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title",
+        "description": "The title of the section.",
+        "default": "Section Title",
+        "examples": ["Curabitur suscipit suscipit tellus"]
+      },
+      {
+        "name": "tag_name",
+        "type": "string",
+        "required": true,
+        "title": "Tag",
+        "description": "The HTML tag to be used for the heading (e.g., h1, h2).",
+        "enum": ["h1", "h2", "h3", "h4", "h5", "h6", "div"],
+        "metaEnum": {
+          "h1": "Heading 1",
+          "h2": "Heading 2",
+          "h3": "Heading 3",
+          "h4": "Heading 4",
+          "h5": "Heading 5",
+          "h6": "Heading 6",
+          "div": "Div"
+        },
+        "default": "h2",
+        "examples": ["h2"]
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": true,
+        "title": "Description",
+        "description": "The description of the section.",
+        "contentMediaType": "text/html",
+        "default": "",
+        "examples": [
+          "We understand human needs through empathy to design experiences that improve conversion through practical strategies. We create integrated design-driven digital solutions where form follows function across an entire web product or through individual products and services."
+        ]
+      },
+      {
+        "name": "alignment",
+        "type": "string",
+        "required": false,
+        "title": "Alignment",
+        "description": "Alignment of the section content.",
+        "enum": ["left", "center", "split"],
+        "default": "left",
+        "examples": ["left"]
+      },
+      {
+        "name": "with_image",
+        "type": "boolean",
+        "required": false,
+        "title": "With Image",
+        "description": "Enables or Disables image for the section heading title before and after.",
+        "default": false
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-stats-kpi",
+    "name": "Space Stats KPI",
+    "description": "",
+    "status": "stable",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "keynumber",
+        "type": "integer",
+        "required": true,
+        "title": "Key number",
+        "description": "Key number",
+        "default": 400,
+        "examples": [400]
+      },
+      {
+        "name": "subheading",
+        "type": "string",
+        "required": true,
+        "title": "Sub headline",
+        "description": "Sub headline",
+        "default": "Metric",
+        "examples": ["Projects completed"]
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "title": "Description",
+        "description": "Content",
+        "contentMediaType": "text/html",
+        "examples": [
+          "We have helped build over 400 projects and have worked with some amazing companies."
+        ]
+      },
+      {
+        "name": "alignment",
+        "type": "string",
+        "required": false,
+        "title": "Alignment",
+        "description": "Alignment",
+        "enum": ["left", "center"],
+        "default": "left",
+        "examples": ["left"]
+      }
+    ],
+    "slots": [
+      {
+        "name": "link",
+        "title": "Link",
+        "description": "An optional slot at the bottom of the card."
+      }
+    ]
+  },
+  {
+    "id": "space_ds:space-testimony-card",
+    "name": "Space Testimonial Card",
+    "description": "The **Space Testimonial Card** is a component used to display customer or partner testimonials with support for avatar images, name, designation, and descriptive text.",
+    "status": "stable",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Avatar Image",
+        "description": "",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [
+          {
+            "src": "images/avatar.jpg",
+            "alt": "Boring placeholder",
+            "width": 96,
+            "height": 96
+          }
+        ]
+      },
+      {
+        "name": "person_name",
+        "type": "string",
+        "required": false,
+        "title": "Headline - Name",
+        "description": "The main headline.",
+        "examples": ["John Rambo"]
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "required": false,
+        "title": "Description",
+        "description": "A long text under the headline.",
+        "contentMediaType": "text/html",
+        "examples": [
+          "The content published on the Pulse platform provided clarity about my health care. It made everything feel more structured and comprehensible."
+        ]
+      },
+      {
+        "name": "designation",
+        "type": "string",
+        "required": false,
+        "title": "Designation",
+        "description": "A long text under the headline.",
+        "examples": ["Sales Manager"]
+      },
+      {
+        "name": "company_logo",
+        "type": "object",
+        "required": false,
+        "title": "Company Logo",
+        "description": "",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [
+          {
+            "src": "images/logo.png",
+            "alt": "Logo",
+            "width": 172,
+            "height": 54
+          }
+        ]
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-user-card",
+    "name": "Space User Card",
+    "description": "Displays user image, name, short description and social media links.",
+    "status": "stable",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "User image",
+        "description": "",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [
+          {
+            "src": "images/person.jpg",
+            "alt": "Boring placeholder",
+            "width": 56,
+            "height": 56
+          }
+        ]
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": false,
+        "title": "Name",
+        "description": "The name of the user.",
+        "examples": ["Priyanka Jeph"]
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "title": "Description",
+        "description": "Short user information.",
+        "examples": ["Interested in medicine"]
+      },
+      {
+        "name": "twitter_url",
+        "type": "string",
+        "required": false,
+        "title": "Twitter URL",
+        "description": "Link to the Twitter profile.",
+        "examples": ["https://twitter.com/example"]
+      },
+      {
+        "name": "linkedin_url",
+        "type": "string",
+        "required": false,
+        "title": "LinkedIn URL",
+        "description": "Link to the LinkedIn profile.",
+        "examples": ["https://linkedin.com/in/example"]
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-videocard",
+    "name": "Space Video Card",
+    "description": "",
+    "status": "stable",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": false,
+        "title": "Title",
+        "description": "Title",
+        "examples": [
+          "Building a sustainable workout plan Building a sustainable workout plan"
+        ]
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "Link URL",
+        "description": "URL where the card should link.",
+        "examples": ["/event/building-sustainable-workout"]
+      },
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "description": "",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [
+          {
+            "src": "/themes/contrib/space_ds/components/02-molecules/space-videocard/images/city.jpg",
+            "alt": "Boring placeholder",
+            "width": 384,
+            "height": 223
+          }
+        ]
+      },
+      {
+        "name": "date",
+        "type": "string",
+        "required": false,
+        "title": "date",
+        "description": "A date to be displayed in the card.",
+        "examples": ["20 Jan 2026"]
+      },
+      {
+        "name": "read_time",
+        "type": "string",
+        "required": false,
+        "title": "Read time",
+        "description": "Estimated read time to be displayed in the card.",
+        "examples": ["15 min"]
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "required": false,
+        "title": "Description",
+        "description": "Description text under the headline.",
+        "contentMediaType": "text/html",
+        "examples": [
+          "Signs that indicate it's time to move beyond general care."
+        ]
+      },
+      {
+        "name": "primary_category",
+        "type": "string",
+        "required": false,
+        "title": "Primary Category",
+        "description": "Primary category of the card.",
+        "examples": ["Everyday health"]
+      },
+      {
+        "name": "secondary_category",
+        "type": "string",
+        "required": false,
+        "title": "Secondary Category",
+        "description": "Secondary category of the card.",
+        "examples": ["Care Decisions"]
+      },
+      {
+        "name": "alignment",
+        "type": "string",
+        "required": false,
+        "title": "Alignment",
+        "description": "Alignment",
+        "enum": ["vertical", "horizontal"],
+        "default": "vertical",
+        "examples": ["vertical"]
+      },
+      {
+        "name": "horizontal_column_alignment",
+        "type": "string",
+        "required": false,
+        "title": "Horizontal column alignment",
+        "description": "Horizontal column alignment",
+        "enum": ["left-image", "right-image"],
+        "default": "left-image",
+        "examples": ["left-image"]
+      },
+      {
+        "name": "vertical_column_alignment",
+        "type": "string",
+        "required": false,
+        "title": "Vertical column alignment",
+        "description": "Vertical column alignment",
+        "enum": ["top-image", "bottom-image"],
+        "default": "top-image",
+        "examples": ["top-image"]
+      },
+      {
+        "name": "card_layout",
+        "type": "string",
+        "required": false,
+        "title": "Layout of card",
+        "description": "Layout of card",
+        "enum": ["default", "no-image"],
+        "default": "default",
+        "examples": ["default"]
+      },
+      {
+        "name": "card_size",
+        "type": "string",
+        "required": false,
+        "title": "Card size",
+        "description": "Card size",
+        "enum": ["large", "medium", "small"],
+        "default": "large",
+        "examples": ["large"]
+      },
+      {
+        "name": "full_box_link",
+        "type": "boolean",
+        "required": false,
+        "title": "Full box link",
+        "description": "Full box link",
+        "default": false,
+        "examples": [false]
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-accordion",
+    "name": "Space Accordion",
+    "description": "This component allows for the display of collapsible content sections, ideal for presenting frequently asked questions, detailed information, or nested content in a compact manner. It helps in organizing large amounts of text by showing only a summary initially, expanding upon user interaction. Use this component to improve content scannability and reduce visual clutter on a page.",
+    "status": "stable",
+    "group": "Organisms",
+    "category": "organism",
+    "props": [
+      {
+        "name": "icon_type",
+        "type": "string",
+        "required": false,
+        "title": "Icon",
+        "description": "Icon",
+        "enum": ["PlusMinus", "chevronDown", "noIcon"],
+        "default": "PlusMinus",
+        "examples": ["PlusMinus"]
+      },
+      {
+        "name": "alignment",
+        "type": "string",
+        "required": false,
+        "title": "Icon alignment",
+        "description": "Icon alignment",
+        "enum": ["right", "left"],
+        "default": "right",
+        "examples": ["right"]
+      },
+      {
+        "name": "border",
+        "type": "boolean",
+        "required": false,
+        "title": "Border Style",
+        "description": "Border Style",
+        "default": true,
+        "examples": [true]
+      },
+      {
+        "name": "container_width",
+        "type": "string",
+        "required": false,
+        "title": "Container width",
+        "description": "Container width",
+        "enum": ["default", "half-width", "three-quarters-width"],
+        "default": "default",
+        "examples": ["default"]
+      }
+    ],
+    "slots": [
+      {
+        "name": "items",
+        "title": "Accordion Items",
+        "description": "Add one or more **Accordion Item** components into this slot; each item will render as a collapsible panel inside the accordion."
+      }
+    ]
+  },
+  {
+    "id": "space_ds:space-cta-banner-type-1",
+    "name": "Space CTA Banner",
+    "description": "The **Space CTA Banner - Type 1** is a call-to-action banner designed to highlight key messages and encourage user interaction. It supports a title, description, and flexible content placement for CTAs such as buttons or links.",
+    "status": "stable",
+    "group": "Organisms",
+    "category": "organism",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title",
+        "description": "The title of the CTA Banner.",
+        "default": "Get Started Today",
+        "examples": ["Vivamus aliquet elit"]
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": true,
+        "title": "Description",
+        "description": "The description of the CTA Banner.",
+        "contentMediaType": "text/html",
+        "default": "",
+        "examples": [
+          "Maecenas vestibulum mollis diam. In ac felis quis tortor malesuada pretium."
+        ]
+      },
+      {
+        "name": "background_image",
+        "type": "object",
+        "required": false,
+        "title": "Background image",
+        "description": "Set image as background image of section.",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [
+          {
+            "src": "images/cta_background.png",
+            "alt": "CTA Banner placeholder",
+            "width": 1440,
+            "height": 500
+          }
+        ]
+      },
+      {
+        "name": "width",
+        "type": "string",
+        "required": true,
+        "title": "CTA Banner width",
+        "description": "Width of CTA Banner.",
+        "enum": ["boxed-width", "full-width"],
+        "default": "full-width",
+        "examples": ["full-width"]
+      },
+      {
+        "name": "alignment",
+        "type": "string",
+        "required": true,
+        "title": "Alignment",
+        "description": "Alignment of CTA Banner content.",
+        "enum": ["left-align", "center-align", "stacked"],
+        "default": "stacked",
+        "examples": ["stacked"]
+      }
+    ],
+    "slots": [
+      {
+        "name": "cta_content",
+        "title": "Content",
+        "description": "A flexible slot area for inserting one or more **Space Button** components or other call-to-action elements."
+      }
+    ]
+  },
+  {
+    "id": "space_ds:space-detail-page-hero-banner",
+    "name": "Space Detail Page Hero Banner",
+    "description": "This component renders a prominent Detail Page Hero Banner, designed for the top of a page to create a strong initial impact. It integrates a background image with a main title and sub-headline, effectively communicating a key message to the user. Use this component to introduce a page or section, drawing attention to its core purpose or offering.",
+    "status": "stable",
+    "group": "Organisms",
+    "category": "organism",
+    "props": [
+      {
+        "name": "background_image",
+        "type": "object",
+        "required": false,
+        "title": "Background image",
+        "description": "",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [
+          {
+            "src": "images/city.jpg",
+            "alt": "Boring placeholder"
+          }
+        ]
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "required": false,
+        "title": "Label",
+        "description": "The label of the section.",
+        "examples": ["Article"]
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title",
+        "description": "Title of the banner.",
+        "default": "",
+        "examples": [
+          "Understanding Common Medicines: What They Do and How to Use Them Safely"
+        ]
+      },
+      {
+        "name": "primary_category",
+        "type": "string",
+        "required": false,
+        "title": "Primary Category",
+        "description": "Primary category of the card.",
+        "examples": ["Everyday health"]
+      },
+      {
+        "name": "secondary_category",
+        "type": "string",
+        "required": false,
+        "title": "Secondary Category",
+        "description": "Secondary category of the card.",
+        "examples": ["Care Decisions"]
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-footer",
+    "name": "Space Footer",
+    "description": "",
+    "status": "stable",
+    "group": "Layout",
+    "category": "organism",
+    "props": [
+      {
+        "name": "brand_logo",
+        "type": "object",
+        "required": false,
+        "title": "Brand logo",
+        "description": "Upload the brand logo.",
+        "$ref": "json-schema-definitions://canvas.module/image"
+      },
+      {
+        "name": "brand_name",
+        "type": "string",
+        "required": true,
+        "title": "Brand Name",
+        "description": "Name of the brand",
+        "default": "",
+        "examples": ["Plus"]
+      },
+      {
+        "name": "brand_slogan",
+        "type": "string",
+        "required": true,
+        "title": "Brand Slogan",
+        "description": "Slogan for the brand",
+        "default": "",
+        "examples": ["Healthcare, made clear"]
+      },
+      {
+        "name": "brand_description",
+        "type": "string",
+        "required": true,
+        "title": "Brand Description",
+        "description": "Description for the brand",
+        "contentMediaType": "text/html",
+        "default": "",
+        "examples": [
+          "A modern healthcare platform to understand healthcare clearly and securely."
+        ]
+      },
+      {
+        "name": "disclaimer",
+        "type": "string",
+        "required": false,
+        "title": "Disclaimer Text",
+        "description": "Disclaimer text for the brand",
+        "contentMediaType": "text/html",
+        "examples": [
+          "Your data is protected with industry-standard security. Pulse does not provide medical diagnosis."
+        ]
+      },
+      {
+        "name": "copyright",
+        "type": "string",
+        "required": true,
+        "title": "Copyright Text",
+        "description": "Copyright text for the brand",
+        "default": "",
+        "examples": ["2026 Pulse Health Technologies"]
+      }
+    ],
+    "slots": [
+      {
+        "name": "social_links",
+        "title": "Social Media Links",
+        "description": "Place social media icon links here"
+      },
+      {
+        "name": "columns",
+        "title": "Navigation Columns",
+        "description": "Place footer navigation columns here"
+      },
+      {
+        "name": "footer_bottom_links",
+        "title": "Legal Links",
+        "description": "Place Privacy, Terms, Cookies links here"
+      },
+      {
+        "name": "cookie_section",
+        "title": "Cookie Section",
+        "description": "Place Cookie section here"
+      }
+    ]
+  },
+  {
+    "id": "space_ds:space-header",
+    "name": "Space Header",
+    "description": "",
+    "status": "stable",
+    "group": "Layout",
+    "category": "organism",
+    "props": [
+      {
+        "name": "menu_align",
+        "type": "string",
+        "required": false,
+        "title": "Menu alignment",
+        "description": "Menu alignment on desktop.",
+        "enum": ["left", "center", "right"],
+        "default": "center",
+        "examples": ["center"]
+      }
+    ],
+    "slots": [
+      {
+        "name": "logo",
+        "title": "Site logo",
+        "description": ""
+      },
+      {
+        "name": "navigation",
+        "title": "Navigation menu",
+        "description": ""
+      },
+      {
+        "name": "links",
+        "title": "CTAs",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "space_ds:space-hero-banner-style-02",
+    "name": "Space Hero Banner",
+    "description": "This component renders a prominent hero banner style 02, designed for the top of a page to create a strong initial impact. It integrates a background image with a main title and sub-headline, effectively communicating a key message to the user. Use this component to introduce a page or section, drawing attention to its core purpose or offering.",
+    "status": "stable",
+    "group": "Organisms",
+    "category": "organism",
+    "props": [
+      {
+        "name": "background_image",
+        "type": "object",
+        "required": false,
+        "title": "Background image",
+        "description": "",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [
+          {
+            "src": "images/city.jpg",
+            "alt": "Boring placeholder",
+            "width": 1440,
+            "height": 900
+          }
+        ]
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "required": false,
+        "title": "Label",
+        "description": "The label of the section.",
+        "examples": ["Launch faster"]
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title",
+        "description": "title",
+        "default": "Welcome",
+        "examples": ["Curabitur suscipit suscipit tellus"]
+      },
+      {
+        "name": "sub_headline",
+        "type": "string",
+        "required": true,
+        "title": "Sub Headline",
+        "description": "Sub Headline",
+        "contentMediaType": "text/html",
+        "default": "",
+        "examples": [
+          "Nous travaillons avec des clients du monde entier pour des utilisateurs du monde entier. Tout xE7a depuis la belle ville de Lyon, en France."
+        ]
+      }
+    ],
+    "slots": [
+      {
+        "name": "content",
+        "title": "Content",
+        "description": "Add the **Email Form** component into this slot."
+      },
+      {
+        "name": "items",
+        "title": "Block Banner info items",
+        "description": "Add one or more **Text** components into this slot."
+      }
+    ]
+  },
+  {
+    "id": "space_ds:space-hero-banner-with-media",
+    "name": "Space Hero Banner with Media",
+    "description": "This component renders a prominent hero banner with media, designed for the top of a page to create a strong initial impact. It integrates a image with a main title, label and category, effectively communicating a key message to the user.",
+    "status": "stable",
+    "group": "Organisms",
+    "category": "organism",
+    "props": [
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "description": "",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [
+          {
+            "src": "images/city.jpg",
+            "alt": "Boring placeholder",
+            "width": 420,
+            "height": 322
+          }
+        ]
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "required": false,
+        "title": "Label",
+        "description": "The label of the section.",
+        "examples": ["Research Paper"]
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title",
+        "description": "Title of the banner.",
+        "default": "",
+        "examples": [
+          "Understanding Common Medicines: What They Do and How to Use Them Safely"
+        ]
+      },
+      {
+        "name": "institute_involved",
+        "type": "string",
+        "required": false,
+        "title": "Institute Involved",
+        "description": "The institute involved in the paper.",
+        "examples": ["Global Institute of Metabolic Health"]
+      },
+      {
+        "name": "primary_category",
+        "type": "string",
+        "required": false,
+        "title": "Primary Category",
+        "description": "Primary category of the card.",
+        "examples": ["Everyday health"]
+      },
+      {
+        "name": "secondary_category",
+        "type": "string",
+        "required": false,
+        "title": "Secondary Category",
+        "description": "Secondary category of the card.",
+        "examples": ["Care Decisions"]
+      },
+      {
+        "name": "download_paper_link",
+        "type": "string",
+        "required": false,
+        "title": "Download Paper Link",
+        "description": "Link to Download Paper",
+        "examples": ["download"]
+      }
+    ],
+    "slots": []
+  },
+  {
+    "id": "space_ds:space-slider",
+    "name": "Space Slider",
+    "description": "",
+    "status": "stable",
+    "group": "Organisms",
+    "category": "organism",
+    "props": [
+      {
+        "name": "slides_type",
+        "type": "string",
+        "required": false,
+        "title": "Slides Type",
+        "description": "",
+        "enum": ["slide", "loop"],
+        "default": "slide",
+        "examples": ["slide"]
+      },
+      {
+        "name": "slide_focus",
+        "type": "string",
+        "required": false,
+        "title": "Slide Focus",
+        "description": "",
+        "enum": ["none", "center"],
+        "default": "none",
+        "examples": ["none"]
+      },
+      {
+        "name": "slides_per_view_desktop",
+        "type": "integer",
+        "required": false,
+        "title": "Slides Per View Desktop",
+        "description": "",
+        "enum": [1, 2, 3, 4, 5, 6],
+        "default": 3,
+        "examples": [3]
+      },
+      {
+        "name": "slides_per_view_ipad",
+        "type": "integer",
+        "required": false,
+        "title": "Slides Per View iPad",
+        "description": "",
+        "enum": [1, 2, 3],
+        "default": 2,
+        "examples": [2]
+      },
+      {
+        "name": "slides_per_view_mobile",
+        "type": "integer",
+        "required": false,
+        "title": "Slides Per View Mobile",
+        "description": "",
+        "enum": [1, 2],
+        "default": 1,
+        "examples": [1]
+      },
+      {
+        "name": "autoplay",
+        "type": "boolean",
+        "required": false,
+        "title": "Autoplay",
+        "description": "",
+        "default": false,
+        "examples": [false]
+      },
+      {
+        "name": "arrows",
+        "type": "boolean",
+        "required": false,
+        "title": "Show Arrows",
+        "description": "",
+        "default": true,
+        "examples": [true]
+      },
+      {
+        "name": "arrows_color",
+        "type": "string",
+        "required": false,
+        "title": "Arrows Color",
+        "description": "",
+        "enum": ["primary", "secondary"],
+        "default": "primary",
+        "examples": ["primary"]
+      },
+      {
+        "name": "arrows_alignment",
+        "type": "string",
+        "required": false,
+        "title": "Arrows Alignment",
+        "description": "",
+        "enum": ["left", "right", "center"],
+        "default": "left",
+        "examples": ["left"]
+      },
+      {
+        "name": "pagination",
+        "type": "boolean",
+        "required": false,
+        "title": "Show Pagination",
+        "description": "",
+        "default": false,
+        "examples": [false]
+      },
+      {
+        "name": "pagination_color",
+        "type": "string",
+        "required": false,
+        "title": "Pagination Color",
+        "description": "",
+        "enum": ["primary", "secondary"],
+        "default": "primary",
+        "examples": ["primary"]
+      },
+      {
+        "name": "pagination_alignment",
+        "type": "string",
+        "required": false,
+        "title": "Pagination Alignment",
+        "description": "",
+        "enum": ["left", "right", "center"],
+        "default": "center",
+        "examples": ["center"]
+      },
+      {
+        "name": "pagination_type",
+        "type": "string",
+        "required": false,
+        "title": "Pagination Type",
+        "description": "",
+        "enum": ["default", "arrow-with-pagination"],
+        "default": "default",
+        "examples": ["default"]
+      },
+      {
+        "name": "with_gradient",
+        "type": "boolean",
+        "required": false,
+        "title": "With Gradient",
+        "description": "Enable or Disable gradient overlay, that will be visible at left and right side of the slider container. Use this only with Slide Focus 'Center' mode.",
+        "default": false,
+        "examples": [false]
+      }
+    ],
+    "slots": [
+      {
+        "name": "slide_item",
+        "title": "Slide Item",
+        "description": "Content for the slide item"
+      }
+    ]
+  },
+  {
+    "id": "space_ds:space-video-banner",
+    "name": "Space Video Banner",
+    "description": "This component renders a prominent Detail Page Hero Banner, designed for the top of a page to create a strong initial impact. It integrates a background video with a main title and sub-headline, effectively communicating a key message to the user.",
+    "status": "stable",
+    "group": "Organisms",
+    "category": "organism",
+    "props": [
+      {
+        "name": "video",
+        "type": "string",
+        "required": false,
+        "title": "Video",
+        "description": "The source URL or path of the video.",
+        "examples": [
+          "<iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/EngW7tLk6R8?si=j0XxXvQKW3cWDS2V\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>"
+        ]
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "required": false,
+        "title": "Label",
+        "description": "The label of the section.",
+        "examples": ["Video"]
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title",
+        "description": "Title of the banner.",
+        "default": "",
+        "examples": [
+          "Understanding Common Medicines: What They Do and How to Use Them Safely"
+        ]
+      },
+      {
+        "name": "primary_category",
+        "type": "string",
+        "required": false,
+        "title": "Primary Category",
+        "description": "Primary category of the card.",
+        "examples": ["Everyday health"]
+      },
+      {
+        "name": "secondary_category",
+        "type": "string",
+        "required": false,
+        "title": "Secondary Category",
+        "description": "Secondary category of the card.",
+        "examples": ["Care Decisions"]
+      }
+    ],
+    "slots": []
+  }
+]

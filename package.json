@@ -1,0 +1,8 @@
+{
+  "name": "drupal-cms-ai-builder",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "platform-app"
+  ]
+}
