@@ -16,10 +16,11 @@ Currently, each page is generated in isolation — the AI has no knowledge of si
 
 | ID | Task | Priority | Effort | Assignee Persona | Status | Depends On |
 |----|------|----------|--------|-------------------|--------|------------|
-| TASK-335 | Supply page sitemap context to generation prompt | P0 | S | `/dev` | TODO | — |
-| TASK-336 | Add interlinking rules to page generation prompt | P0 | M | `/dev` | TODO | TASK-335 |
-| TASK-337 | Post-generation URL validation and rewriting | P1 | M | `/dev` | TODO | TASK-335 |
-| TASK-338 | Add interlinking quality checks to review phase | P1 | S | `/dev` | TODO | TASK-335, TASK-336 |
+| TASK-335 | Supply page sitemap context to generation prompt | P0 | S | `/dev` | DONE | — |
+| TASK-336 | Add interlinking rules to page generation prompt | P0 | M | `/dev` | DONE | TASK-335 |
+| TASK-337 | Post-generation URL validation and rewriting | P1 | M | `/dev` | DONE | TASK-335 |
+| TASK-338 | Add interlinking quality checks to review phase | P1 | S | `/dev` | DONE | TASK-335, TASK-336 |
+| BUGFIX | Header/footer not rendering on Drupal site | P0 | S | `/dev` | DONE | — |
 
 ## Execution Order
 
