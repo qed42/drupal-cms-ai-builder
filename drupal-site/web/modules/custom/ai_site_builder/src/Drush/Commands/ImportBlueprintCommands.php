@@ -66,6 +66,11 @@ final class ImportBlueprintCommands extends DrushCommands {
       $this->blueprintImport->importForms($result->forms);
     }
 
+    if (!empty($result->header) || !empty($result->footer)) {
+      $this->logger()->notice(dt('Importing header and footer...'));
+      $this->blueprintImport->importHeaderFooter($result->header, $result->footer);
+    }
+
     $this->logger()->success(dt('Blueprint import complete.'));
   }
 

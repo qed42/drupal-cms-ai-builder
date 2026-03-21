@@ -13,6 +13,41 @@ declare(strict_types=1);
  * Hides admin toolbar items for site_owner role, keeping only content
  * listing and Canvas editor access.
  */
+/**
+ * Implements hook_preprocess_page().
+ *
+ * Renders the imported header/footer canvas_page entities into
+ * the page.header and page.footer theme regions.
+ */
+function ai_site_builder_preprocess_page(array &$variables): void {
+  $config = \Drupal::config('ai_site_builder.layout');
+  $entityTypeManager = \Drupal::entityTypeManager();
+  $viewBuilder = $entityTypeManager->getViewBuilder('canvas_page');
+  $pageStorage = $entityTypeManager->getStorage('canvas_page');
+
+  $headerPageId = $config->get('header_page_id');
+  if ($headerPageId) {
+    $headerPage = $pageStorage->load($headerPageId);
+    if ($headerPage) {
+      $variables['page']['header']['ai_header'] = $viewBuilder->view($headerPage);
+    }
+  }
+
+  $footerPageId = $config->get('footer_page_id');
+  if ($footerPageId) {
+    $footerPage = $pageStorage->load($footerPageId);
+    if ($footerPage) {
+      $variables['page']['footer']['ai_footer'] = $viewBuilder->view($footerPage);
+    }
+  }
+}
+
+/**
+ * Implements hook_toolbar_alter().
+ *
+ * Hides admin toolbar items for site_owner role, keeping only content
+ * listing and Canvas editor access.
+ */
 function ai_site_builder_toolbar_alter(array &$items): void {
   $current_user = \Drupal::currentUser();
 
