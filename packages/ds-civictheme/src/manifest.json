@@ -1,0 +1,1205 @@
+[
+  {
+    "id": "civictheme:heading",
+    "name": "Heading",
+    "description": "Heading element with configurable level and theme.",
+    "group": "Atoms",
+    "category": "atoms",
+    "props": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "title": "Text",
+        "description": "The heading text content."
+      },
+      {
+        "name": "level",
+        "type": "integer",
+        "required": false,
+        "title": "Level",
+        "description": "Heading level (1-6).",
+        "enum": [1, 2, 3, 4, 5, 6],
+        "default": 2
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "description": "Light or dark theme variant.",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:paragraph",
+    "name": "Paragraph",
+    "description": "Rich text paragraph content.",
+    "group": "Atoms",
+    "category": "atoms",
+    "props": [
+      {
+        "name": "content",
+        "type": "string",
+        "required": true,
+        "title": "Content",
+        "description": "HTML content for the paragraph."
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:button",
+    "name": "Button",
+    "description": "Button element with multiple types and sizes.",
+    "group": "Atoms",
+    "category": "atoms",
+    "props": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "title": "Text",
+        "description": "Button label."
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "URL",
+        "description": "Link URL for the button."
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "title": "Type",
+        "enum": ["primary", "secondary", "tertiary"],
+        "default": "primary"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      },
+      {
+        "name": "size",
+        "type": "string",
+        "required": false,
+        "title": "Size",
+        "enum": ["large", "regular", "small"],
+        "default": "regular"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:content-link",
+    "name": "Content Link",
+    "description": "Inline or standalone text link.",
+    "group": "Atoms",
+    "category": "atoms",
+    "props": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "title": "Text"
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": true,
+        "title": "URL"
+      },
+      {
+        "name": "is_new_window",
+        "type": "boolean",
+        "required": false,
+        "title": "Open in new window",
+        "default": false
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:tag",
+    "name": "Tag",
+    "description": "Tag/label element for categorization.",
+    "group": "Atoms",
+    "category": "atoms",
+    "props": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "title": "Text"
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "URL"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:chip",
+    "name": "Chip",
+    "description": "Compact filter/selection element.",
+    "group": "Atoms",
+    "category": "atoms",
+    "props": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "title": "Text"
+      },
+      {
+        "name": "is_selected",
+        "type": "boolean",
+        "required": false,
+        "title": "Selected",
+        "default": false
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:icon",
+    "name": "Icon",
+    "description": "SVG icon element.",
+    "group": "Atoms",
+    "category": "atoms",
+    "props": [
+      {
+        "name": "symbol",
+        "type": "string",
+        "required": true,
+        "title": "Symbol",
+        "description": "Icon symbol name."
+      },
+      {
+        "name": "size",
+        "type": "string",
+        "required": false,
+        "title": "Size",
+        "enum": ["small", "regular", "large"],
+        "default": "regular"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:quote",
+    "name": "Quote",
+    "description": "Blockquote element for quotations.",
+    "group": "Atoms",
+    "category": "atoms",
+    "props": [
+      {
+        "name": "content",
+        "type": "string",
+        "required": true,
+        "title": "Content",
+        "description": "The quoted text."
+      },
+      {
+        "name": "author",
+        "type": "string",
+        "required": false,
+        "title": "Author"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:table",
+    "name": "Table",
+    "description": "Data table with rows and columns.",
+    "group": "Atoms",
+    "category": "atoms",
+    "props": [
+      {
+        "name": "header",
+        "type": "object",
+        "required": false,
+        "title": "Header",
+        "description": "Array of header cell strings."
+      },
+      {
+        "name": "rows",
+        "type": "object",
+        "required": true,
+        "title": "Rows",
+        "description": "Array of row arrays."
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:accordion",
+    "name": "Accordion",
+    "description": "Collapsible accordion container. Children are accordion panels.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      },
+      {
+        "name": "expand_all",
+        "type": "boolean",
+        "required": false,
+        "title": "Expand all",
+        "default": false
+      }
+    ],
+    "slots": [
+      {
+        "name": "panels",
+        "description": "Accordion panel items."
+      }
+    ]
+  },
+  {
+    "id": "civictheme:accordion-panel",
+    "name": "Accordion Panel",
+    "description": "Single accordion panel with title and content.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title",
+        "description": "Panel heading / question text."
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "required": true,
+        "title": "Content",
+        "description": "Panel body content (HTML)."
+      },
+      {
+        "name": "expanded",
+        "type": "boolean",
+        "required": false,
+        "title": "Expanded",
+        "default": false
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:breadcrumb",
+    "name": "Breadcrumb",
+    "description": "Navigation breadcrumb trail.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "items",
+        "type": "object",
+        "required": true,
+        "title": "Items",
+        "description": "Array of {text, url} breadcrumb items."
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:callout",
+    "name": "Callout",
+    "description": "Highlighted content callout block with optional CTA.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title"
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "required": false,
+        "title": "Content",
+        "description": "Body text or HTML content."
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ],
+    "slots": [
+      {
+        "name": "cta",
+        "description": "Call-to-action button(s)."
+      }
+    ]
+  },
+  {
+    "id": "civictheme:figure",
+    "name": "Figure",
+    "description": "Image with optional caption.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "image",
+        "type": "object",
+        "required": true,
+        "title": "Image",
+        "description": "Image object with src, alt, width, height.",
+        "$ref": "json-schema-definitions://canvas.module/image"
+      },
+      {
+        "name": "caption",
+        "type": "string",
+        "required": false,
+        "title": "Caption"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:navigation-card",
+    "name": "Navigation Card",
+    "description": "Card for navigating to a section or page.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title"
+      },
+      {
+        "name": "summary",
+        "type": "string",
+        "required": false,
+        "title": "Summary"
+      },
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "$ref": "json-schema-definitions://canvas.module/image"
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": true,
+        "title": "URL"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:promo-card",
+    "name": "Promo Card",
+    "description": "Promotional content card with optional date.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title"
+      },
+      {
+        "name": "summary",
+        "type": "string",
+        "required": false,
+        "title": "Summary"
+      },
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "$ref": "json-schema-definitions://canvas.module/image"
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "URL"
+      },
+      {
+        "name": "date",
+        "type": "string",
+        "required": false,
+        "title": "Date"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:event-card",
+    "name": "Event Card",
+    "description": "Card for event listings with date and location.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title"
+      },
+      {
+        "name": "summary",
+        "type": "string",
+        "required": false,
+        "title": "Summary"
+      },
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "$ref": "json-schema-definitions://canvas.module/image"
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "URL"
+      },
+      {
+        "name": "date",
+        "type": "string",
+        "required": false,
+        "title": "Date"
+      },
+      {
+        "name": "location",
+        "type": "string",
+        "required": false,
+        "title": "Location"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:publication-card",
+    "name": "Publication Card",
+    "description": "Card for publications, articles, blog posts.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title"
+      },
+      {
+        "name": "summary",
+        "type": "string",
+        "required": false,
+        "title": "Summary"
+      },
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "$ref": "json-schema-definitions://canvas.module/image"
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "URL"
+      },
+      {
+        "name": "date",
+        "type": "string",
+        "required": false,
+        "title": "Date"
+      },
+      {
+        "name": "categories",
+        "type": "object",
+        "required": false,
+        "title": "Categories",
+        "description": "Array of category tag strings."
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:service-card",
+    "name": "Service Card",
+    "description": "Card for service/contact information.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title"
+      },
+      {
+        "name": "summary",
+        "type": "string",
+        "required": false,
+        "title": "Summary"
+      },
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "$ref": "json-schema-definitions://canvas.module/image"
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "URL"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:subject-card",
+    "name": "Subject Card",
+    "description": "Card for subject/topic navigation.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title"
+      },
+      {
+        "name": "summary",
+        "type": "string",
+        "required": false,
+        "title": "Summary"
+      },
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "$ref": "json-schema-definitions://canvas.module/image"
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "URL"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:price-card",
+    "name": "Price Card",
+    "description": "Pricing plan card with features list.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title"
+      },
+      {
+        "name": "price",
+        "type": "string",
+        "required": true,
+        "title": "Price",
+        "description": "Price amount (e.g., '$29/mo')."
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "title": "Description"
+      },
+      {
+        "name": "features",
+        "type": "object",
+        "required": false,
+        "title": "Features",
+        "description": "Array of feature strings."
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "URL"
+      },
+      {
+        "name": "button_text",
+        "type": "string",
+        "required": false,
+        "title": "Button Text",
+        "default": "Get Started"
+      },
+      {
+        "name": "highlighted",
+        "type": "boolean",
+        "required": false,
+        "title": "Highlighted",
+        "default": false
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:snippet",
+    "name": "Snippet",
+    "description": "Testimonial/quote snippet with author information.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "quote",
+        "type": "string",
+        "required": true,
+        "title": "Quote",
+        "description": "Testimonial quote text."
+      },
+      {
+        "name": "author",
+        "type": "string",
+        "required": false,
+        "title": "Author"
+      },
+      {
+        "name": "author_image",
+        "type": "object",
+        "required": false,
+        "title": "Author Image",
+        "$ref": "json-schema-definitions://canvas.module/image"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:tabs",
+    "name": "Tabs",
+    "description": "Tabbed content container.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ],
+    "slots": [
+      {
+        "name": "panels",
+        "description": "Tab panel items."
+      }
+    ]
+  },
+  {
+    "id": "civictheme:tooltip",
+    "name": "Tooltip",
+    "description": "Contextual tooltip popup.",
+    "group": "Molecules",
+    "category": "molecules",
+    "props": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "title": "Text",
+        "description": "Tooltip content."
+      },
+      {
+        "name": "position",
+        "type": "string",
+        "required": false,
+        "title": "Position",
+        "enum": ["top", "bottom", "left", "right"],
+        "default": "top"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:banner",
+    "name": "Banner",
+    "description": "Page hero banner with title, breadcrumb, and content slot.",
+    "group": "Organisms",
+    "category": "organisms",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "dark"
+      },
+      {
+        "name": "background_image",
+        "type": "object",
+        "required": false,
+        "title": "Background Image",
+        "$ref": "json-schema-definitions://canvas.module/image"
+      },
+      {
+        "name": "breadcrumb",
+        "type": "object",
+        "required": false,
+        "title": "Breadcrumb",
+        "description": "Array of {text, url} breadcrumb items."
+      }
+    ],
+    "slots": [
+      {
+        "name": "content",
+        "description": "Banner body content (paragraphs, buttons)."
+      }
+    ]
+  },
+  {
+    "id": "civictheme:campaign",
+    "name": "Campaign",
+    "description": "Full-width campaign hero with media support.",
+    "group": "Organisms",
+    "category": "organisms",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title"
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "dark"
+      },
+      {
+        "name": "background_image",
+        "type": "object",
+        "required": false,
+        "title": "Background Image",
+        "$ref": "json-schema-definitions://canvas.module/image"
+      },
+      {
+        "name": "video_url",
+        "type": "string",
+        "required": false,
+        "title": "Video URL",
+        "description": "URL to a background or featured video."
+      }
+    ],
+    "slots": [
+      {
+        "name": "content",
+        "description": "Campaign body content."
+      }
+    ]
+  },
+  {
+    "id": "civictheme:promo",
+    "name": "Promo",
+    "description": "Pre-composed text+image organism. The primary component for content sections combining text, headings, images, and CTAs in a structured layout.",
+    "group": "Organisms",
+    "category": "organisms",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "title": "Title"
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "required": false,
+        "title": "Content",
+        "description": "Rich text / HTML body content."
+      },
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "$ref": "json-schema-definitions://canvas.module/image"
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "URL",
+        "description": "Link URL for the promo block."
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:carousel",
+    "name": "Carousel",
+    "description": "Sliding carousel container for cards or content.",
+    "group": "Organisms",
+    "category": "organisms",
+    "props": [
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ],
+    "slots": [
+      {
+        "name": "slides",
+        "description": "Carousel slide items."
+      }
+    ]
+  },
+  {
+    "id": "civictheme:slider",
+    "name": "Slider",
+    "description": "Full-width slider for testimonials or featured content.",
+    "group": "Organisms",
+    "category": "organisms",
+    "props": [
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ],
+    "slots": [
+      {
+        "name": "slides",
+        "description": "Slider slide items (snippets, cards)."
+      }
+    ]
+  },
+  {
+    "id": "civictheme:list",
+    "name": "List",
+    "description": "Layout component for arranging cards or items in columns.",
+    "group": "Organisms",
+    "category": "organisms",
+    "props": [
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      },
+      {
+        "name": "column_count",
+        "type": "integer",
+        "required": false,
+        "title": "Column Count",
+        "enum": [1, 2, 3, 4],
+        "default": 3
+      },
+      {
+        "name": "fill_width",
+        "type": "boolean",
+        "required": false,
+        "title": "Fill Width",
+        "default": true
+      }
+    ],
+    "slots": [
+      {
+        "name": "items",
+        "description": "List child items (cards, promos, etc.)."
+      }
+    ]
+  },
+  {
+    "id": "civictheme:social-links",
+    "name": "Social Links",
+    "description": "Social media icon links.",
+    "group": "Organisms",
+    "category": "organisms",
+    "props": [
+      {
+        "name": "items",
+        "type": "object",
+        "required": true,
+        "title": "Items",
+        "description": "Array of {platform, url, icon} social link items."
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ]
+  },
+  {
+    "id": "civictheme:header",
+    "name": "Header",
+    "description": "Site header with navigation, logo, and search.",
+    "group": "Organisms",
+    "category": "organisms",
+    "props": [
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "light"
+      }
+    ],
+    "slots": [
+      {
+        "name": "top_bar",
+        "description": "Top bar content (secondary links, utility nav)."
+      },
+      {
+        "name": "primary_navigation",
+        "description": "Primary navigation menu links."
+      },
+      {
+        "name": "secondary_navigation",
+        "description": "Secondary navigation and CTA buttons."
+      }
+    ]
+  },
+  {
+    "id": "civictheme:footer",
+    "name": "Footer",
+    "description": "Site footer with columns, social links, and copyright.",
+    "group": "Organisms",
+    "category": "organisms",
+    "props": [
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "enum": ["light", "dark"],
+        "default": "dark"
+      },
+      {
+        "name": "acknowledgment",
+        "type": "string",
+        "required": false,
+        "title": "Acknowledgment",
+        "description": "Acknowledgment of country or similar text."
+      },
+      {
+        "name": "copyright",
+        "type": "string",
+        "required": false,
+        "title": "Copyright"
+      }
+    ],
+    "slots": [
+      {
+        "name": "columns",
+        "description": "Footer link columns."
+      },
+      {
+        "name": "social_links",
+        "description": "Social media links."
+      },
+      {
+        "name": "copyright_links",
+        "description": "Legal/policy links."
+      }
+    ]
+  }
+]
