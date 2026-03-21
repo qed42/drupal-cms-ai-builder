@@ -22,7 +22,9 @@
     "prisma": "^7.5.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "@ai-builder/ds-types": "*",
+    "@ai-builder/ds-space-ds": "*"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",

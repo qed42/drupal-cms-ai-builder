@@ -6,8 +6,10 @@
  * TASK-268: Manifest-based schema enforcement
  */
 
-import componentManifest from "../ai/space-component-manifest.json";
+import { getDefaultAdapter } from "@/lib/design-systems/setup";
 import type { PageSection } from "./types";
+
+const componentManifest = getDefaultAdapter().getManifest();
 
 // ---- Types ----
 
@@ -141,7 +143,7 @@ export function validateSections(sections: PageSection[]): ValidationResult {
         type: "error",
         sectionIndex: i,
         componentId: section.component_id,
-        message: `Unknown component "${section.component_id}". It does not exist in the Space DS manifest.`,
+        message: `Unknown component "${section.component_id}". It does not exist in the design system manifest.`,
       });
       // Keep the section as-is — pipeline will decide whether to retry
       sanitizedSections.push({ ...section });

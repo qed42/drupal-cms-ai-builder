@@ -4,79 +4,12 @@ import type { z } from "zod";
 import type { ContentPlanPageSchema } from "@/lib/pipeline/schemas";
 import { getManifestComponent } from "../../blueprint/component-validator";
 import { formatRulesForGeneration, classifyPageType, getRule } from "../page-design-rules";
+import { getDefaultAdapter } from "@/lib/design-systems/setup";
 
 type ContentPlanPage = z.infer<typeof ContentPlanPageSchema>;
 
-/**
- * Build a concise prop reference for the most commonly used components,
- * derived from the Space DS manifest. This ensures the AI only uses
- * valid props for each component.
- */
-function buildComponentPropReference(): string[] {
-  const commonComponents = [
-    // Heroes
-    "space_ds:space-hero-banner-style-02",
-    "space_ds:space-hero-banner-with-media",
-    "space_ds:space-detail-page-hero-banner",
-    "space_ds:space-video-banner",
-    // CTA
-    "space_ds:space-cta-banner-type-1",
-    // Organisms
-    "space_ds:space-accordion",
-    "space_ds:space-slider",
-    // Molecules (used as section content)
-    "space_ds:space-section-heading",
-    "space_ds:space-testimony-card",
-    "space_ds:space-stats-kpi",
-    "space_ds:space-user-card",
-    "space_ds:space-imagecard",
-    "space_ds:space-dark-bg-imagecard",
-    "space_ds:space-contact-card",
-    "space_ds:space-content-detail",
-    "space_ds:space-logo-section",
-    "space_ds:space-videocard",
-    "space_ds:space-accordion-item",
-    // Atoms (for content within flexi grids)
-    "space_ds:space-heading",
-    "space_ds:space-text",
-    "space_ds:space-button",
-    "space_ds:space-image",
-    "space_ds:space-icon",
-    "space_ds:space-link",
-  ];
-
-  const lines: string[] = [];
-  for (const compId of commonComponents) {
-    const comp = getManifestComponent(compId);
-    if (!comp) continue;
-
-    // Show string/HTML props (content props the AI should fill)
-    const stringProps = comp.props
-      .filter((p) => p.type === "string" && !p.enum)
-      .map((p) => p.name);
-
-    // Show slots (where child components go) — cast to access slot data from manifest
-    const compAny = comp as unknown as { slots?: Array<{ name: string }> };
-    const slots = compAny.slots
-      ?.filter((s) => s.name)
-      .map((s) => s.name) ?? [];
-
-    const parts: string[] = [];
-    if (stringProps.length > 0) {
-      const example = stringProps.map((p) => `"${p}":"..."`).join(", ");
-      parts.push(`string props = [${stringProps.join(", ")}] → props_json: '{${example}}'`);
-    } else {
-      parts.push(`no string content props (layout-only)`);
-    }
-
-    if (slots.length > 0) {
-      parts.push(`slots = [${slots.join(", ")}]`);
-    }
-
-    lines.push(`- ${compId}: ${parts.join(" | ")}`);
-  }
-
-  return lines;
+function buildComponentPropReference(): string {
+  return getDefaultAdapter().buildPromptComponentReference();
 }
 
 /**
@@ -281,7 +214,7 @@ export function buildPageGenerationPrompt(
     ``,
     `## Component Prop Reference (ONLY use props listed here)`,
     ``,
-    ...buildComponentPropReference(),
+    buildComponentPropReference(),
     ``,
     ...formatRulesForGeneration(page.slug, page.title),
     ``,
@@ -325,12 +258,7 @@ export function buildPageGenerationPrompt(
     `- **Multi-column layouts**: Every column slot MUST have at least one child component. Never leave a column empty.`,
     `- **Images**: Each component that accepts an image prop should describe a unique, contextually relevant image. Use different images for different sections — never reuse the same image description across sections.`,
     ``,
-    `### Accessibility & Contrast (WCAG AA)`,
-    `- NEVER use "black" as container_background when text content is dark-colored — use "white" or "transparent" instead`,
-    `- Prefer light backgrounds (white, transparent, option-1) for text-heavy sections`,
-    `- Dark backgrounds (black, base-brand) are only for hero banners and CTA banners where text is white`,
-    `- Ensure sufficient contrast: light text on dark backgrounds, dark text on light backgrounds`,
-    `- Do NOT stack multiple dark-background sections consecutively`,
+    getDefaultAdapter().buildPromptAccessibilityRules(),
     ``,
     `### Internal Linking Strategy (SEO/GEO Critical)`,
     `- Every CTA banner MUST set its child space-button "url" to a real page from the Site Pages list above`,
