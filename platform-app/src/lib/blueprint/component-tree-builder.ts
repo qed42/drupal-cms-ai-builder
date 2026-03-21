@@ -585,37 +585,8 @@ function buildComposedSection(
       );
     }
 
-    // Multi-column (2+): ensure identical component types across columns.
-    // If children have mixed types, normalize to the most common one.
-    if (expectedColumns > 1 && children.length >= expectedColumns) {
-      const typeCount = new Map<string, number>();
-      for (const child of children) {
-        typeCount.set(child.component_id, (typeCount.get(child.component_id) || 0) + 1);
-      }
-      // Find the dominant component type
-      let dominant = children[0].component_id;
-      let maxCount = 0;
-      for (const [type, count] of typeCount) {
-        if (count > maxCount) { dominant = type; maxCount = count; }
-      }
-      // Replace outliers with the dominant type (keep their props)
-      if (typeCount.size > 1) {
-        const lastIdx = items.length;
-        // Walk back through just-added child items and fix component_id
-        for (let j = lastIdx - children.length; j < lastIdx; j++) {
-          if (items[j] && items[j].component_id !== toCanvasComponentId(dominant)) {
-            const fixed = createItem(
-              dominant,
-              flexi.uuid,
-              items[j].slot,
-              items[j].inputs,
-              items[j].label
-            );
-            fixed.parent_uuid = items[j].parent_uuid;
-            items[j] = fixed;
-          }
-        }
-      }
+    // Note: mixed component types across columns are intentional — the AI
+    // may place different atoms (heading, text, image) in different columns.
     }
 
     // Multi-column: ensure no empty columns — fill gaps with placeholder text
