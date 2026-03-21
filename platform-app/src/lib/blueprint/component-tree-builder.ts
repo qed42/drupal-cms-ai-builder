@@ -462,10 +462,12 @@ function buildComposedSection(
   sectionTag: string = "h2"
 ): ComponentTreeItem[] {
   const patternName = section.pattern!;
-  // Use AI-provided background only if it's a real value, otherwise cycle
+  // Use AI-provided background only if it's a safe value, otherwise cycle.
+  // Block "black" on composed sections — causes dark-on-dark contrast issues.
+  const UNSAFE_BACKGROUNDS = new Set(["black", "base-brand"]);
   const aiBg = section.container_background;
   const cycleBg = SECTION_BACKGROUNDS[bgIndex % SECTION_BACKGROUNDS.length];
-  const bg = aiBg && aiBg !== "transparent" ? aiBg : cycleBg;
+  const bg = aiBg && aiBg !== "transparent" && !UNSAFE_BACKGROUNDS.has(aiBg) ? aiBg : cycleBg;
 
   // Resolve column_width from pattern name, then adjust to match actual child count
   let columnWidth =
