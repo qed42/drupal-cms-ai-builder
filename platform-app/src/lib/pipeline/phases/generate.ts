@@ -3,12 +3,12 @@ import { getAIProvider, resolveModel } from "@/lib/ai/factory";
 import { generateValidatedJSON } from "@/lib/ai/validation";
 import { PageLayoutSchema } from "@/lib/pipeline/schemas";
 import { buildPageGenerationPrompt } from "@/lib/ai/prompts/page-generation";
-import { buildComponentTree } from "@/lib/blueprint/component-tree-builder";
+import { buildComponentTree, buildHeaderTree, buildFooterTree } from "@/lib/blueprint/component-tree-builder";
 import { validateSections, formatValidationFeedback } from "@/lib/blueprint/component-validator";
 import { safeParsePropsJson } from "@/lib/ai/safe-parse-props";
 import { reviewPage, formatReviewLog } from "./review";
 import type { ReviewResult } from "./review";
-import type { OnboardingData, BlueprintBundle, PageLayout, PageSection, FormField } from "@/lib/blueprint/types";
+import type { OnboardingData, BlueprintBundle, PageLayout, PageSection, FormField, HeaderConfig, FooterConfig } from "@/lib/blueprint/types";
 import type { ResearchBrief, ContentPlan } from "@/lib/pipeline/schemas";
 import type { z } from "zod";
 
@@ -312,6 +312,53 @@ export async function runGeneratePhase(
     { name: "message", type: "textarea", label: "Message", required: true },
   ];
 
+  // Build header and footer component trees
+  const contactPage = pages.find((p) => p.slug === "contact" || p.slug === "contact-us");
+  const ctaUrl = contactPage ? `/${contactPage.slug}` : "/contact";
+  const ctaText = contactPage ? "Contact Us" : "Get Started";
+
+  const headerTree = buildHeaderTree(
+    data.name || plan.siteName,
+    (data.pages || []).map((p) => ({ slug: p.slug, title: p.title })),
+    { logoUrl: data.logo_url, menuAlign: "center", ctaText, ctaUrl }
+  );
+
+  const footerNavLinks = (data.pages || []).map((p) => ({ title: p.title, url: `/${p.slug}` }));
+  const defaultSocialLinks = [
+    { platform: "Facebook", url: "https://facebook.com", icon: "facebook-logo" },
+    { platform: "Twitter", url: "https://twitter.com", icon: "twitter-logo" },
+    { platform: "Instagram", url: "https://instagram.com", icon: "instagram-logo" },
+    { platform: "LinkedIn", url: "https://linkedin.com", icon: "linkedin-logo" },
+  ];
+  const defaultLegalLinks = [
+    { title: "Privacy Policy", url: "/privacy" },
+    { title: "Terms of Service", url: "/terms" },
+  ];
+
+  const footerTree = buildFooterTree(
+    { name: data.name || plan.siteName, tagline: plan.tagline },
+    {
+      brandDescription: plan.tagline,
+      navLinks: footerNavLinks,
+      socialLinks: defaultSocialLinks,
+      legalLinks: defaultLegalLinks,
+    }
+  );
+
+  const header: HeaderConfig = {
+    menu_align: "center",
+    cta_text: ctaText,
+    cta_url: ctaUrl,
+    component_tree: headerTree,
+  };
+
+  const footer: FooterConfig = {
+    brand_description: plan.tagline,
+    legal_links: defaultLegalLinks,
+    social_links: defaultSocialLinks,
+    component_tree: footerTree,
+  };
+
   // Assemble into BlueprintBundle
   const blueprint: BlueprintBundle = {
     site: {
@@ -332,6 +379,8 @@ export async function runGeneratePhase(
     forms: {
       contact: { fields: formFields },
     },
+    header,
+    footer,
   };
 
   // Save blueprint to database with review metadata (TASK-294)
