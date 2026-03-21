@@ -1,8 +1,27 @@
 @import "tailwindcss";
 
+/* ================================================================
+ * TASK-339: Color System Spike
+ *
+ * Testing three approaches for custom colors in Tailwind v4:
+ *
+ * Option A — :root CSS vars + @theme inline var() reference
+ *   Defined in :root below, referenced in @theme inline via var()
+ *
+ * Option B — @theme (without inline)
+ *   NOT tested here — Tailwind v4 only supports @theme inline
+ *   when using @import "tailwindcss". Skipping.
+ *
+ * Option C — @theme inline with direct hex values
+ *   This is what we already use for brand-* and what we're testing
+ *   with new indigo/cyan hues.
+ * ================================================================ */
+
+/* Option A: Define a test color in :root, reference in @theme inline */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --test-a-color: #FF6B6B;
 }
 
 @theme inline {
@@ -11,18 +30,34 @@
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
 
-  /* Brand color palette (teal) */
-  --color-brand-50: #f0fdfa;
-  --color-brand-100: #ccfbf1;
-  --color-brand-200: #99f6e4;
-  --color-brand-300: #5eead4;
-  --color-brand-400: #2dd4bf;
-  --color-brand-500: #14b8a6;
-  --color-brand-600: #0d9488;
-  --color-brand-700: #0f766e;
-  --color-brand-800: #115e59;
-  --color-brand-900: #134e4a;
-  --color-brand-950: #042f2e;
+  /* ---- Option C: Brand Primary (indigo) — direct hex in @theme inline ---- */
+  --color-brand-50: #EEF2FF;
+  --color-brand-100: #E0E7FF;
+  --color-brand-200: #C7D2FE;
+  --color-brand-300: #A5B4FC;
+  --color-brand-400: #818CF8;
+  --color-brand-500: #4F46E5;
+  --color-brand-600: #4338CA;
+  --color-brand-700: #3730A3;
+  --color-brand-800: #312E81;
+  --color-brand-900: #1E1B4B;
+  --color-brand-950: #0F0D2E;
+
+  /* ---- Option C: Accent (cyan) — direct hex in @theme inline ---- */
+  --color-accent-50: #ECFEFF;
+  --color-accent-100: #CFFAFE;
+  --color-accent-200: #A5F3FC;
+  --color-accent-300: #67E8F9;
+  --color-accent-400: #22D3EE;
+  --color-accent-500: #06B6D4;
+  --color-accent-600: #0891B2;
+  --color-accent-700: #0E7490;
+  --color-accent-800: #155E75;
+  --color-accent-900: #164E63;
+  --color-accent-950: #083344;
+
+  /* ---- Option A: Test color via var() reference ---- */
+  --color-test-a: var(--test-a-color);
 }
 
 @media (prefers-color-scheme: dark) {
