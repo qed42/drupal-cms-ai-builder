@@ -104,14 +104,15 @@ function getFallbackPages(
       page.slug === "home"
         ? [
             {
-              component_id: "space_ds:space-hero-banner-style-01",
+              component_id: "space_ds:space-hero-banner-style-02",
               props: {
                 title: `Welcome to ${data.name || "Our Site"}`,
                 sub_headline: data.idea || "Your trusted partner",
               },
             },
             {
-              component_id: "space_ds:space-text-media-default",
+              component_id: "",
+              pattern: "text-image-split-50-50",
               props: {
                 title: "Our Services",
                 description: (content.services || [])
@@ -130,14 +131,15 @@ function getFallbackPages(
         : page.slug === "contact"
           ? [
               {
-                component_id: "space_ds:space-hero-banner-style-03",
+                component_id: "space_ds:space-hero-banner-with-media",
                 props: {
                   title: "Get in Touch",
                   sub_headline: "We'd love to hear from you.",
                 },
               },
               {
-                component_id: "space_ds:space-text-media-default",
+                component_id: "",
+                pattern: "text-image-split-50-50",
                 props: {
                   title: "Send us a message",
                   description:
@@ -158,14 +160,15 @@ function getFallbackPages(
             ]
           : [
               {
-                component_id: "space_ds:space-hero-banner-style-03",
+                component_id: "space_ds:space-hero-banner-with-media",
                 props: {
                   title: page.title,
                   sub_headline: `Learn more about ${page.title.toLowerCase()}.`,
                 },
               },
               {
-                component_id: "space_ds:space-text-media-default",
+                component_id: "",
+                pattern: "text-image-split-50-50",
                 props: {
                   title: page.title,
                   description: `Welcome to our ${page.title.toLowerCase()} page.`,

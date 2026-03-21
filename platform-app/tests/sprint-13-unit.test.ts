@@ -23,18 +23,20 @@ describe("Sprint 13: Content Review Page & Inline Editing", () => {
       expect(content).toContain("export function getComponentLabel");
     });
 
-    it("has friendly labels for all major Space DS components", () => {
+    it("has friendly labels for all major Space DS v2 components", () => {
       const content = fs.readFileSync(rendererPath, "utf8");
       const expectedComponents = [
-        "space-hero-banner-style-01",
-        "space-text-media-default",
+        "space-hero-banner-style-02",
+        "space-hero-banner-with-media",
         "space-cta-banner-type-1",
-        "space-features",
         "space-accordion",
-        "space-team-section-type-1",
+        "space-slider",
         "space-testimony-card",
-        "space-pricing-card",
         "space-stats-kpi",
+        "space-section-heading",
+        "space-user-card",
+        "space-imagecard",
+        "space-contact-card",
       ];
       for (const comp of expectedComponents) {
         expect(content).toContain(comp);

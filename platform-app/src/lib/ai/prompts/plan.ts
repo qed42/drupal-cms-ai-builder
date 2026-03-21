@@ -1,6 +1,6 @@
 import type { OnboardingData } from "@/lib/blueprint/types";
 import type { ResearchBrief } from "@/lib/pipeline/schemas";
-import { formatRulesForPlan } from "../page-design-rules";
+import { formatRulesForPlan, classifyPageType, getRule } from "../page-design-rules";
 
 /**
  * Build the plan phase prompt from research brief + onboarding data.
@@ -76,6 +76,13 @@ export function buildPlanPrompt(
     `- Each section's contentBrief should be specific and actionable, not vague`,
     `- Include SEO keywords naturally in section briefs`,
     `- Every content section MUST have an estimatedWordCount that meets the word count range specified in the page requirements above`,
+    ``,
+    `## FINAL CHECK — Minimum Section Counts (your output will be REJECTED if any page falls below)`,
+    ...pages.map((p) => {
+      const pageType = classifyPageType(p.slug, p.title);
+      const rule = getRule(pageType);
+      return `- ${p.title} (/${p.slug}): MINIMUM ${rule.sectionCountRange[0]} sections`;
+    }),
     ``,
     `Return ONLY valid JSON.`
   );

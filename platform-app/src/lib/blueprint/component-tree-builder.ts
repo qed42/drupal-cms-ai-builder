@@ -38,7 +38,11 @@ const ORGANISM_PATTERNS = new Set([
  * Background colors cycled for visual rhythm across composed sections.
  * Can be overridden per-section via container_background.
  */
-const SECTION_BACKGROUNDS = ["transparent", "option-1", "white", "option-2"];
+/**
+ * Background colors cycled to ensure visual separation between sections.
+ * No two consecutive sections should share the same background.
+ */
+const SECTION_BACKGROUNDS = ["white", "option-1", "transparent", "option-2"];
 
 /**
  * Map column_width string to expected number of children.
@@ -154,13 +158,32 @@ function componentHasProp(componentId: string, propName: string): boolean {
 }
 
 /**
+ * Index of image-type props per component — used to ensure all image slots
+ * are filled with valid placeholders to prevent Canvas render failures.
+ */
+const MANIFEST_IMAGE_PROPS = new Map<string, string[]>();
+for (const comp of componentManifest as ManifestComponent[]) {
+  const imgProps = comp.props
+    .filter((p) => p.type === "object" && (
+      p.name.includes("image") || p.name.includes("logo") ||
+      (p as unknown as { $ref?: string }).$ref === "json-schema-definitions://canvas.module/image"
+    ))
+    .map((p) => p.name);
+  if (imgProps.length > 0) {
+    MANIFEST_IMAGE_PROPS.set(comp.id, imgProps);
+  }
+}
+
+/**
  * Intentional overrides where our desired default differs from the manifest.
  * These take precedence over manifest defaults but are overridden by user input.
  */
 const PROP_OVERRIDES: Record<string, Record<string, unknown>> = {
   "space_ds:space-container": { width: "boxed-width" },
-  "space_ds:space-heading": { alignment: "left" },
+  "space_ds:space-heading": { alignment: "none" },
   "space_ds:space-section-heading": { alignment: "center" },
+  "space_ds:space-button": { variant: "primary" },
+  "space_ds:space-cta-banner-type-1": { width: "full-width", alignment: "stacked" },
 };
 
 /**
@@ -183,18 +206,34 @@ function createItem(
   // Layer 3: user/AI-provided inputs take final precedence
   const mergedInputs = { ...manifestDefaults, ...overrides, ...inputs };
 
-  // Strip null/undefined/empty/invalid-object props so Canvas uses component defaults.
-  // This prevents Canvas template errors like "[canvas:image/src] NULL value found".
+  // Sanitize null/undefined props. For string props, replace with "" instead
+  // of deleting — Canvas expects strings, not NULL. For image objects with
+  // null sub-properties, strip the entire object to avoid "[canvas:image/src] NULL".
   for (const [key, value] of Object.entries(mergedInputs)) {
     if (value === null || value === undefined) {
-      delete mergedInputs[key];
+      // Replace null strings with "" instead of deleting — prevents NULL template errors
+      mergedInputs[key] = "";
     } else if (typeof value === "object" && !Array.isArray(value)) {
       const obj = value as Record<string, unknown>;
       const keys = Object.keys(obj);
       // Empty object or all-null-values object (e.g., { src: null, alt: null })
       if (keys.length === 0 || keys.every((k) => obj[k] === null || obj[k] === undefined)) {
         delete mergedInputs[key];
+      } else {
+        // Replace null sub-properties with "" for image objects
+        for (const k of keys) {
+          if (obj[k] === null || obj[k] === undefined) {
+            obj[k] = "";
+          }
+        }
       }
+    }
+  }
+
+  // Replace "_none" with "none" — Canvas doesn't recognize "_none"
+  for (const [key, value] of Object.entries(mergedInputs)) {
+    if (value === "_none") {
+      mergedInputs[key] = "none";
     }
   }
 
@@ -206,6 +245,24 @@ function createItem(
     for (const key of Object.keys(mergedInputs)) {
       if (!validProps.has(key)) {
         delete mergedInputs[key];
+      }
+    }
+  }
+
+  // Fill empty/missing image props with a valid placeholder.
+  // Canvas crashes with "[canvas:image/src] NULL" when image slots are empty.
+  const imageProps = MANIFEST_IMAGE_PROPS.get(componentId);
+  if (imageProps) {
+    for (const propName of imageProps) {
+      const val = mergedInputs[propName];
+      if (!val || (typeof val === "object" && !Array.isArray(val) &&
+          (!((val as Record<string, unknown>).src) || (val as Record<string, unknown>).src === ""))) {
+        mergedInputs[propName] = {
+          src: "/images/placeholder.webp",
+          alt: label || "Image",
+          width: propName === "background_image" ? 1920 : 800,
+          height: propName === "background_image" ? 1080 : 600,
+        };
       }
     }
   }
@@ -442,6 +499,7 @@ function buildComposedSection(
       column_width: columnWidth,
       no_of_columns: COLUMN_COUNT_NAMES[colCount] ?? "none",
       gap,
+      margin_top: "small",
     },
     `Flexi: ${label}`
   );
@@ -480,6 +538,23 @@ function buildComposedSection(
         childProps.spacing_bottom = "small";
       }
 
+      // Space Text: ensure rich text field has trailing newline for proper rendering
+      if (child.component_id === "space_ds:space-text" && typeof childProps.rich_text === "string") {
+        if (!childProps.rich_text.endsWith("\n")) {
+          childProps.rich_text = childProps.rich_text + "\n";
+        }
+      }
+
+      // Space Stats KPI: sub_headline must be descriptive text, not a number
+      if (child.component_id === "space_ds:space-stats-kpi" && typeof childProps.sub_headline === "string") {
+        // If sub_headline looks like a number/stat, swap with title
+        if (/^\d[\d,.%+]*$/.test(childProps.sub_headline.trim())) {
+          const origTitle = childProps.title;
+          childProps.title = childProps.sub_headline;
+          childProps.sub_headline = typeof origTitle === "string" ? origTitle : "";
+        }
+      }
+
       items.push(
         createItem(
           child.component_id,
@@ -489,6 +564,61 @@ function buildComposedSection(
           labelFromId(child.component_id)
         )
       );
+    }
+
+    // Multi-column (2+): ensure identical component types across columns.
+    // If children have mixed types, normalize to the most common one.
+    if (expectedColumns > 1 && children.length >= expectedColumns) {
+      const typeCount = new Map<string, number>();
+      for (const child of children) {
+        typeCount.set(child.component_id, (typeCount.get(child.component_id) || 0) + 1);
+      }
+      // Find the dominant component type
+      let dominant = children[0].component_id;
+      let maxCount = 0;
+      for (const [type, count] of typeCount) {
+        if (count > maxCount) { dominant = type; maxCount = count; }
+      }
+      // Replace outliers with the dominant type (keep their props)
+      if (typeCount.size > 1) {
+        const lastIdx = items.length;
+        // Walk back through just-added child items and fix component_id
+        for (let j = lastIdx - children.length; j < lastIdx; j++) {
+          if (items[j] && items[j].component_id !== toCanvasComponentId(dominant)) {
+            const fixed = createItem(
+              dominant,
+              flexi.uuid,
+              items[j].slot,
+              items[j].inputs,
+              items[j].label
+            );
+            fixed.parent_uuid = items[j].parent_uuid;
+            items[j] = fixed;
+          }
+        }
+      }
+    }
+
+    // Multi-column: ensure no empty columns — fill gaps with placeholder text
+    if (expectedColumns > 1) {
+      const usedSlots = new Set(children.map((c, i) => {
+        if (i < expectedColumns && COLUMN_SLOTS[i]) return COLUMN_SLOTS[i];
+        return c.slot;
+      }));
+      for (let col = 0; col < expectedColumns; col++) {
+        const colSlot = COLUMN_SLOTS[col];
+        if (colSlot && !usedSlots.has(colSlot)) {
+          items.push(
+            createItem(
+              "space_ds:space-text",
+              flexi.uuid,
+              colSlot,
+              { rich_text: "\n" },
+              `Placeholder: ${colSlot}`
+            )
+          );
+        }
+      }
     }
   }
 

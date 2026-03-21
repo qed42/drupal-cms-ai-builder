@@ -250,7 +250,8 @@ describe("PAGE_DESIGN_RULES data integrity", () => {
       "hero-banner-style-10", "hero-banner-style-11",
       "team-section", "pricing-card", "pricing-featured",
       "people-card", "cta-banner-type-2", "cta-banner-type-3",
-      "accordion-with-image",
+      "accordion-with-image", "space-features", "logo-grid",
+      "icon-card", "quicklink-card",
     ];
     const serialized = JSON.stringify(PAGE_DESIGN_RULES);
     for (const pattern of deletedPatterns) {

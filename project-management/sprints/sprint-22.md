@@ -3,6 +3,7 @@
 **Milestone:** M16 — Pipeline Stabilization & Quality
 **Duration:** 4 days
 **Predecessor:** Sprint 21 (v2 Completion — DONE)
+**Status:** CLOSED (2026-03-21) — Remaining bugs carried to Sprint 24 Bug Sprint
 
 ## Sprint Goal
 

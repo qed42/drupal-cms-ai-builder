@@ -49,6 +49,29 @@ for (const comp of componentManifest as ManifestComponent[]) {
 }
 
 /**
+ * Known composition pattern names that the AI may incorrectly place in
+ * component_id. When detected, we remap them to proper composed sections
+ * so downstream processing (tree builder) handles them correctly.
+ */
+const KNOWN_PATTERN_NAMES = new Set([
+  "testimonials-carousel",
+  "card-carousel",
+  "faq-accordion",
+  "logo-showcase",
+  "text-image-split-50-50",
+  "text-image-split-66-33",
+  "image-text-split-33-66",
+  "features-grid-3col",
+  "features-grid-4col",
+  "stats-row",
+  "team-grid-4col",
+  "team-grid-3col",
+  "card-grid-3col",
+  "contact-info",
+  "full-width-text",
+]);
+
+/**
  * Get the list of valid prop names for a component. Returns null if the
  * component is not in the manifest.
  */
@@ -84,10 +107,29 @@ export function validateSections(sections: PageSection[]): ValidationResult {
     const section = sections[i];
 
     // Composed sections (Type B) use pattern instead of component_id.
-    // Their component_id is intentionally empty — skip manifest validation.
+    // Their component_id may be empty or set to the pattern name by the AI.
     // Children carry the actual component IDs and are validated downstream.
-    if (section.pattern && !section.component_id) {
+    if (section.pattern && (!section.component_id || !manifestIndex.has(section.component_id))) {
       sanitizedSections.push({ ...section });
+      continue;
+    }
+
+    // Auto-remap: AI placed a pattern name in component_id instead of using
+    // the pattern field. Convert to a proper composed section so the tree
+    // builder handles it correctly.
+    if (!section.pattern && KNOWN_PATTERN_NAMES.has(section.component_id)) {
+      issues.push({
+        type: "warning",
+        sectionIndex: i,
+        componentId: section.component_id,
+        message: `Remapped pattern name "${section.component_id}" from component_id to pattern field.`,
+      });
+      sanitizedSections.push({
+        ...section,
+        pattern: section.component_id,
+        component_id: "",
+        props: section.props ?? {},
+      });
       continue;
     }
 

@@ -19,10 +19,10 @@ type GeneratedPage = z.infer<typeof PageLayoutSchema>;
  * Pages with more sections need more tokens to avoid truncation.
  */
 function calculateTokenBudget(sectionCount: number): number {
-  const base = 4000;
-  const perExtraSection = 500;
+  const base = 8000;
+  const perExtraSection = 1000;
   const extra = Math.max(0, sectionCount - 3) * perExtraSection;
-  return Math.min(base + extra, 10000);
+  return Math.min(base + extra, 20000);
 }
 
 export interface GeneratePhaseResult {

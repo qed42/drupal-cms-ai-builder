@@ -77,6 +77,10 @@ export async function runPlanPhase(
   const model = resolveModel("plan") || "default";
   const basePrompt = buildPlanPrompt(data, research);
 
+  // Scale token budget based on number of pages — more pages need more planning tokens
+  const pageCount = data.pages?.length ?? 3;
+  const planTokenBudget = Math.min(6000 + pageCount * 1500, 16000);
+
   // Generate plan with depth validation + max 1 retry (ADR-012)
   let plan = await generateValidatedJSON<ContentPlan>(
     provider,
@@ -85,7 +89,7 @@ export async function runPlanPhase(
     {
       phase: "plan",
       temperature: 0.3,
-      maxTokens: 6000,
+      maxTokens: planTokenBudget,
     }
   );
 
@@ -101,7 +105,7 @@ export async function runPlanPhase(
       {
         phase: "plan",
         temperature: 0.3,
-        maxTokens: 6000,
+        maxTokens: planTokenBudget,
       }
     );
 

@@ -1002,14 +1002,23 @@ export function formatRulesForGeneration(
     );
   }
 
-  // Component mapping for this page type
+  // Component mapping for this page type — clearly distinguish
+  // Type A (organism component_id) from Type B (composition pattern name)
   lines.push(
-    `## Component ID Mapping (${pageType} page)`
+    `## Section Type Mapping (${pageType} page)`,
+    `Type A sections use "component_id". Type B sections use "pattern" (with component_id="").`,
+    ``
   );
 
-  const sectionTypeMap: Record<string, string[]> = {
-    hero: rule.heroRule.preferredStyles,
-    cta: ["space_ds:space-cta-banner-type-1"],
+  // Type A organism sections — these go in component_id
+  lines.push(`**Type A (organism component_id):**`);
+  lines.push(`- hero -> ${rule.heroRule.preferredStyles.map((s) => `"${s}"`).join(" or ")}`);
+  lines.push(`- cta -> "space_ds:space-cta-banner-type-1"`);
+  lines.push(``);
+
+  // Type B composed sections — these go in the pattern field, NOT component_id
+  lines.push(`**Type B (composition pattern — use in "pattern" field, set component_id=""):**`);
+  const patternMap: Record<string, string[]> = {
     "text/about": ["text-image-split-50-50", "text-image-split-66-33", "full-width-text"],
     features: ["features-grid-3col", "features-grid-4col"],
     testimonials: ["testimonials-carousel"],
@@ -1019,16 +1028,14 @@ export function formatRulesForGeneration(
     "gallery/cards": ["card-grid-3col", "card-carousel"],
     contact: ["contact-info"],
     logos: ["logo-showcase"],
-    "section-heading": ["space_ds:space-section-heading"],
   };
-
-  for (const [sectionType, patterns] of Object.entries(sectionTypeMap)) {
-    const labels = patterns.map((p) => {
-      if (p.startsWith("space_ds:")) return `"${p}"`;
-      return `"${p}"`;
-    }).join(" or ");
-    lines.push(`- ${sectionType} -> ${labels}`);
+  for (const [sectionType, patterns] of Object.entries(patternMap)) {
+    lines.push(`- ${sectionType} -> pattern: ${patterns.map((p) => `"${p}"`).join(" or ")}`);
   }
+
+  lines.push(``);
+  lines.push(`**Utility (used inside containers, not as standalone sections):**`);
+  lines.push(`- section-heading -> "space_ds:space-section-heading"`);
 
   // Avoid list
   if (rule.avoidComponents.length > 0) {

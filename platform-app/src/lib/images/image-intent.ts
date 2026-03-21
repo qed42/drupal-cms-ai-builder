@@ -28,45 +28,22 @@ export interface ImageIntent {
  */
 const IMAGE_PROP_MAP: Record<string, { props: string[]; orientation: "landscape" | "portrait" | "square"; width: number; height: number }> = {
   // Hero banners
-  "space_ds:space-hero-banner-style-01": { props: ["background_image"], orientation: "landscape", width: 1920, height: 1080 },
   "space_ds:space-hero-banner-style-02": { props: ["background_image"], orientation: "landscape", width: 1920, height: 1080 },
-  "space_ds:space-hero-banner-style-03": { props: ["image_1"], orientation: "landscape", width: 1200, height: 800 },
-  "space_ds:space-hero-banner-style-04": { props: ["image_1"], orientation: "landscape", width: 1200, height: 800 },
-  "space_ds:space-hero-banner-style-05": { props: ["image_1"], orientation: "landscape", width: 1200, height: 800 },
-  "space_ds:space-hero-banner-style-06": { props: ["image_1"], orientation: "landscape", width: 1200, height: 800 },
-  "space_ds:space-hero-banner-style-07": { props: ["image_1"], orientation: "landscape", width: 1200, height: 800 },
-  "space_ds:space-hero-banner-style-08": { props: ["image_1"], orientation: "landscape", width: 1200, height: 800 },
-  "space_ds:space-hero-banner-style-10": { props: ["image_1"], orientation: "landscape", width: 1200, height: 800 },
-  "space_ds:space-hero-banner-style-11": { props: ["image_1"], orientation: "landscape", width: 1200, height: 800 },
-
-  // Text-media sections
-  "space_ds:space-text-media-default": { props: ["image_1"], orientation: "landscape", width: 800, height: 600 },
-  "space_ds:space-text-media-with-checklist": { props: ["image_1"], orientation: "landscape", width: 800, height: 600 },
-  "space_ds:space-text-media-with-images": { props: ["image_1"], orientation: "landscape", width: 800, height: 600 },
-  "space_ds:space-text-media-with-link": { props: ["image_1"], orientation: "landscape", width: 800, height: 600 },
-  "space_ds:space-text-media-with-stats": { props: ["image_1"], orientation: "landscape", width: 800, height: 600 },
+  "space_ds:space-hero-banner-with-media": { props: ["image_1"], orientation: "landscape", width: 1200, height: 800 },
+  "space_ds:space-detail-page-hero-banner": { props: ["background_image"], orientation: "landscape", width: 1920, height: 1080 },
 
   // Cards with images
-  "space_ds:space-featured-card": { props: ["image"], orientation: "landscape", width: 600, height: 400 },
   "space_ds:space-imagecard": { props: ["image"], orientation: "landscape", width: 600, height: 400 },
-  "space_ds:space-quicklink-card": { props: ["image"], orientation: "landscape", width: 600, height: 400 },
+  "space_ds:space-dark-bg-imagecard": { props: ["image"], orientation: "landscape", width: 600, height: 400 },
   "space_ds:space-testimony-card": { props: ["image"], orientation: "square", width: 400, height: 400 },
+  "space_ds:space-user-card": { props: ["image"], orientation: "square", width: 400, height: 400 },
 
-  // CTA banners
-  "space_ds:space-cta-banner-type-2": { props: ["image"], orientation: "landscape", width: 800, height: 600 },
-  "space_ds:space-cta-banner-type-3": { props: ["image"], orientation: "landscape", width: 800, height: 600 },
+  // CTA banner
+  "space_ds:space-cta-banner-type-1": { props: ["image"], orientation: "landscape", width: 800, height: 600 },
 
-  // People / team sections
-  "space_ds:space-people-card-people-with-image": { props: ["image"], orientation: "square", width: 400, height: 400 },
-  "space_ds:space-people-card-people-with-image-bio": { props: ["image"], orientation: "square", width: 400, height: 400 },
-  "space_ds:space-people-card-testimony-with-image": { props: ["image"], orientation: "square", width: 400, height: 400 },
-  "space_ds:space-people-card-people-with-avatar": { props: ["image"], orientation: "square", width: 400, height: 400 },
-  "space_ds:space-people-card-people-with-avatar-bio": { props: ["image"], orientation: "square", width: 400, height: 400 },
-  "space_ds:space-people-card-testimony-with-avatar": { props: ["image"], orientation: "square", width: 400, height: 400 },
-
-  // Accordion with image
-  "space_ds:space-accordion-with-image-item": { props: ["image"], orientation: "landscape", width: 600, height: 400 },
-  "space_ds:space-accordion-with-image-variation-4-image": { props: ["image"], orientation: "landscape", width: 600, height: 400 },
+  // Video banner
+  "space_ds:space-video-banner": { props: ["image"], orientation: "landscape", width: 1200, height: 800 },
+  "space_ds:space-videocard": { props: ["image"], orientation: "landscape", width: 600, height: 400 },
 };
 
 /**
@@ -157,10 +134,9 @@ function buildSearchQuery(
 
 function getComponentTypeHint(componentId: string): string {
   if (componentId.includes("hero-banner")) return "professional";
-  if (componentId.includes("people-card") || componentId.includes("testimony")) return "portrait person";
-  if (componentId.includes("text-media")) return "office workspace";
+  if (componentId.includes("user-card") || componentId.includes("testimony")) return "portrait person";
   if (componentId.includes("cta-banner")) return "business";
-  if (componentId.includes("featured-card") || componentId.includes("imagecard")) return "";
-  if (componentId.includes("accordion")) return "";
+  if (componentId.includes("imagecard") || componentId.includes("videocard")) return "";
+  if (componentId.includes("video-banner")) return "professional";
   return "";
 }

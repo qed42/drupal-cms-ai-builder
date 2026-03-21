@@ -92,14 +92,14 @@ export async function POST(
         type: "hero",
         contentBrief: `Hero section for the ${body.title} page`,
         estimatedWordCount: 50,
-        componentSuggestion: "space_ds:space-hero-banner-style-03",
+        componentSuggestion: "space_ds:space-hero-banner-style-02",
       },
       {
         heading: "Content",
         type: "text",
         contentBrief: body.description || `Main content for the ${body.title} page`,
         estimatedWordCount: 200,
-        componentSuggestion: "space_ds:space-text-media-default",
+        componentSuggestion: "text-image-split-50-50",
       },
     ],
   };
