@@ -587,7 +587,6 @@ function buildComposedSection(
 
     // Note: mixed component types across columns are intentional — the AI
     // may place different atoms (heading, text, image) in different columns.
-    }
 
     // Multi-column: ensure no empty columns — fill gaps with placeholder text
     if (expectedColumns > 1) {
