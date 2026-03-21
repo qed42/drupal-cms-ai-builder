@@ -255,8 +255,13 @@ function createItem(
   if (imageProps) {
     for (const propName of imageProps) {
       const val = mergedInputs[propName];
-      if (!val || (typeof val === "object" && !Array.isArray(val) &&
-          (!((val as Record<string, unknown>).src) || (val as Record<string, unknown>).src === ""))) {
+      // Fill if: missing, empty string, null, or object without valid src
+      const needsFill = !val || val === "" || val === null ||
+        (typeof val === "object" && !Array.isArray(val) &&
+          (!((val as Record<string, unknown>).src) ||
+           (val as Record<string, unknown>).src === "" ||
+           (val as Record<string, unknown>).src === null));
+      if (needsFill) {
         mergedInputs[propName] = {
           src: "/images/placeholder.webp",
           alt: label || "Image",
@@ -455,11 +460,25 @@ function buildComposedSection(
     section.container_background ||
     SECTION_BACKGROUNDS[bgIndex % SECTION_BACKGROUNDS.length];
 
-  // Resolve column_width from pattern name
-  const columnWidth =
+  // Resolve column_width from pattern name, then adjust to match actual child count
+  let columnWidth =
     PATTERN_COLUMN_WIDTHS[patternName] ??
     COMPOSITION_PATTERNS[patternName]?.layout?.column_width ??
     "100";
+
+  // Adjust column_width to match actual children count to prevent empty columns
+  const childCount = section.children?.length ?? 0;
+  const patternCols = getColumnCount(columnWidth);
+  if (childCount > 0 && childCount < patternCols) {
+    // Redistribute: e.g., 3 children with "25-25-25-25" → "33-33-33"
+    const CHILD_COUNT_WIDTHS: Record<number, string> = {
+      1: "100",
+      2: "50-50",
+      3: "33-33-33",
+      4: "25-25-25-25",
+    };
+    columnWidth = CHILD_COUNT_WIDTHS[childCount] ?? columnWidth;
+  }
 
   const gap =
     COMPOSITION_PATTERNS[patternName]?.layout?.gap ?? "medium";
