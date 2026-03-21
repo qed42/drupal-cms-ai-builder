@@ -180,7 +180,7 @@ for (const comp of componentManifest as ManifestComponent[]) {
  */
 const PROP_OVERRIDES: Record<string, Record<string, unknown>> = {
   "space_ds:space-container": { width: "boxed-width" },
-  "space_ds:space-heading": { alignment: "none" },
+  "space_ds:space-heading": { align: "none" },
   "space_ds:space-section-heading": { alignment: "center" },
   "space_ds:space-button": { variant: "primary" },
   "space_ds:space-cta-banner-type-1": { width: "full-width", alignment: "stacked" },
@@ -255,17 +255,20 @@ function createItem(
   if (imageProps) {
     for (const propName of imageProps) {
       const val = mergedInputs[propName];
-      // Fill if: missing, empty string, null, or object without valid src
-      const needsFill = !val || val === "" || val === null ||
+      // Fill if: missing, empty string, null, a plain string (AI description),
+      // or object without valid src
+      const needsFill = !val || val === null ||
+        typeof val === "string" ||
         (typeof val === "object" && !Array.isArray(val) &&
           (!((val as Record<string, unknown>).src) ||
            (val as Record<string, unknown>).src === "" ||
            (val as Record<string, unknown>).src === null));
       if (needsFill) {
+        // Use a real Space DS theme image that exists on every Drupal CMS install
         mergedInputs[propName] = {
-          src: "/placeholder.png",
-          alt: label || "Image",
-          width: propName === "background_image" ? 1920 : 800,
+          src: "/themes/contrib/space_ds/components/01-atoms/space-image/images/city.jpeg",
+          alt: typeof val === "string" ? val : (label || "Image"),
+          width: propName === "background_image" ? 1920 : 1080,
           height: propName === "background_image" ? 1080 : 600,
         };
       }
@@ -396,9 +399,10 @@ function buildOrganismSection(section: PageSection, sectionTag: string = "h2"): 
     const organism = createItem(componentId, null, null, inputs, label);
     const items: ComponentTreeItem[] = [organism];
 
-    // Add children (e.g., CTA button)
+    // Add children (e.g., CTA button) — skip any that duplicate the parent organism
     if (section.children?.length) {
       for (const child of section.children) {
+        if (child.component_id === componentId) continue;
         items.push(
           createItem(
             child.component_id,
@@ -420,6 +424,8 @@ function buildOrganismSection(section: PageSection, sectionTag: string = "h2"): 
 
   if (section.children?.length) {
     for (const child of section.children) {
+      // Skip children that duplicate the parent organism (prevents nesting)
+      if (child.component_id === componentId) continue;
       childItems.push(
         createItem(
           child.component_id,
@@ -456,9 +462,10 @@ function buildComposedSection(
   sectionTag: string = "h2"
 ): ComponentTreeItem[] {
   const patternName = section.pattern!;
-  const bg =
-    section.container_background ||
-    SECTION_BACKGROUNDS[bgIndex % SECTION_BACKGROUNDS.length];
+  // Use AI-provided background only if it's a real value, otherwise cycle
+  const aiBg = section.container_background;
+  const cycleBg = SECTION_BACKGROUNDS[bgIndex % SECTION_BACKGROUNDS.length];
+  const bg = aiBg && aiBg !== "transparent" ? aiBg : cycleBg;
 
   // Resolve column_width from pattern name, then adjust to match actual child count
   let columnWidth =
@@ -503,9 +510,19 @@ function buildComposedSection(
 
   const items: ComponentTreeItem[] = [container];
 
-  // Add section heading if specified — uses section-level tag
+  // Add section heading — auto-generate from pattern name if not specified
   if (section.section_heading) {
     items.push(createSectionHeading(container.uuid, section.section_heading, sectionTag));
+  } else {
+    // Every composed section needs a section heading for semantic structure
+    const autoTitle = patternName
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+      .replace(/\d+col$/i, "")
+      .trim();
+    items.push(
+      createSectionHeading(container.uuid, { title: autoTitle }, sectionTag)
+    );
   }
 
   // Create flexi layout — set both column_width and no_of_columns
@@ -557,10 +574,23 @@ function buildComposedSection(
         childProps.spacing_bottom = "small";
       }
 
-      // Space Text: ensure rich text field has trailing newline for proper rendering
-      if (child.component_id === "space_ds:space-text" && typeof childProps.rich_text === "string") {
-        if (!childProps.rich_text.endsWith("\n")) {
-          childProps.rich_text = childProps.rich_text + "\n";
+      // Space Text: remap rich_text → text (manifest uses "text", not "rich_text")
+      // and ensure HTML wrapping for proper Canvas rendering
+      if (child.component_id === "space_ds:space-text") {
+        // Remap if AI used wrong prop name
+        if (childProps.rich_text && !childProps.text) {
+          childProps.text = childProps.rich_text;
+          delete childProps.rich_text;
+        }
+        const textVal = childProps.text;
+        if (typeof textVal === "string") {
+          // Wrap in <p> tags if not already HTML
+          let fixed = textVal.startsWith("<") ? textVal : `<p>${textVal}</p>`;
+          // Ensure trailing newline for proper rendering
+          if (!fixed.endsWith("\n")) {
+            fixed = fixed + "\n";
+          }
+          childProps.text = fixed;
         }
       }
 
@@ -590,10 +620,19 @@ function buildComposedSection(
 
     // Multi-column: ensure no empty columns — fill gaps with placeholder text
     if (expectedColumns > 1) {
-      const usedSlots = new Set(children.map((c, i) => {
-        if (i < expectedColumns && COLUMN_SLOTS[i]) return COLUMN_SLOTS[i];
-        return c.slot;
-      }));
+      // Track which column slots actually have children assigned
+      const usedSlots = new Set<string>();
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        // Mirror the slot assignment logic above
+        let slot = child.slot;
+        if (i < expectedColumns && COLUMN_SLOTS[i]) {
+          if (!slot || !COLUMN_SLOTS.includes(slot)) {
+            slot = COLUMN_SLOTS[i];
+          }
+        }
+        if (slot) usedSlots.add(slot);
+      }
       for (let col = 0; col < expectedColumns; col++) {
         const colSlot = COLUMN_SLOTS[col];
         if (colSlot && !usedSlots.has(colSlot)) {
@@ -602,7 +641,7 @@ function buildComposedSection(
               "space_ds:space-text",
               flexi.uuid,
               colSlot,
-              { rich_text: "\n" },
+              { text: "<p></p>\n" },
               `Placeholder: ${colSlot}`
             )
           );
