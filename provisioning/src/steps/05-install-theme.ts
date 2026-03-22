@@ -3,9 +3,21 @@ import type { ProvisioningConfig, StepResult } from "../types.js";
 import type winston from "winston";
 
 /**
+ * Modules that must be enabled before a given theme can be installed.
+ * CivicTheme registers Layout Builder plugins at install time, so
+ * layout_builder must already be present.
+ */
+const THEME_PREREQUISITES: Record<string, string[]> = {
+  civictheme: ["layout_builder"],
+};
+
+/**
  * Install and set the active design system theme.
  * Reads the theme name from the provisioning config's designSystemTheme field,
  * defaulting to "space_ds" for backward compatibility.
+ *
+ * Some themes (e.g. CivicTheme) require prerequisite modules to be enabled
+ * before installation — this step handles that automatically.
  */
 export async function installThemeStep(
   config: ProvisioningConfig,
@@ -19,6 +31,16 @@ export async function installThemeStep(
 
   // Read theme from config, default to space_ds for backward compatibility
   const themeName = config.designSystemTheme ?? "space_ds";
+
+  // Enable prerequisite modules before theme installation.
+  const prerequisites = THEME_PREREQUISITES[themeName];
+  if (prerequisites && prerequisites.length > 0) {
+    logger.info(
+      `Enabling prerequisite modules for ${themeName}: ${prerequisites.join(", ")}`,
+      { step: "install-theme" }
+    );
+    await drush("en", prerequisites, drushOptions);
+  }
 
   // Install the theme.
   await drush("theme:install", [themeName], drushOptions);
