@@ -4,5 +4,11 @@
   "workspaces": [
     "packages/*",
     "platform-app"
-  ]
+  ],
+  "scripts": {
+    "test:adapters": "vitest run --config vitest.config.ts"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.0"
+  }
 }

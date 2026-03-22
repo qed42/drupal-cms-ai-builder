@@ -9,7 +9,10 @@
 import { getDefaultAdapter } from "@/lib/design-systems/setup";
 import type { PageSection } from "./types";
 
-const componentManifest = getDefaultAdapter().getManifest();
+// Lazy — resolved at call time so it reflects the active adapter.
+function getComponentManifest() {
+  return getDefaultAdapter().getManifest();
+}
 
 // ---- Types ----
 
@@ -43,11 +46,21 @@ export interface ValidationResult {
   sanitizedSections: PageSection[];
 }
 
-// ---- Manifest index (built once) ----
+// ---- Manifest index (lazy, rebuilt when adapter changes) ----
 
-const manifestIndex = new Map<string, ManifestComponent>();
-for (const comp of componentManifest as ManifestComponent[]) {
-  manifestIndex.set(comp.id, comp);
+let _cachedAdapterId: string | null = null;
+let _manifestIndex = new Map<string, ManifestComponent>();
+
+function getManifestIndex(): Map<string, ManifestComponent> {
+  const adapter = getDefaultAdapter();
+  if (_cachedAdapterId !== adapter.id) {
+    _manifestIndex = new Map<string, ManifestComponent>();
+    for (const comp of getComponentManifest() as ManifestComponent[]) {
+      _manifestIndex.set(comp.id, comp);
+    }
+    _cachedAdapterId = adapter.id;
+  }
+  return _manifestIndex;
 }
 
 /**
@@ -78,7 +91,7 @@ const KNOWN_PATTERN_NAMES = new Set([
  * component is not in the manifest.
  */
 export function getValidProps(componentId: string): string[] | null {
-  const comp = manifestIndex.get(componentId);
+  const comp = getManifestIndex().get(componentId);
   if (!comp) return null;
   return comp.props.map((p) => p.name);
 }
@@ -87,7 +100,7 @@ export function getValidProps(componentId: string): string[] | null {
  * Get a manifest component definition by its SDC-format ID.
  */
 export function getManifestComponent(componentId: string): ManifestComponent | undefined {
-  return manifestIndex.get(componentId);
+  return getManifestIndex().get(componentId);
 }
 
 /**
@@ -111,7 +124,7 @@ export function validateSections(sections: PageSection[]): ValidationResult {
     // Composed sections (Type B) use pattern instead of component_id.
     // Their component_id may be empty or set to the pattern name by the AI.
     // Children carry the actual component IDs and are validated downstream.
-    if (section.pattern && (!section.component_id || !manifestIndex.has(section.component_id))) {
+    if (section.pattern && (!section.component_id || !getManifestIndex().has(section.component_id))) {
       sanitizedSections.push({ ...section });
       continue;
     }
@@ -135,7 +148,7 @@ export function validateSections(sections: PageSection[]): ValidationResult {
       continue;
     }
 
-    const comp = manifestIndex.get(section.component_id);
+    const comp = getManifestIndex().get(section.component_id);
 
     // 1. Unknown component
     if (!comp) {

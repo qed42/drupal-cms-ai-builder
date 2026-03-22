@@ -11,6 +11,7 @@ export interface ProvisioningParams {
   industry: string;
   subdomain: string;
   blueprintPayload: Record<string, unknown>;
+  designSystemTheme?: string;
 }
 
 /**
@@ -70,6 +71,8 @@ export async function spawnProvisioning(
     params.industry,
     "--callback-url",
     callbackUrl,
+    "--theme",
+    params.designSystemTheme || "space_ds",
   ];
 
   // Add database config from env if available.

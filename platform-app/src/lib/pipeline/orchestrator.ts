@@ -3,6 +3,7 @@ import { runResearchPhase } from "./phases/research";
 import { runPlanPhase } from "./phases/plan";
 import { runGeneratePhase } from "./phases/generate";
 import { runEnhancePhase } from "./phases/enhance";
+import { setActiveAdapter } from "@/lib/design-systems/setup";
 import type { OnboardingData, BlueprintBundle } from "@/lib/blueprint/types";
 import type { ResearchBrief, ContentPlan } from "./schemas";
 
@@ -57,6 +58,9 @@ export async function runPipeline(
   blueprintId: string,
   data: OnboardingData
 ): Promise<PipelineResult> {
+  // Activate the user-selected design system adapter for this pipeline run.
+  setActiveAdapter(data.designSystemId || "space_ds");
+
   const pipelineStart = Date.now();
 
   // --- Phase 1: Research ---

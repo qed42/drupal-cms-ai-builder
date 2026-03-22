@@ -9,4 +9,4 @@ registerAdapter(mercuryAdapter);
 registerAdapter(civicthemeAdapter);
 
 // Re-export for convenience
-export { getAdapter, getDefaultAdapter, listAdapters } from "@ai-builder/ds-types";
+export { getAdapter, getDefaultAdapter, setActiveAdapter, listAdapters } from "@ai-builder/ds-types";

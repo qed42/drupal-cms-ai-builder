@@ -5,6 +5,7 @@
  */
 
 import type { PageSection, PageLayout } from "@/lib/blueprint/types";
+import { getDefaultAdapter } from "@/lib/design-systems/setup";
 
 export interface ImageIntent {
   /** Index of the page in the pages array */
@@ -23,30 +24,6 @@ export interface ImageIntent {
 }
 
 /**
- * Component ID → image prop mappings.
- * Only components that benefit from stock photos (not icons/SVGs).
- */
-const IMAGE_PROP_MAP: Record<string, { props: string[]; orientation: "landscape" | "portrait" | "square"; width: number; height: number }> = {
-  // Hero banners
-  "space_ds:space-hero-banner-style-02": { props: ["background_image"], orientation: "landscape", width: 1920, height: 1080 },
-  "space_ds:space-hero-banner-with-media": { props: ["image_1"], orientation: "landscape", width: 1200, height: 800 },
-  "space_ds:space-detail-page-hero-banner": { props: ["background_image"], orientation: "landscape", width: 1920, height: 1080 },
-
-  // Cards with images
-  "space_ds:space-imagecard": { props: ["image"], orientation: "landscape", width: 600, height: 400 },
-  "space_ds:space-dark-bg-imagecard": { props: ["image"], orientation: "landscape", width: 600, height: 400 },
-  "space_ds:space-testimony-card": { props: ["image"], orientation: "square", width: 400, height: 400 },
-  "space_ds:space-user-card": { props: ["image"], orientation: "square", width: 400, height: 400 },
-
-  // CTA banner
-  "space_ds:space-cta-banner-type-1": { props: ["image"], orientation: "landscape", width: 800, height: 600 },
-
-  // Video banner
-  "space_ds:space-video-banner": { props: ["image"], orientation: "landscape", width: 1200, height: 800 },
-  "space_ds:space-videocard": { props: ["image"], orientation: "landscape", width: 600, height: 400 },
-};
-
-/**
  * Extract image intents from all pages in a blueprint.
  * Analyzes each section's component type and text content to generate
  * contextually relevant search queries.
@@ -57,13 +34,14 @@ export function extractImageIntents(
   audience: string
 ): ImageIntent[] {
   const intents: ImageIntent[] = [];
+  const adapter = getDefaultAdapter();
 
   for (let pageIdx = 0; pageIdx < pages.length; pageIdx++) {
     const page = pages[pageIdx];
 
     for (let secIdx = 0; secIdx < page.sections.length; secIdx++) {
       const section = page.sections[secIdx];
-      const mapping = IMAGE_PROP_MAP[section.component_id];
+      const mapping = adapter.getImageMapping(section.component_id);
 
       if (!mapping) continue;
 
@@ -79,8 +57,8 @@ export function extractImageIntents(
           propName,
           query,
           orientation: mapping.orientation,
-          targetWidth: mapping.width,
-          targetHeight: mapping.height,
+          targetWidth: mapping.dimensions.width,
+          targetHeight: mapping.dimensions.height,
         });
       }
     }
@@ -133,10 +111,9 @@ function buildSearchQuery(
 }
 
 function getComponentTypeHint(componentId: string): string {
-  if (componentId.includes("hero-banner")) return "professional";
-  if (componentId.includes("user-card") || componentId.includes("testimony")) return "portrait person";
-  if (componentId.includes("cta-banner")) return "business";
-  if (componentId.includes("imagecard") || componentId.includes("videocard")) return "";
-  if (componentId.includes("video-banner")) return "professional";
+  if (componentId.includes("hero")) return "professional";
+  if (componentId.includes("user-card") || componentId.includes("testimon")) return "portrait person";
+  if (componentId.includes("cta")) return "business";
+  if (componentId.includes("image") || componentId.includes("video")) return "";
   return "";
 }

@@ -137,6 +137,9 @@ export interface OnboardingData {
   compliance_flags?: string[];
   keywords?: string[];
 
+  // Design system selection (M19)
+  designSystemId?: string;
+
   // v2 enrichment fields (US-033, US-034, US-035, US-036)
   followUpAnswers?: Record<string, string>;
   differentiators?: string;

@@ -18,6 +18,7 @@ import { validateSections } from "@/lib/blueprint/component-validator";
 import { safeParsePropsJson } from "@/lib/ai/safe-parse-props";
 import { buildComponentTree } from "@/lib/blueprint/component-tree-builder";
 import { loadPipelineContext } from "@/lib/blueprint/load-pipeline-context";
+import { getDefaultAdapter } from "@/lib/design-systems/setup";
 import type { PageSection } from "@/lib/blueprint/types";
 import type { z } from "zod";
 
@@ -92,7 +93,7 @@ export async function POST(
         type: "hero",
         contentBrief: `Hero section for the ${body.title} page`,
         estimatedWordCount: 50,
-        componentSuggestion: "space_ds:space-hero-banner-style-02",
+        componentSuggestion: getDefaultAdapter().resolveRole("hero")[0] || "",
       },
       {
         heading: "Content",

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateSubdomain, spawnProvisioning } from "@/lib/provisioning";
+import { getAdapter } from "@/lib/design-systems/setup";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -55,6 +56,16 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Resolve the design system theme from the onboarding session.
+    const onboarding = await prisma.onboardingSession.findFirst({
+      where: { siteId: site.id },
+      orderBy: { createdAt: "desc" },
+      select: { data: true },
+    });
+    const onboardingData = (onboarding?.data as Record<string, unknown>) || {};
+    const designSystemId = (onboardingData.designSystemId as string) || "space_ds";
+    const adapter = getAdapter(designSystemId);
+
     // Spawn the provisioning engine.
     await spawnProvisioning({
       siteId: site.id,
@@ -63,6 +74,7 @@ export async function POST(req: NextRequest) {
       industry: siteData?.industry || "professional_services",
       subdomain,
       blueprintPayload,
+      designSystemTheme: adapter.themeName,
     });
 
     return NextResponse.json({

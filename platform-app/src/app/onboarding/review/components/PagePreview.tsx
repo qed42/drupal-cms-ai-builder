@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import type { PageLayout, PageSection, PageSectionChild } from "@/lib/blueprint/types";
 import { getComponentLabel } from "@/lib/blueprint/markdown-renderer";
+import { getDefaultAdapter } from "@/lib/design-systems/setup";
 import RegenerateButton from "./RegenerateButton";
 
 interface PagePreviewProps {
@@ -250,6 +251,7 @@ function TreeNode({
  * Shows: container > section-heading (slot=content) + flexi (slot=content) > children (slot=column_*)
  */
 function ComposedSectionTree({ section }: { section: PageSection }) {
+  const adapter = getDefaultAdapter();
   const bg = section.container_background || "transparent";
   const patternLabel = section.pattern
     ? section.pattern.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
@@ -294,7 +296,7 @@ function ComposedSectionTree({ section }: { section: PageSection }) {
   return (
     <TreeNode
       label="Container"
-      componentId="space_ds:space-container"
+      componentId={adapter.primaryComponent("container")}
       props={containerProps}
       defaultOpen={true}
       depth={0}
@@ -304,7 +306,7 @@ function ComposedSectionTree({ section }: { section: PageSection }) {
       {section.section_heading && (
         <TreeNode
           label="Section Heading"
-          componentId="space_ds:space-section-heading"
+          componentId={adapter.primaryComponent("section-heading")}
           slot="content"
           props={{
             title: section.section_heading.title,
@@ -319,8 +321,8 @@ function ComposedSectionTree({ section }: { section: PageSection }) {
 
       {/* Flexi grid in content slot */}
       <TreeNode
-        label="Flexi"
-        componentId="space_ds:space-flexi"
+        label="Layout"
+        componentId={adapter.resolveRole("container")[1] || adapter.primaryComponent("container")}
         slot="content"
         props={flexiProps}
         defaultOpen={true}
@@ -347,14 +349,9 @@ function ComposedSectionTree({ section }: { section: PageSection }) {
  * Full-width organisms render at root; others get a container wrapper.
  */
 function OrganismSectionTree({ section }: { section: PageSection }) {
-  const FULL_WIDTH = new Set([
-    "space_ds:space-hero-banner-style-02",
-    "space_ds:space-hero-banner-with-media",
-    "space_ds:space-detail-page-hero-banner",
-    "space_ds:space-video-banner",
-    "space_ds:space-cta-banner-type-1",
-  ]);
-  const isFullWidth = FULL_WIDTH.has(section.component_id);
+  const adapter = getDefaultAdapter();
+  const fullWidthOrganisms = new Set(adapter.getFullWidthOrganisms());
+  const isFullWidth = fullWidthOrganisms.has(section.component_id);
   const label = getComponentLabel(section.component_id);
   const children = section.children ?? [];
 
@@ -386,7 +383,7 @@ function OrganismSectionTree({ section }: { section: PageSection }) {
   return (
     <TreeNode
       label="Container"
-      componentId="space_ds:space-container"
+      componentId={adapter.primaryComponent("container")}
       props={{ width: "boxed-width", padding_top: "large", padding_bottom: "large" }}
       defaultOpen={true}
       depth={0}

@@ -35,13 +35,11 @@ const THEMES: ThemeOption[] = [
 
 export default function ThemeSelectionPage() {
   const router = useRouter();
-  const { session, updateSession, buildStepUrl } = useOnboarding();
-  const [selected, setSelected] = useState(
-    (session as Record<string, unknown>)?.designSystemId as string ?? "space_ds"
-  );
+  const { save, buildStepUrl } = useOnboarding();
+  const [selected, setSelected] = useState("space_ds");
 
-  const handleNext = () => {
-    updateSession({ designSystemId: selected });
+  const handleNext = async () => {
+    await save("theme", { designSystemId: selected });
     router.push(buildStepUrl("name"));
   };
 

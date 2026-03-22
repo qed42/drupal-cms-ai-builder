@@ -41,6 +41,7 @@ program
   .option("--db-user <user>", "Database user", "db")
   .option("--db-password <password>", "Database password", "db")
   .option("--callback-url <url>", "Platform API callback URL")
+  .option("--theme <name>", "Design system theme machine name", "space_ds")
   .parse();
 
 const opts = program.opts();
@@ -70,6 +71,7 @@ const config: ProvisioningConfig = {
     password: siteDbPassword,
   },
   callbackUrl: opts.callbackUrl,
+  designSystemTheme: opts.theme,
 };
 
 // Validate inputs.

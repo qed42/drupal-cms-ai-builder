@@ -28,6 +28,8 @@ export interface ProvisioningConfig {
   callbackUrl?: string;
   /** Site ID in the platform. */
   siteId: string;
+  /** Design system theme machine name (defaults to "space_ds"). */
+  designSystemTheme?: string;
 }
 
 export interface StepResult {

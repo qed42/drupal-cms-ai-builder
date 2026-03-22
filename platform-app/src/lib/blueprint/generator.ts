@@ -5,6 +5,7 @@ import { buildContentPrompt } from "@/lib/ai/prompts/content-generation";
 import { buildPageLayoutPrompt } from "@/lib/ai/prompts/page-layout";
 import { buildFormPrompt } from "@/lib/ai/prompts/form-generation";
 import { buildComponentTree, buildHeaderTree, buildFooterTree } from "./component-tree-builder";
+import { getDefaultAdapter, setActiveAdapter, getAdapter } from "@/lib/design-systems/setup";
 import type {
   BlueprintBundle,
   ContentItems,
@@ -93,6 +94,12 @@ function getFallbackPages(
     { slug: "about", title: "About Us" },
     { slug: "contact", title: "Contact" },
   ];
+  const adapter = getDefaultAdapter();
+  const heroIds = adapter.resolveRole("hero");
+  const primaryHero = heroIds[0] || "";
+  const secondaryHero = heroIds[1] || primaryHero;
+  const ctaId = adapter.primaryComponent("cta-banner");
+
   return pages.map((page) => ({
     slug: page.slug,
     title: page.title,
@@ -104,7 +111,7 @@ function getFallbackPages(
       page.slug === "home"
         ? [
             {
-              component_id: "space_ds:space-hero-banner-style-02",
+              component_id: primaryHero,
               props: {
                 title: `Welcome to ${data.name || "Our Site"}`,
                 sub_headline: data.idea || "Your trusted partner",
@@ -121,7 +128,7 @@ function getFallbackPages(
               },
             },
             {
-              component_id: "space_ds:space-cta-banner-type-1",
+              component_id: ctaId,
               props: {
                 title: "Ready to get started?",
                 description: "Contact us today for a free consultation.",
@@ -131,7 +138,7 @@ function getFallbackPages(
         : page.slug === "contact"
           ? [
               {
-                component_id: "space_ds:space-hero-banner-with-media",
+                component_id: secondaryHero,
                 props: {
                   title: "Get in Touch",
                   sub_headline: "We'd love to hear from you.",
@@ -147,11 +154,7 @@ function getFallbackPages(
                 },
               },
               {
-                component_id: "space_ds:space-form",
-                props: { _form_placeholder: true },
-              },
-              {
-                component_id: "space_ds:space-cta-banner-type-1",
+                component_id: ctaId,
                 props: {
                   title: "Need immediate assistance?",
                   description: `Call us or visit our office for a quick response.`,
@@ -160,7 +163,7 @@ function getFallbackPages(
             ]
           : [
               {
-                component_id: "space_ds:space-hero-banner-with-media",
+                component_id: secondaryHero,
                 props: {
                   title: page.title,
                   sub_headline: `Learn more about ${page.title.toLowerCase()}.`,
@@ -299,6 +302,10 @@ export async function generateBlueprint(
   siteId: string,
   sessionData: OnboardingData
 ): Promise<BlueprintBundle> {
+  // Activate the user-selected design system adapter for this pipeline run.
+  const designSystemId = sessionData.designSystemId || "space_ds";
+  setActiveAdapter(designSystemId);
+
   const data: OnboardingData = {
     name: sessionData.name || "My Site",
     idea: sessionData.idea || "",
@@ -311,6 +318,7 @@ export async function generateBlueprint(
     logo_url: sessionData.logo_url,
     compliance_flags: sessionData.compliance_flags || [],
     keywords: sessionData.keywords || [],
+    designSystemId,
   };
 
   // Step 1: Generate content items
@@ -478,8 +486,10 @@ export async function generateBlueprint(
     component_tree: footerTree,
   };
 
-  // Map onboarding colors to Space DS native token names.
+  // Map onboarding colors via the active adapter's brand token pipeline.
   const brandColors = mapColorsToSpaceDS(data.colors || {});
+  // TODO(M19): Replace mapColorsToSpaceDS with adapter.prepareBrandPayload()
+  // once all adapters implement full brand token mapping.
 
   // Assemble blueprint
   const blueprint: BlueprintBundle = {
@@ -529,6 +539,7 @@ export async function generateBlueprint(
   });
 
   // Auto-trigger provisioning (fire-and-forget).
+  const activeAdapter = getDefaultAdapter();
   spawnProvisioning({
     siteId,
     siteName: data.name!,
@@ -536,6 +547,7 @@ export async function generateBlueprint(
     industry: data.industry!,
     subdomain,
     blueprintPayload: JSON.parse(JSON.stringify(blueprint)),
+    designSystemTheme: activeAdapter.themeName,
   }).catch((err) => {
     console.error("[provisioning] Failed to spawn:", err);
     prisma.site

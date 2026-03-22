@@ -1,6 +1,6 @@
 /**
  * Tests for Page Design Rules — classification, formatting, and data integrity.
- * Updated for Space DS v2 compositional model.
+ * Updated for design system adapter model.
  */
 import { describe, it, expect } from "vitest";
 import {
@@ -11,43 +11,11 @@ import {
   PAGE_DESIGN_RULES,
   COMPOSITION_PATTERNS,
 } from "../src/lib/ai/page-design-rules";
+import { getDefaultAdapter } from "../src/lib/design-systems/setup";
 
-// ============================================================================
-// V2 component whitelist — only these component IDs are valid
-// ============================================================================
-const V2_COMPONENT_IDS = new Set([
-  "space_ds:space-container",
-  "space_ds:space-flexi",
-  "space_ds:space-button",
-  "space_ds:space-heading",
-  "space_ds:space-icon",
-  "space_ds:space-image",
-  "space_ds:space-input-submit",
-  "space_ds:space-link",
-  "space_ds:space-text",
-  "space_ds:space-accordion-item",
-  "space_ds:space-breadcrumb",
-  "space_ds:space-contact-card",
-  "space_ds:space-content-detail",
-  "space_ds:space-dark-bg-imagecard",
-  "space_ds:space-imagecard",
-  "space_ds:space-logo-section",
-  "space_ds:space-pagination",
-  "space_ds:space-section-heading",
-  "space_ds:space-stats-kpi",
-  "space_ds:space-testimony-card",
-  "space_ds:space-user-card",
-  "space_ds:space-videocard",
-  "space_ds:space-accordion",
-  "space_ds:space-cta-banner-type-1",
-  "space_ds:space-detail-page-hero-banner",
-  "space_ds:space-footer",
-  "space_ds:space-header",
-  "space_ds:space-hero-banner-style-02",
-  "space_ds:space-hero-banner-with-media",
-  "space_ds:space-slider",
-  "space_ds:space-video-banner",
-]);
+// Build component ID whitelist from the active adapter's manifest
+const adapter = getDefaultAdapter();
+const VALID_COMPONENT_IDS = new Set(adapter.getManifest().map((c) => c.id));
 
 // ============================================================================
 // classifyPageType
@@ -121,19 +89,9 @@ describe("classifyPageType", () => {
 // COMPOSITION_PATTERNS integrity
 // ============================================================================
 describe("COMPOSITION_PATTERNS", () => {
-  it("all pattern children reference valid v2 component IDs", () => {
+  it("all patterns have childRoles defined", () => {
     for (const [name, pattern] of Object.entries(COMPOSITION_PATTERNS)) {
-      for (const child of pattern.children) {
-        expect(V2_COMPONENT_IDS.has(child), `Pattern "${name}" child "${child}" is not a valid v2 component`).toBe(true);
-      }
-    }
-  });
-
-  it("all layout patterns use space-flexi", () => {
-    for (const [name, pattern] of Object.entries(COMPOSITION_PATTERNS)) {
-      if (pattern.layout) {
-        expect(pattern.layout.component, `Pattern "${name}" layout must use space-flexi`).toBe("space_ds:space-flexi");
-      }
+      expect(pattern.childRoles.length, `Pattern "${name}" must have childRoles`).toBeGreaterThan(0);
     }
   });
 
@@ -183,38 +141,33 @@ describe("PAGE_DESIGN_RULES data integrity", () => {
     }
   });
 
-  it("all hero style IDs reference valid v2 hero components", () => {
-    const validHeroes = new Set([
-      "space_ds:space-hero-banner-style-02",
-      "space_ds:space-hero-banner-with-media",
-      "space_ds:space-detail-page-hero-banner",
-      "space_ds:space-video-banner",
-    ]);
+  it("all hero style IDs reference valid adapter hero components", () => {
+    const validHeroes = new Set(adapter.resolveRole("hero"));
     for (const rule of PAGE_DESIGN_RULES) {
       for (const style of rule.heroRule.preferredStyles) {
-        expect(validHeroes.has(style), `${rule.pageType} hero style "${style}" is not a valid v2 hero`).toBe(true);
+        expect(validHeroes.has(style), `${rule.pageType} hero style "${style}" is not a valid hero component`).toBe(true);
       }
     }
   });
 
-  it("all component IDs in preferredPatterns and avoidComponents are valid v2 or composition pattern names", () => {
+  it("all component IDs in preferredPatterns and avoidComponents are valid adapter components or composition pattern names", () => {
     const patternNames = new Set(Object.keys(COMPOSITION_PATTERNS));
     for (const rule of PAGE_DESIGN_RULES) {
       for (const section of rule.sections) {
         for (const pattern of section.preferredPatterns) {
-          const isComponentId = pattern.startsWith("space_ds:");
+          const isComponentId = pattern.includes(":");
           const isPatternName = patternNames.has(pattern);
           expect(
             isComponentId || isPatternName,
-            `${rule.pageType}.${section.type} pattern "${pattern}" is neither a v2 component nor a composition pattern`
+            `${rule.pageType}.${section.type} pattern "${pattern}" is neither a component ID nor a composition pattern`
           ).toBe(true);
           if (isComponentId) {
-            expect(V2_COMPONENT_IDS.has(pattern), `${rule.pageType}.${section.type} pattern "${pattern}" is not in v2 manifest`).toBe(true);
+            expect(VALID_COMPONENT_IDS.has(pattern), `${rule.pageType}.${section.type} pattern "${pattern}" is not in adapter manifest`).toBe(true);
           }
         }
       }
       for (const avoid of rule.avoidComponents) {
-        expect(V2_COMPONENT_IDS.has(avoid), `${rule.pageType} avoidComponent "${avoid}" is not in v2 manifest`).toBe(true);
+        expect(VALID_COMPONENT_IDS.has(avoid), `${rule.pageType} avoidComponent "${avoid}" is not in adapter manifest`).toBe(true);
       }
     }
   });
@@ -312,11 +265,10 @@ describe("formatRulesForPlan", () => {
     expect(joined).toContain("words");
   });
 
-  it("includes composition pattern references in output", () => {
+  it("includes design system model in output", () => {
     const lines = formatRulesForPlan([{ slug: "home", title: "Home" }]);
     const joined = lines.join("\n");
-    expect(joined).toContain("Space DS v2 Compositional Model");
-    expect(joined).toContain("space-section-heading");
+    expect(joined).toContain("Compositional Model");
   });
 });
 
@@ -344,15 +296,12 @@ describe("formatRulesForGeneration", () => {
     const joined = lines.join("\n");
     expect(joined).toContain("## Composition Patterns Reference");
     expect(joined).toContain("features-grid-3col");
-    expect(joined).toContain("space-flexi");
   });
 
   it("includes section composition rules", () => {
     const lines = formatRulesForGeneration("home", "Home");
     const joined = lines.join("\n");
     expect(joined).toContain("## Section Composition Rules");
-    expect(joined).toContain("space-container");
-    expect(joined).toContain("space-section-heading");
   });
 
   it("includes visual rhythm guidance", () => {
@@ -366,13 +315,12 @@ describe("formatRulesForGeneration", () => {
     const lines = formatRulesForGeneration("contact", "Contact");
     const joined = lines.join("\n");
     expect(joined).toContain("AVOID");
-    expect(joined).toContain("space-stats-kpi");
   });
 
-  it("includes component mapping", () => {
+  it("includes section type mapping", () => {
     const lines = formatRulesForGeneration("services", "Services");
     const joined = lines.join("\n");
-    expect(joined).toContain("Component ID Mapping");
+    expect(joined).toContain("Section Type Mapping");
     expect(joined).toContain("hero ->");
     expect(joined).toContain("cta ->");
   });

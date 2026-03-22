@@ -25,6 +25,7 @@ export {
   registerAdapter,
   getAdapter,
   getDefaultAdapter,
+  setActiveAdapter,
   listAdapters,
 } from "./registry";
 

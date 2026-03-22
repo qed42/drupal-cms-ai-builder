@@ -585,7 +585,7 @@ function checkFaqPresence(input: ReviewInput): ReviewCheck {
       ? "FAQ/accordion section found in site"
       : "No FAQ/accordion section found across the site",
     fix: !hasFaq
-      ? "Consider adding an FAQ section (space_ds:space-accordion) to at least one page to improve AI knowledge graph visibility."
+      ? "Consider adding an FAQ section (accordion component) to at least one page to improve AI knowledge graph visibility."
       : undefined,
   };
 }

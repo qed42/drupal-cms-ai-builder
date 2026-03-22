@@ -18,7 +18,7 @@ export async function installThemeStep(
   };
 
   // Read theme from config, default to space_ds for backward compatibility
-  const themeName = (config as Record<string, unknown>).designSystemTheme as string ?? "space_ds";
+  const themeName = config.designSystemTheme ?? "space_ds";
 
   // Install the theme.
   await drush("theme:install", [themeName], drushOptions);

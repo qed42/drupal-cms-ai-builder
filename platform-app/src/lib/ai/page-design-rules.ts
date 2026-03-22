@@ -7,9 +7,14 @@
  */
 
 import { getDefaultAdapter } from "@/lib/design-systems/setup";
+import type {
+  CompositionPattern,
+  SectionRule,
+  PageDesignRule,
+} from "@ai-builder/ds-types";
 
 // ---------------------------------------------------------------------------
-// Types
+// Types (re-exported for backward compatibility)
 // ---------------------------------------------------------------------------
 
 export type PageType =
@@ -23,58 +28,57 @@ export type PageType =
   | "landing"
   | "generic";
 
-export interface CompositionPattern {
-  name: string;
-  description: string;
-  layout: {
-    component: "space_ds:space-flexi";
-    column_width: string;
-    gap?: string;
-  } | null;
-  children: string[];
+export type { CompositionPattern, SectionRule, PageDesignRule };
+
+// ---------------------------------------------------------------------------
+// Composition Patterns & Rules — lazy accessors that resolve at call time,
+// so they reflect whichever adapter is active (not just the one loaded at
+// module init).
+// ---------------------------------------------------------------------------
+
+/** Get composition patterns from the currently active adapter. */
+export function getCompositionPatterns(): Record<string, CompositionPattern> {
+  return getDefaultAdapter().getCompositionPatterns();
 }
 
-export interface SectionRule {
-  type: string;
-  required: boolean;
-  position: "opening" | "middle" | "closing" | "any";
-  visualWeight: "heavy" | "medium" | "light";
-  preferredPatterns: string[];
-  wordCountRange: [number, number];
+/** Get page design rules from the currently active adapter. */
+export function getPageDesignRules(): PageDesignRule[] {
+  return getDefaultAdapter().getPageDesignRules();
 }
 
-export interface PageDesignRule {
-  pageType: PageType;
-  slugPatterns: string[];
-  titlePatterns: string[];
-  description: string;
-  sectionCountRange: [number, number];
-  sections: SectionRule[];
-  heroRule: {
-    preferredStyles: string[];
-    selectionGuidance: string;
-  };
-  rhythm: {
-    pattern: string;
-    guidance: string;
-  };
-  avoidComponents: string[];
-  closingPattern: string;
-  compositionGuidance: string;
-}
+// Legacy constants — kept as getters for backward compatibility.
+// Consumers that destructure at import time will still see the active adapter's
+// data because these evaluate lazily through the getter.
+export const COMPOSITION_PATTERNS: Record<string, CompositionPattern> = new Proxy(
+  {} as Record<string, CompositionPattern>,
+  {
+    get(_target, prop, receiver) {
+      return Reflect.get(getCompositionPatterns(), prop, receiver);
+    },
+    ownKeys() {
+      return Reflect.ownKeys(getCompositionPatterns());
+    },
+    getOwnPropertyDescriptor(_target, prop) {
+      const patterns = getCompositionPatterns();
+      if (prop in patterns) {
+        return { configurable: true, enumerable: true, value: (patterns as Record<string | symbol, unknown>)[prop] };
+      }
+      return undefined;
+    },
+    has(_target, prop) {
+      return prop in getCompositionPatterns();
+    },
+  }
+);
 
-// ---------------------------------------------------------------------------
-// Composition Patterns — provided by the active design system adapter.
-// Re-exported here for backward compatibility during migration.
-// ---------------------------------------------------------------------------
-
-export const COMPOSITION_PATTERNS = getDefaultAdapter().getCompositionPatterns() as Record<string, CompositionPattern>;
-
-// ---------------------------------------------------------------------------
-// Rules Data — provided by the active design system adapter.
-// ---------------------------------------------------------------------------
-
-export const PAGE_DESIGN_RULES = getDefaultAdapter().getPageDesignRules() as PageDesignRule[];
+export const PAGE_DESIGN_RULES: PageDesignRule[] = new Proxy(
+  [] as PageDesignRule[],
+  {
+    get(_target, prop, receiver) {
+      return Reflect.get(getPageDesignRules(), prop, receiver);
+    },
+  }
+);
 
 // ---------------------------------------------------------------------------
 // Classification
@@ -94,10 +98,10 @@ export function classifyPageType(slug: string, title: string): PageType {
         (p) => s === p || s.startsWith(p + "-") || s.endsWith("-" + p)
       )
     ) {
-      return rule.pageType;
+      return rule.pageType as PageType;
     }
     if (rule.titlePatterns.some((p) => t.includes(p))) {
-      return rule.pageType;
+      return rule.pageType as PageType;
     }
   }
   return "generic";
@@ -119,11 +123,11 @@ export function getRule(pageType: PageType): PageDesignRule {
 
 /**
  * Resolve a preferred pattern name to a human-readable description.
- * If the name is a component ID (starts with "space_ds:"), return it as-is.
+ * If the name contains ":" it's a raw component ID — return as-is.
  * Otherwise, look up the composition pattern description.
  */
 function resolvePatternLabel(patternName: string): string {
-  if (patternName.startsWith("space_ds:")) {
+  if (patternName.includes(":")) {
     return patternName;
   }
   const pattern = COMPOSITION_PATTERNS[patternName];
@@ -141,13 +145,14 @@ function resolvePatternLabel(patternName: string): string {
 export function formatRulesForPlan(
   pages: Array<{ slug: string; title: string }>
 ): string[] {
+  const adapter = getDefaultAdapter();
   const lines: string[] = [
     `## MANDATORY Page Composition Requirements`,
     ``,
     `CRITICAL: Each page MUST meet the minimum section count specified below. This is a hard constraint, NOT a suggestion. Pages with fewer sections than the minimum will be REJECTED and regenerated.`,
     ``,
-    `### Space DS v2 Compositional Model`,
-    `Sections are composed from layout primitives (space-flexi for multi-column, space-container for full-width) with atoms/molecules placed in slots. Every content section should start with a space-section-heading.`,
+    `### ${adapter.name} Compositional Model`,
+    adapter.buildPromptDesignGuidance(),
     ``,
   ];
 
@@ -249,7 +254,7 @@ export function formatRulesForGeneration(
   const referencedPatterns = new Set<string>();
   for (const s of rule.sections) {
     for (const p of s.preferredPatterns) {
-      if (!p.startsWith("space_ds:")) {
+      if (!p.includes(":")) {
         referencedPatterns.add(p);
       }
     }
@@ -258,16 +263,14 @@ export function formatRulesForGeneration(
   for (const patternName of referencedPatterns) {
     const pattern = COMPOSITION_PATTERNS[patternName];
     if (!pattern) continue;
-    const layoutStr = pattern.layout
-      ? `flexi(${pattern.layout.column_width}${pattern.layout.gap ? `, gap: ${pattern.layout.gap}` : ""})`
-      : "organism-level (no flexi wrapper)";
     lines.push(
       `- **${pattern.name}**: ${pattern.description}`,
-      `  Layout: ${layoutStr}`,
-      `  Children: ${pattern.children.map((c) => `"${c}"`).join(", ")}`,
+      `  Child roles: ${pattern.childRoles.map((c) => `"${c}"`).join(", ")}`,
       ``
     );
   }
+
+  const adapter = getDefaultAdapter();
 
   // Component mapping for this page type — clearly distinguish
   // Type A (organism component_id) from Type B (composition pattern name)
@@ -280,7 +283,8 @@ export function formatRulesForGeneration(
   // Type A organism sections — these go in component_id
   lines.push(`**Type A (organism component_id):**`);
   lines.push(`- hero -> ${rule.heroRule.preferredStyles.map((s) => `"${s}"`).join(" or ")}`);
-  lines.push(`- cta -> "space_ds:space-cta-banner-type-1"`);
+  const ctaComponent = adapter.primaryComponent("cta-banner");
+  lines.push(`- cta -> "${ctaComponent}"`);
   lines.push(``);
 
   // Type B composed sections — these go in the pattern field, NOT component_id
@@ -302,7 +306,8 @@ export function formatRulesForGeneration(
 
   lines.push(``);
   lines.push(`**Utility (used inside containers, not as standalone sections):**`);
-  lines.push(`- section-heading -> "space_ds:space-section-heading"`);
+  const sectionHeading = adapter.primaryComponent("section-heading");
+  lines.push(`- section-heading -> "${sectionHeading}"`);
 
   // Avoid list
   if (rule.avoidComponents.length > 0) {
@@ -312,16 +317,11 @@ export function formatRulesForGeneration(
     );
   }
 
-  // Section heading + container guidance
+  // Section heading + container guidance — delegate to adapter
   lines.push(
     ``,
     `## Section Composition Rules (CRITICAL)`,
-    `Every content section should follow this structure:`,
-    `1. space-container (with background_color alternating between sections)`,
-    `2. space-section-heading (label, title, description) at the top of the container`,
-    `3. space-flexi layout OR organism component for the section content`,
-    ``,
-    `Background alternation: alternate between light (white/light-gray) and colored (brand accent) backgrounds to create visual rhythm.`,
+    adapter.buildPromptDesignGuidance(),
     ``
   );
 
