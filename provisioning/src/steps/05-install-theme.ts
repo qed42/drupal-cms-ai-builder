@@ -8,7 +8,7 @@ import type winston from "winston";
  * layout_builder must already be present.
  */
 const THEME_PREREQUISITES: Record<string, string[]> = {
-  civictheme: ["layout_builder"],
+  civictheme: ["layout_builder", "layout_discovery"],
 };
 
 /**

@@ -103,7 +103,7 @@ async function provision(): Promise<void> {
     { name: "Generate settings.php", label: "Configuring your site settings", fn: generateSettingsStep },
     { name: "Update sites.php", label: "Registering your website address", fn: updateSitesStep },
     { name: "Install Drupal CMS", label: "Building your website platform", fn: installDrupalStep },
-    { name: "Install Space DS theme", label: "Applying your design system", fn: installThemeStep },
+    { name: `Install theme (${opts.theme})`, label: "Applying your design system", fn: installThemeStep },
     { name: "Enable modules", label: "Adding website features", fn: enableModulesStep },
     { name: "Import industry config", label: "Customizing for your industry", fn: importConfigStep },
     // TASK-285: Copy images and apply brand BEFORE importing the blueprint
