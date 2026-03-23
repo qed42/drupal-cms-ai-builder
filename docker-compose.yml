@@ -19,16 +19,19 @@ services:
 
   platform:
     build:
-      context: ./platform-app
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: platform-app/Dockerfile.dev
     container_name: space-ai-platform
     restart: unless-stopped
     ports:
       - "3000:3000"
+    working_dir: /workspace/platform-app
     volumes:
-      - ./platform-app:/app
-      - /app/node_modules
-      - /app/.next
+      - ./package.json:/workspace/package.json
+      - ./packages:/workspace/packages
+      - ./platform-app:/workspace/platform-app
+      - /workspace/node_modules
+      - /workspace/platform-app/.next
       - ./provisioning:/provisioning
       - ./drupal-site:/drupal-site
       - /var/run/docker.sock:/var/run/docker.sock

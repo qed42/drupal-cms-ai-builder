@@ -2,15 +2,22 @@ FROM node:22-alpine
 
 RUN apk add --no-cache docker-cli
 
-WORKDIR /app
+WORKDIR /workspace
 
-COPY package*.json ./
+# Copy root workspace config and package directories
+COPY package.json ./
+COPY packages/ ./packages/
+COPY platform-app/package*.json ./platform-app/
+
+# Install all workspace dependencies
 RUN npm install
 
-COPY prisma ./prisma
+WORKDIR /workspace/platform-app
+
+COPY platform-app/prisma ./prisma
 RUN npx prisma generate
 
-COPY . .
+COPY platform-app/ .
 
 EXPOSE 3000
 

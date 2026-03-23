@@ -1,0 +1,8 @@
+**/node_modules
+**/.next
+.git
+drupal-site
+provisioning
+project-management
+.claude
+.planning
