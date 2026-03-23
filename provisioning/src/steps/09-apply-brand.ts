@@ -35,7 +35,7 @@ export async function applyBrandStep(
   // which doesn't exist inside the Drupal container.
   if (blueprint.brand.logo_url) {
     const logoUrl = blueprint.brand.logo_url;
-    const platformLogoPath = join("/app", "public", logoUrl);
+    const platformLogoPath = join("/workspace/platform-app", "public", logoUrl);
     const siteFilesDir = join(
       config.drupalRoot,
       "web",

@@ -52,9 +52,9 @@ export async function copyStockImagesStep(
 
     const filename = path.basename(imgObj.src);
 
-    // Source: /app/public{imgObj.src}
-    // In Docker, platform-app is mounted at /app, provisioning at /provisioning
-    const sourcePath = path.join("/app", "public", imgObj.src);
+    // Source: /workspace/platform-app/public{imgObj.src}
+    // In Docker, platform-app is mounted at /workspace/platform-app (see docker-compose.yml)
+    const sourcePath = path.join("/workspace/platform-app", "public", imgObj.src);
 
     // Destination: drupal-site/web/sites/{domain}/files/stock/{filename}
     await mkdir(siteFilesDir, { recursive: true });
