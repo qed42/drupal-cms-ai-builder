@@ -4,6 +4,7 @@ import { generateValidatedJSON } from "@/lib/ai/validation";
 import { PageLayoutSchema } from "@/lib/pipeline/schemas";
 import { buildPageGenerationPrompt } from "@/lib/ai/prompts/page-generation";
 import { buildComponentTree, buildHeaderTree, buildFooterTree } from "@/lib/blueprint/component-tree-builder";
+import { getDefaultAdapter } from "@/lib/design-systems/setup";
 import { validateAndRewriteUrls } from "@/lib/blueprint/url-validator";
 import { validateSections, formatValidationFeedback } from "@/lib/blueprint/component-validator";
 import { safeParsePropsJson } from "@/lib/ai/safe-parse-props";
@@ -380,7 +381,10 @@ export async function runGeneratePhase(
     }
   );
 
+  const adapter = getDefaultAdapter();
+
   const header: HeaderConfig = {
+    region: adapter.headerRegion,
     menu_align: "center",
     cta_text: ctaText,
     cta_url: ctaUrl,
@@ -388,6 +392,7 @@ export async function runGeneratePhase(
   };
 
   const footer: FooterConfig = {
+    region: adapter.footerRegion,
     brand_description: plan.tagline,
     legal_links: defaultLegalLinks,
     social_links: defaultSocialLinks,

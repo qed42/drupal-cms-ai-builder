@@ -11,6 +11,8 @@ export interface BlueprintBundle {
 }
 
 export interface HeaderConfig {
+  /** Drupal theme region name (e.g., "header"). */
+  region: string;
   menu_align: "left" | "center" | "right";
   cta_text?: string;
   cta_url?: string;
@@ -18,6 +20,8 @@ export interface HeaderConfig {
 }
 
 export interface FooterConfig {
+  /** Drupal theme region name (e.g., "footer"). */
+  region: string;
   brand_description?: string;
   disclaimer?: string;
   social_links?: Array<{ platform: string; url: string; icon: string }>;

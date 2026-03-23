@@ -234,6 +234,12 @@ export interface DesignSystemAdapter {
   /** Composer package for installing the theme */
   readonly composerPackage: string;
 
+  /** Drupal theme region name for the global header */
+  readonly headerRegion: string;
+
+  /** Drupal theme region name for the global footer */
+  readonly footerRegion: string;
+
   // ─── Component Registry ───────────────────────────
 
   getManifest(): ComponentDefinition[];

@@ -480,7 +480,10 @@ export async function generateBlueprint(
     }
   );
 
+  const activeAdapterForRegions = getDefaultAdapter();
+
   const header: HeaderConfig = {
+    region: activeAdapterForRegions.headerRegion,
     menu_align: "center",
     cta_text: ctaText,
     cta_url: ctaUrl,
@@ -488,6 +491,7 @@ export async function generateBlueprint(
   };
 
   const footer: FooterConfig = {
+    region: activeAdapterForRegions.footerRegion,
     brand_description: footerDescription || siteDescription,
     disclaimer: footerDisclaimer || undefined,
     legal_links: defaultLegalLinks,

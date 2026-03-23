@@ -393,12 +393,12 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
   }
 
   /**
-   * Imports header and footer as canvas_page entities.
+   * Imports header and footer into Canvas global page regions.
    *
-   * Header and footer are created as special canvas_page entities with
-   * component trees. They are stored with reserved slugs '__header' and
-   * '__footer' so the theme can identify and render them in the appropriate
-   * regions.
+   * Creates page_region config entities for the active theme's header and
+   * footer regions, populating them with the blueprint's component trees.
+   * Also ensures all other theme regions have (empty) page_region entities
+   * so the CanvasPageVariant display variant can render the page.
    *
    * @param array $headerData
    *   The header configuration with 'component_tree' key.
@@ -406,46 +406,72 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
    *   The footer configuration with 'component_tree' key.
    */
   public function importHeaderFooter(array $headerData, array $footerData): void {
-    $pageStorage = $this->entityTypeManager->getStorage('canvas_page');
-
-    // Import header.
-    if (!empty($headerData['component_tree'])) {
-      $headerValues = [
-        'title' => 'Header',
-        'status' => TRUE,
-        'components' => $this->prepareComponentTree($headerData['component_tree']),
-      ];
-      $headerPage = $pageStorage->create($headerValues);
-      $headerPage->save();
-
-      // Store header page ID in site config for theme consumption.
-      $this->configFactory->getEditable('ai_site_builder.layout')
-        ->set('header_page_id', (int) $headerPage->id())
-        ->save();
-
-      $this->logger->info('Created header canvas_page (id: @id).', [
-        '@id' => $headerPage->id(),
-      ]);
+    $theme = $this->configFactory->get('system.theme')->get('default');
+    if (!$theme) {
+      $this->logger->error('No default theme configured, cannot import header/footer regions.');
+      return;
     }
 
-    // Import footer.
+    $regionStorage = $this->entityTypeManager->getStorage('page_region');
+
+    // Determine which regions get component trees from the blueprint.
+    // Region names come from the design system adapter (e.g., "header", "footer")
+    // and are included in the blueprint JSON for theme-agnostic import.
+    $regionTrees = [];
+    if (!empty($headerData['component_tree'])) {
+      $headerRegion = $headerData['region'] ?? 'header';
+      $regionTrees[$headerRegion] = $this->prepareComponentTree($headerData['component_tree']);
+    }
     if (!empty($footerData['component_tree'])) {
-      $footerValues = [
-        'title' => 'Footer',
+      $footerRegion = $footerData['region'] ?? 'footer';
+      $regionTrees[$footerRegion] = $this->prepareComponentTree($footerData['component_tree']);
+    }
+
+    // Get all regions defined by the theme (except "content" which Canvas
+    // reserves for main page content).
+    $themeHandler = \Drupal::service('theme_handler');
+    $themeInfo = $themeHandler->getTheme($theme);
+    $allRegions = array_keys($themeInfo->info['regions'] ?? []);
+
+    foreach ($allRegions as $regionName) {
+      // The content region is handled by CanvasPageVariant directly.
+      if ($regionName === 'content') {
+        continue;
+      }
+
+      $regionId = $theme . '.' . $regionName;
+
+      // Skip if this page_region already exists (e.g. from theme install).
+      $existing = $regionStorage->load($regionId);
+      if ($existing) {
+        // Update with new component tree if we have one for this region.
+        if (isset($regionTrees[$regionName])) {
+          $existing->set('component_tree', $regionTrees[$regionName]);
+          $existing->enable();
+          $existing->save();
+          $this->logger->info('Updated page_region "@id" with component tree.', [
+            '@id' => $regionId,
+          ]);
+        }
+        continue;
+      }
+
+      // Create the page_region entity.
+      $values = [
+        'theme' => $theme,
+        'region' => $regionName,
         'status' => TRUE,
-        'components' => $this->prepareComponentTree($footerData['component_tree']),
+        'component_tree' => $regionTrees[$regionName] ?? [],
       ];
-      $footerPage = $pageStorage->create($footerValues);
-      $footerPage->save();
 
-      // Store footer page ID in site config for theme consumption.
-      $this->configFactory->getEditable('ai_site_builder.layout')
-        ->set('footer_page_id', (int) $footerPage->id())
-        ->save();
+      $pageRegion = $regionStorage->create($values);
+      $pageRegion->save();
 
-      $this->logger->info('Created footer canvas_page (id: @id).', [
-        '@id' => $footerPage->id(),
-      ]);
+      if (isset($regionTrees[$regionName])) {
+        $this->logger->info('Created page_region "@id" with component tree.', [
+          '@id' => $regionId,
+        ]);
+      }
     }
   }
 

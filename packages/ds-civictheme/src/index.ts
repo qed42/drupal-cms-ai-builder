@@ -60,6 +60,8 @@ export const civicthemeAdapter: DesignSystemAdapter = {
   name: "CivicTheme",
   themeName: "civictheme",
   composerPackage: "civictheme/civictheme",
+  headerRegion: "header",
+  footerRegion: "footer",
 
   // --- Component Registry ---
 

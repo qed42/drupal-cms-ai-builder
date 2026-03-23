@@ -60,6 +60,8 @@ export const spaceDsAdapter: DesignSystemAdapter = {
   name: "Space DS v2",
   themeName: "space_ds",
   composerPackage: "starter-starter/space-ds",
+  headerRegion: "header",
+  footerRegion: "footer",
 
   // ─── Component Registry ───────────────────────────
 

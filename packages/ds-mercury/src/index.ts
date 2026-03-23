@@ -60,6 +60,8 @@ export const mercuryAdapter: DesignSystemAdapter = {
   name: "Mercury",
   themeName: "mercury",
   composerPackage: "starter-starter/mercury",
+  headerRegion: "header",
+  footerRegion: "footer",
 
   // --- Component Registry ---
 
