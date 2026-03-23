@@ -53,12 +53,16 @@ export async function runGeneratePhase(
   const pages: PageLayout[] = [];
   const pageReviewScores: Array<{ page: string; review: unknown }> = [];
 
-  // Generate each page sequentially (ADR-006)
-  for (let i = 0; i < plan.pages.length; i++) {
-    const planPage = plan.pages[i];
+  // DEV: limit to first page only for faster testing
+  const genPages = process.env.GENERATE_HOMEPAGE_ONLY === "true"
+    ? plan.pages.slice(0, 1)
+    : plan.pages;
+
+  for (let i = 0; i < genPages.length; i++) {
+    const planPage = genPages[i];
 
     if (onProgress) {
-      await onProgress(planPage.title, i, plan.pages.length);
+      await onProgress(planPage.title, i, genPages.length);
     }
 
     // Build sitemap context for interlinking (TASK-335)
@@ -177,11 +181,18 @@ export async function runGeneratePhase(
     }
 
     // Stage 2: Content Review + retry (TASK-293, ADR-011)
-    const MAX_REVIEW_RETRIES = 2;
+    // Set SKIP_CONTENT_REVIEW=1 to bypass the review agent for faster/cheaper test runs.
+    const skipReview = process.env.SKIP_CONTENT_REVIEW === "1" || process.env.SKIP_CONTENT_REVIEW === "true";
+    const MAX_REVIEW_RETRIES = skipReview ? 0 : 2;
     let bestAttempt = { page: { slug: pageSlug, title: pageTitle, seo: pageSeo, sections }, score: 0 };
     let reviewResult: ReviewResult | null = null;
 
-    for (let reviewAttempt = 0; reviewAttempt <= MAX_REVIEW_RETRIES; reviewAttempt++) {
+    if (skipReview) {
+      console.log(`[review] Skipped for "${planPage.title}" (SKIP_CONTENT_REVIEW=1)`);
+      bestAttempt.score = 1;
+    }
+
+    for (let reviewAttempt = 0; !skipReview && reviewAttempt <= MAX_REVIEW_RETRIES; reviewAttempt++) {
       const currentPage = reviewAttempt === 0
         ? { slug: pageSlug, title: pageTitle, seo: pageSeo, sections }
         : bestAttempt.page;
