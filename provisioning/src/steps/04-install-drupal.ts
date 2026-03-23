@@ -18,7 +18,7 @@ export async function installDrupalStep(
   await drush(
     "site:install",
     [
-      "drupal_cms_installer",
+      "standard",
       `--sites-subdir=${config.domain}`,
       `--db-url=${dbUrl}`,
       `--site-name=${config.siteName}`,
@@ -35,6 +35,6 @@ export async function installDrupalStep(
 
   return {
     success: true,
-    message: "Drupal CMS installed with drupal_cms_installer profile",
+    message: "Drupal installed with standard profile",
   };
 }
