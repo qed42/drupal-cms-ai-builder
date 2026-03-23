@@ -789,14 +789,20 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
       ]);
     }
 
-    // Remove system-defined (static) menu links in the main menu.
-    // The standard profile defines 'standard.front_page'; other profiles may
-    // define their own. The drupal_cms_installer profile uses content-based
-    // menu links (handled above) rather than static links, but we check for
-    // the standard profile's link as a safety net for all install profiles.
+    // Hide system-defined (static) menu links in the main menu.
+    // The standard profile defines 'standard.front_page' which cannot be
+    // deleted via removeDefinition(). Instead, disable it by setting
+    // enabled=FALSE so it won't render alongside blueprint-created links.
     if ($this->menuLinkManager->hasDefinition('standard.front_page')) {
-      $this->menuLinkManager->removeDefinition('standard.front_page');
-      $this->logger->info('Removed static menu link "standard.front_page" from main menu.');
+      try {
+        $this->menuLinkManager->updateDefinition('standard.front_page', ['enabled' => FALSE]);
+        $this->logger->info('Disabled static menu link "standard.front_page".');
+      }
+      catch (\Exception $e) {
+        $this->logger->warning('Could not disable standard.front_page: @error', [
+          '@error' => $e->getMessage(),
+        ]);
+      }
     }
   }
 
