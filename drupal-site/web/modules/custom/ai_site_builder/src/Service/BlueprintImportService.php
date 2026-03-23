@@ -656,13 +656,15 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
         $this->logger->warning('Theme image not found at "@path".', ['@path' => $sourcePath]);
         return NULL;
       }
-      $destUri = 'public://imported/' . $filename;
-      $this->fileSystem?->prepareDirectory('public://imported', FileSystemInterface::CREATE_DIRECTORY);
+      $importDir = 'public://imported';
+      $this->fileSystem?->prepareDirectory($importDir, FileSystemInterface::CREATE_DIRECTORY);
+      $destUri = $importDir . '/' . $filename;
       $this->fileSystem?->copy($sourcePath, $destUri, FileSystemInterface::EXISTS_REPLACE);
       $uri = $destUri;
     }
     else {
-      // Unknown path format — cannot create a valid stream wrapper URI.
+      // Unrewritten paths (e.g., /uploads/stock/... that provisioning didn't
+      // copy) — skip gracefully rather than crash.
       $this->logger->warning('Unrecognized image path format "@path", skipping media creation.', [
         '@path' => $webPath,
       ]);
