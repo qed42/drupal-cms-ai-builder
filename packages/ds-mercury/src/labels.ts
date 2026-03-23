@@ -1,5 +1,5 @@
 /**
- * Human-friendly labels for all 22 Mercury components.
+ * Human-friendly labels for all Mercury components.
  */
 export const COMPONENT_LABELS: Record<string, string> = {
   // Layout
@@ -17,7 +17,7 @@ export const COMPONENT_LABELS: Record<string, string> = {
   // CTA
   "mercury:cta": "Call to Action",
   // Cards
-  "mercury:card": "Card",
+  "mercury:card": "Image Card",
   "mercury:card-icon": "Icon Card",
   "mercury:card-logo": "Logo Card",
   "mercury:card-pricing": "Pricing Card",
@@ -29,7 +29,6 @@ export const COMPONENT_LABELS: Record<string, string> = {
   "mercury:badge": "Badge",
   "mercury:blockquote": "Blockquote",
   "mercury:image": "Image",
-  "mercury:video": "Video",
   "mercury:icon": "Icon",
   "mercury:anchor": "Anchor",
 };

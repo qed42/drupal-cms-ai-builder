@@ -2,6 +2,9 @@
  * Human-friendly labels for CivicTheme components.
  */
 export const COMPONENT_LABELS: Record<string, string> = {
+  // Base
+  "civictheme:icon": "Icon",
+
   // Atoms
   "civictheme:heading": "Heading",
   "civictheme:paragraph": "Paragraph",
@@ -9,13 +12,11 @@ export const COMPONENT_LABELS: Record<string, string> = {
   "civictheme:content-link": "Content Link",
   "civictheme:tag": "Tag",
   "civictheme:chip": "Chip",
-  "civictheme:icon": "Icon",
-  "civictheme:quote": "Quote",
+  "civictheme:image": "Image",
   "civictheme:table": "Table",
 
   // Molecules
   "civictheme:accordion": "Accordion",
-  "civictheme:accordion-panel": "Accordion Panel",
   "civictheme:breadcrumb": "Breadcrumb",
   "civictheme:callout": "Callout / CTA",
   "civictheme:figure": "Figure",
@@ -25,19 +26,22 @@ export const COMPONENT_LABELS: Record<string, string> = {
   "civictheme:publication-card": "Publication Card",
   "civictheme:service-card": "Service Card",
   "civictheme:subject-card": "Subject Card",
-  "civictheme:price-card": "Price Card",
+  "civictheme:fast-fact-card": "Fast Fact Card",
   "civictheme:snippet": "Snippet / Testimonial",
   "civictheme:tabs": "Tabs",
   "civictheme:tooltip": "Tooltip",
+  "civictheme:tag-list": "Tag List",
+  "civictheme:basic-content": "Basic Content",
+  "civictheme:social-links": "Social Links",
 
   // Organisms
   "civictheme:banner": "Banner Hero",
   "civictheme:campaign": "Campaign Hero",
   "civictheme:promo": "Promo Section",
-  "civictheme:carousel": "Carousel",
   "civictheme:slider": "Slider",
+  "civictheme:slide": "Slider Slide",
   "civictheme:list": "List Layout",
-  "civictheme:social-links": "Social Links",
+  "civictheme:alert": "Alert",
   "civictheme:header": "Header",
   "civictheme:footer": "Footer",
 };

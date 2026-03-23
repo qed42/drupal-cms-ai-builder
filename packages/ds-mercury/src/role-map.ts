@@ -39,5 +39,5 @@ export const ROLE_MAP: Record<ComponentRole, string[]> = {
   "pricing-card": ["mercury:card-pricing"],
   badge: ["mercury:badge"],
   blockquote: ["mercury:blockquote"],
-  video: ["mercury:video"],
+  video: [],
 };

@@ -21,7 +21,7 @@ export const ROLE_MAP: Record<ComponentRole, string[]> = {
   "cta-banner": ["civictheme:callout"],
   "section-heading": ["civictheme:heading"],
   accordion: ["civictheme:accordion"],
-  "accordion-item": ["civictheme:accordion-panel"],
+  "accordion-item": [],  // Accordion panels are a PROP (array) on the accordion, not a separate component
   slider: ["civictheme:slider"],
   card: ["civictheme:navigation-card", "civictheme:promo-card"],
   header: ["civictheme:header"],
@@ -30,14 +30,14 @@ export const ROLE_MAP: Record<ComponentRole, string[]> = {
   // Extended roles — CivicTheme has rich card type coverage
   "testimonial-card": ["civictheme:snippet"],
   "user-card": ["civictheme:promo-card"],
-  "stats-kpi": [],  // No direct equivalent; use heading+paragraph in a list
+  "stats-kpi": ["civictheme:fast-fact-card"],
   "contact-card": ["civictheme:service-card"],
   "video-banner": ["civictheme:campaign"],
   "logo-section": ["civictheme:navigation-card"],
   "content-detail": ["civictheme:promo"],
   icon: ["civictheme:icon"],
-  "pricing-card": ["civictheme:price-card"],
+  "pricing-card": [],  // No pricing card component in CivicTheme SDC
   badge: ["civictheme:tag"],
-  blockquote: ["civictheme:quote"],
+  blockquote: [],  // No blockquote/quote component in CivicTheme SDC
   video: [],
 };

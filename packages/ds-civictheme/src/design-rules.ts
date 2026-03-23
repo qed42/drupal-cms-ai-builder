@@ -5,6 +5,13 @@ import type { PageDesignRule } from "@ai-builder/ds-types";
  *
  * These reference CivicTheme organisms directly instead of flexi grids.
  * Sections alternate between light/dark theme for visual rhythm.
+ *
+ * IMPORTANT: CivicTheme component structure:
+ * - title/content are typically SLOTS (not props) on organisms
+ * - cards go in "rows" slot on list (not "items")
+ * - accordion panels are a PROP (array of objects), not child components
+ * - slider slides is a PROP (HTML string), not a slot
+ * - callout links is a PROP (array), title/content are SLOTS
  */
 export const PAGE_DESIGN_RULES: PageDesignRule[] = [
   // -- Home -----------------------------------------------------------------
@@ -68,7 +75,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     heroRule: {
       preferredStyles: ["civictheme:campaign", "civictheme:banner"],
       selectionGuidance:
-        "Home heroes need maximum visual impact. Use campaign (full-width bg image with video support) for dramatic landing pages. Use banner (standard hero with breadcrumb) for professional sites.",
+        "Home heroes need maximum visual impact. Use campaign (image with title/content SLOTS) for dramatic landing pages. Use banner (standard hero with breadcrumb) for professional sites.",
     },
     rhythm: {
       pattern: "heavy-medium-light-medium-heavy",
@@ -77,14 +84,14 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     },
     avoidComponents: [],
     closingPattern:
-      "End with a civictheme:callout (dark theme). Optionally precede it with testimonials for social proof.",
+      "End with a civictheme:callout (dark theme). Title/content are SLOTS. CTA links go in the links PROP. Optionally precede it with testimonials for social proof.",
     compositionGuidance: [
       "Use pre-composed organisms — never try to build grids from atoms.",
-      "FEATURES: Use civictheme:list with civictheme:navigation-card children.",
-      "TEXT+IMAGE: Use civictheme:promo organism directly — it handles layout internally.",
-      "TESTIMONIALS: Use civictheme:slider with civictheme:snippet children.",
-      "STATS: Use civictheme:list with civictheme:promo-card children displaying stat values.",
-      "CTA: Use civictheme:callout with button children in the cta slot.",
+      "FEATURES: Use civictheme:list with civictheme:navigation-card children in rows slot.",
+      "TEXT+IMAGE: Use civictheme:promo organism — title/content are SLOTS.",
+      "TESTIMONIALS: Use civictheme:slider with civictheme:slide children.",
+      "STATS: Use civictheme:list with civictheme:fast-fact-card children in rows slot.",
+      "CTA: Use civictheme:callout with title/content SLOTS and links PROP.",
       "Alternate theme: light/dark between sections for visual rhythm.",
     ].join("\n"),
   },
@@ -142,7 +149,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     heroRule: {
       preferredStyles: ["civictheme:banner", "civictheme:campaign"],
       selectionGuidance:
-        "About page heroes should support narrative. Use banner for a clean, mission-forward feel. Use campaign for a visual story intro with background imagery.",
+        "About page heroes should support narrative. Use banner for a clean, mission-forward feel. Use campaign for a visual story intro with imagery.",
     },
     rhythm: {
       pattern: "heavy-light-medium-light-heavy",
@@ -151,12 +158,12 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     },
     avoidComponents: [],
     closingPattern:
-      "End with a warm civictheme:callout (e.g., 'Let's work together').",
+      "End with a warm civictheme:callout (e.g., 'Let's work together'). Title/content are SLOTS.",
     compositionGuidance: [
-      "TEXT SECTIONS: Use civictheme:promo for text+image blocks.",
-      "TEAM: Use civictheme:list with civictheme:promo-card children.",
+      "TEXT SECTIONS: Use civictheme:promo — title/content are SLOTS.",
+      "TEAM: Use civictheme:list with civictheme:promo-card children in rows slot.",
       "Alternate civictheme:promo sections for visual variety.",
-      "Use civictheme:callout for CTA sections.",
+      "Use civictheme:callout for CTA sections — title/content SLOTS, links PROP.",
     ].join("\n"),
   },
 
@@ -224,10 +231,10 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     closingPattern:
       "End with a CTA callout pushing consultation or inquiry.",
     compositionGuidance: [
-      "FEATURES: Use civictheme:list with civictheme:navigation-card children.",
-      "TEXT: Use civictheme:promo for individual service descriptions.",
-      "FAQ: Use civictheme:accordion with civictheme:accordion-panel children.",
-      "TESTIMONIALS: Use civictheme:slider with civictheme:snippet children.",
+      "FEATURES: Use civictheme:list with civictheme:navigation-card children in rows slot.",
+      "TEXT: Use civictheme:promo for individual service descriptions — title/content SLOTS.",
+      "FAQ: Use civictheme:accordion — panels PROP is array of {title, content, expanded}.",
+      "TESTIMONIALS: Use civictheme:slider with civictheme:slide children.",
     ].join("\n"),
   },
 
@@ -277,8 +284,8 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     avoidComponents: ["civictheme:snippet"],
     closingPattern: "The contact info IS the closing. No separate CTA needed.",
     compositionGuidance: [
-      "CONTACT: Use civictheme:list with civictheme:service-card children for email, phone, etc.",
-      "FAQ: Use civictheme:accordion with civictheme:accordion-panel children.",
+      "CONTACT: Use civictheme:list with civictheme:service-card children in rows slot. Service cards have title SLOT and links PROP.",
+      "FAQ: Use civictheme:accordion — panels PROP is array of {title, content, expanded}.",
       "Contact pages are minimal — do not pad with unnecessary sections.",
     ].join("\n"),
   },
@@ -305,7 +312,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         required: true,
         position: "middle",
         visualWeight: "heavy",
-        preferredPatterns: ["card-grid-3col", "card-carousel"],
+        preferredPatterns: ["card-grid-3col"],
         wordCountRange: [50, 100],
       },
       {
@@ -337,8 +344,8 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     avoidComponents: ["civictheme:accordion"],
     closingPattern: "End with a CTA callout to start a project or view more work.",
     compositionGuidance: [
-      "GALLERY: Use civictheme:list with civictheme:promo-card children, or civictheme:carousel.",
-      "TEXT: Use civictheme:promo for narrative sections.",
+      "GALLERY: Use civictheme:list with civictheme:promo-card children in rows slot.",
+      "TEXT: Use civictheme:promo for narrative sections — title/content SLOTS.",
     ].join("\n"),
   },
 
@@ -389,7 +396,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     closingPattern:
       "Optionally end with a callout pointing to contact for unanswered questions.",
     compositionGuidance:
-      "FAQ: Use civictheme:accordion with civictheme:accordion-panel children. Each Q&A pair is a panel with title (question) and content (answer HTML).",
+      "FAQ: Use civictheme:accordion — panels PROP is array of {title, content, expanded} objects. Each Q&A pair is a panel.",
   },
 
   // -- Team -----------------------------------------------------------------
@@ -447,8 +454,8 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     closingPattern:
       "The team list is the main content. Optionally close with a hiring CTA callout.",
     compositionGuidance: [
-      "TEAM: Use civictheme:list with civictheme:promo-card children (name, role, image).",
-      "TEXT: Use civictheme:promo or civictheme:callout for narrative intro.",
+      "TEAM: Use civictheme:list with civictheme:promo-card children in rows slot (title/summary are SLOTS on cards).",
+      "TEXT: Use civictheme:promo or civictheme:callout for narrative intro — title/content are SLOTS.",
     ].join("\n"),
   },
 
@@ -505,7 +512,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     heroRule: {
       preferredStyles: ["civictheme:campaign", "civictheme:banner"],
       selectionGuidance:
-        "Landing heroes need to capture attention immediately. Use campaign for dramatic impact with video support. Use banner for clean, professional look.",
+        "Landing heroes need to capture attention immediately. Use campaign for dramatic impact. Use banner for clean, professional look.",
     },
     rhythm: {
       pattern: "heavy-medium-medium-heavy",
@@ -516,10 +523,10 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     closingPattern:
       "End with a strong, urgent CTA callout. The entire page funnels toward this single action.",
     compositionGuidance: [
-      "FEATURES: Use civictheme:list with civictheme:navigation-card children.",
-      "TESTIMONIALS: Use civictheme:slider with civictheme:snippet children.",
-      "LOGOS: Use civictheme:list with civictheme:navigation-card children (logo images).",
-      "CTA: Use civictheme:callout (dark theme) with button in cta slot.",
+      "FEATURES: Use civictheme:list with civictheme:navigation-card children in rows slot.",
+      "TESTIMONIALS: Use civictheme:slider with civictheme:slide children.",
+      "LOGOS: Use civictheme:list with civictheme:navigation-card children in rows slot (logo images).",
+      "CTA: Use civictheme:callout (dark theme) — title/content SLOTS, links PROP.",
     ].join("\n"),
   },
 
@@ -569,10 +576,10 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     avoidComponents: [],
     closingPattern: "End with a CTA callout.",
     compositionGuidance: [
-      "Use civictheme:promo for text+image content sections.",
-      "Use civictheme:callout for CTA sections.",
-      "Use civictheme:list with appropriate card types for grid layouts.",
-      "Use civictheme:accordion for FAQ sections.",
+      "Use civictheme:promo for text+image content sections — title/content are SLOTS.",
+      "Use civictheme:callout for CTA sections — title/content SLOTS, links PROP.",
+      "Use civictheme:list with appropriate card types in rows slot for grid layouts.",
+      "Use civictheme:accordion for FAQ sections — panels PROP is array of objects.",
       "Alternate light/dark theme between sections.",
     ].join("\n"),
   },

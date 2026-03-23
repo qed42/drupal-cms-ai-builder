@@ -2,32 +2,32 @@
   {
     "id": "civictheme:heading",
     "name": "Heading",
-    "description": "Heading element with configurable level and theme.",
+    "description": "Heading component for titles and section headings",
     "group": "Atoms",
-    "category": "atoms",
+    "category": "atom",
     "props": [
       {
-        "name": "text",
+        "name": "content",
         "type": "string",
         "required": true,
-        "title": "Text",
-        "description": "The heading text content."
+        "title": "Content",
+        "description": "Heading content."
       },
       {
         "name": "level",
-        "type": "integer",
+        "type": "string",
         "required": false,
         "title": "Level",
         "description": "Heading level (1-6).",
-        "enum": [1, 2, 3, 4, 5, 6],
-        "default": 2
+        "enum": ["1", "2", "3", "4", "5", "6"],
+        "default": "2"
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "description": "Light or dark theme variant.",
+        "description": "Theme variation (light or dark).",
         "enum": ["light", "dark"],
         "default": "light"
       }
@@ -36,762 +36,1002 @@
   {
     "id": "civictheme:paragraph",
     "name": "Paragraph",
-    "description": "Rich text paragraph content.",
+    "description": "Paragraph component for text content",
     "group": "Atoms",
-    "category": "atoms",
+    "category": "atom",
     "props": [
       {
         "name": "content",
         "type": "string",
         "required": true,
         "title": "Content",
-        "description": "HTML content for the paragraph."
+        "description": "Paragraph content."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
+        "description": "Theme variation (light or dark).",
         "enum": ["light", "dark"],
         "default": "light"
+      },
+      {
+        "name": "size",
+        "type": "string",
+        "required": false,
+        "title": "Size",
+        "description": "Paragraph size (extra-large, large, regular, small).",
+        "enum": ["extra-large", "large", "regular", "small"],
+        "default": "regular"
+      },
+      {
+        "name": "no_margin",
+        "type": "boolean",
+        "required": false,
+        "title": "No margin",
+        "description": "Disable default margin.",
+        "default": false
       }
     ]
   },
   {
     "id": "civictheme:button",
     "name": "Button",
-    "description": "Button element with multiple types and sizes.",
+    "description": "Button component with multiple variants and styles",
     "group": "Atoms",
-    "category": "atoms",
+    "category": "atom",
     "props": [
       {
         "name": "text",
         "type": "string",
-        "required": true,
+        "required": false,
         "title": "Text",
-        "description": "Button label."
+        "description": "Button text."
       },
       {
         "name": "url",
         "type": "string",
         "required": false,
         "title": "URL",
-        "description": "Link URL for the button."
+        "description": "URL for the link button."
+      },
+      {
+        "name": "kind",
+        "type": "string",
+        "required": false,
+        "title": "Kind",
+        "description": "Button kind (submit, reset, button, link).",
+        "enum": ["submit", "reset", "button", "link"]
       },
       {
         "name": "type",
         "type": "string",
         "required": false,
         "title": "Type",
-        "enum": ["primary", "secondary", "tertiary"],
-        "default": "primary"
-      },
-      {
-        "name": "theme",
-        "type": "string",
-        "required": false,
-        "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Button type (primary, secondary, tertiary).",
+        "enum": ["primary", "secondary", "tertiary"]
       },
       {
         "name": "size",
         "type": "string",
         "required": false,
         "title": "Size",
+        "description": "Button size (large, regular, small).",
         "enum": ["large", "regular", "small"],
         "default": "regular"
+      },
+      {
+        "name": "icon",
+        "type": "string",
+        "required": false,
+        "title": "Icon",
+        "description": "Icon name."
+      },
+      {
+        "name": "icon_placement",
+        "type": "string",
+        "required": false,
+        "title": "Icon placement",
+        "description": "Icon position (before or after).",
+        "enum": ["before", "after"],
+        "default": "after"
+      },
+      {
+        "name": "is_new_window",
+        "type": "boolean",
+        "required": false,
+        "title": "New window",
+        "description": "Open in a new window."
+      },
+      {
+        "name": "is_external",
+        "type": "boolean",
+        "required": false,
+        "title": "External link",
+        "description": "Indicates if the link is external."
+      },
+      {
+        "name": "is_disabled",
+        "type": "boolean",
+        "required": false,
+        "title": "Disabled",
+        "description": "Indicates if the button is disabled."
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ]
   },
   {
     "id": "civictheme:content-link",
     "name": "Content Link",
-    "description": "Inline or standalone text link.",
+    "description": "Link component with text content and configurable states",
     "group": "Atoms",
-    "category": "atoms",
+    "category": "atom",
     "props": [
       {
         "name": "text",
         "type": "string",
-        "required": true,
-        "title": "Text"
+        "required": false,
+        "title": "Text",
+        "description": "Link text."
       },
       {
         "name": "url",
         "type": "string",
-        "required": true,
-        "title": "URL"
+        "required": false,
+        "title": "URL",
+        "description": "Link URL."
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "required": false,
+        "title": "Title",
+        "description": "Link title."
       },
       {
         "name": "is_new_window",
         "type": "boolean",
         "required": false,
-        "title": "Open in new window",
-        "default": false
+        "title": "New window",
+        "description": "Whether to open in a new window."
+      },
+      {
+        "name": "is_external",
+        "type": "boolean",
+        "required": false,
+        "title": "External link",
+        "description": "Whether the link is external."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ]
   },
   {
     "id": "civictheme:tag",
     "name": "Tag",
-    "description": "Tag/label element for categorization.",
+    "description": "Tag component for categorization elements with various styles",
     "group": "Atoms",
-    "category": "atoms",
+    "category": "atom",
     "props": [
       {
-        "name": "text",
+        "name": "content",
         "type": "string",
-        "required": true,
-        "title": "Text"
+        "required": false,
+        "title": "Content",
+        "description": "Tag content."
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "title": "Type",
+        "description": "Tag type (primary, secondary, tertiary).",
+        "enum": ["primary", "secondary", "tertiary"],
+        "default": "primary"
+      },
+      {
+        "name": "icon",
+        "type": "string",
+        "required": false,
+        "title": "Icon",
+        "description": "Icon name."
+      },
+      {
+        "name": "icon_placement",
+        "type": "string",
+        "required": false,
+        "title": "Icon placement",
+        "description": "Icon position (before, after).",
+        "enum": ["before", "after"],
+        "default": "after"
       },
       {
         "name": "url",
         "type": "string",
         "required": false,
-        "title": "URL"
+        "title": "URL",
+        "description": "Optional URL to convert to a link."
+      },
+      {
+        "name": "is_new_window",
+        "type": "boolean",
+        "required": false,
+        "title": "New window",
+        "description": "Whether to open in a new window (only if URL is provided)."
+      },
+      {
+        "name": "is_external",
+        "type": "boolean",
+        "required": false,
+        "title": "External",
+        "description": "Whether the link is external."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ]
   },
   {
     "id": "civictheme:chip",
     "name": "Chip",
-    "description": "Compact filter/selection element.",
+    "description": "Interactive chip component for filters, tags and input elements",
     "group": "Atoms",
-    "category": "atoms",
+    "category": "atom",
     "props": [
       {
-        "name": "text",
-        "type": "string",
-        "required": true,
-        "title": "Text"
-      },
-      {
-        "name": "is_selected",
-        "type": "boolean",
-        "required": false,
-        "title": "Selected",
-        "default": false
-      },
-      {
-        "name": "theme",
+        "name": "content",
         "type": "string",
         "required": false,
-        "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
-      }
-    ]
-  },
-  {
-    "id": "civictheme:icon",
-    "name": "Icon",
-    "description": "SVG icon element.",
-    "group": "Atoms",
-    "category": "atoms",
-    "props": [
+        "title": "Content",
+        "description": "Chip text."
+      },
       {
-        "name": "symbol",
+        "name": "kind",
         "type": "string",
-        "required": true,
-        "title": "Symbol",
-        "description": "Icon symbol name."
+        "required": false,
+        "title": "Kind",
+        "description": "Chip kind (default, input).",
+        "enum": ["default", "input"],
+        "default": "default"
       },
       {
         "name": "size",
         "type": "string",
         "required": false,
         "title": "Size",
-        "enum": ["small", "regular", "large"],
+        "description": "Chip size (large, regular, small).",
+        "enum": ["large", "regular", "small"],
         "default": "regular"
+      },
+      {
+        "name": "is_selected",
+        "type": "boolean",
+        "required": false,
+        "title": "Selected",
+        "description": "Whether the chip is selected (for filter chips)."
+      },
+      {
+        "name": "is_multiple",
+        "type": "boolean",
+        "required": false,
+        "title": "Multiple",
+        "description": "Whether multiple selection is allowed."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ]
   },
   {
-    "id": "civictheme:quote",
-    "name": "Quote",
-    "description": "Blockquote element for quotations.",
-    "group": "Atoms",
-    "category": "atoms",
+    "id": "civictheme:icon",
+    "name": "Icon",
+    "description": "Icon component for SVG icons",
+    "group": "Base",
+    "category": "base",
     "props": [
       {
-        "name": "content",
+        "name": "symbol",
         "type": "string",
         "required": true,
-        "title": "Content",
-        "description": "The quoted text."
+        "title": "Symbol",
+        "description": "Icon name (required)."
       },
       {
-        "name": "author",
+        "name": "size",
         "type": "string",
         "required": false,
-        "title": "Author"
+        "title": "Size",
+        "description": "Icon size."
+      }
+    ]
+  },
+  {
+    "id": "civictheme:image",
+    "name": "Image",
+    "description": "Basic image component",
+    "group": "Atoms",
+    "category": "atom",
+    "props": [
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "URL",
+        "description": "Image URL."
+      },
+      {
+        "name": "alt",
+        "type": "string",
+        "required": false,
+        "title": "Alt text",
+        "description": "Image alt text."
+      },
+      {
+        "name": "width",
+        "type": "string",
+        "required": false,
+        "title": "Width",
+        "description": "Image width."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "required": false,
+        "title": "Height",
+        "description": "Image height."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ]
   },
   {
     "id": "civictheme:table",
     "name": "Table",
-    "description": "Data table with rows and columns.",
+    "description": "Table component for tabular data with styling options",
     "group": "Atoms",
-    "category": "atoms",
+    "category": "atom",
     "props": [
       {
         "name": "header",
-        "type": "object",
+        "type": "array",
         "required": false,
         "title": "Header",
-        "description": "Array of header cell strings."
+        "description": "Header cells (array of strings)."
       },
       {
         "name": "rows",
-        "type": "object",
-        "required": true,
+        "type": "array",
+        "required": false,
         "title": "Rows",
-        "description": "Array of row arrays."
+        "description": "Table rows (array of arrays of strings)."
+      },
+      {
+        "name": "footer",
+        "type": "array",
+        "required": false,
+        "title": "Footer",
+        "description": "Footer cells (array of strings)."
+      },
+      {
+        "name": "caption",
+        "type": "string",
+        "required": false,
+        "title": "Caption",
+        "description": "Table caption."
+      },
+      {
+        "name": "caption_position",
+        "type": "string",
+        "required": false,
+        "title": "Caption position",
+        "description": "Caption position (before, after).",
+        "enum": ["before", "after"],
+        "default": "before"
+      },
+      {
+        "name": "is_striped",
+        "type": "boolean",
+        "required": false,
+        "title": "Striped",
+        "description": "Whether to show table with striped rows."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ]
   },
   {
     "id": "civictheme:accordion",
     "name": "Accordion",
-    "description": "Collapsible accordion container. Children are accordion panels.",
+    "description": "Collapsible accordion component with expandable panels",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
       {
-        "name": "theme",
-        "type": "string",
+        "name": "panels",
+        "type": "array",
         "required": false,
-        "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "title": "Panels",
+        "description": "Accordion panels. Each panel is an object with title (string), content (string), and expanded (boolean)."
       },
       {
         "name": "expand_all",
         "type": "boolean",
         "required": false,
         "title": "Expand all",
-        "default": false
-      }
-    ],
-    "slots": [
-      {
-        "name": "panels",
-        "description": "Accordion panel items."
-      }
-    ]
-  },
-  {
-    "id": "civictheme:accordion-panel",
-    "name": "Accordion Panel",
-    "description": "Single accordion panel with title and content.",
-    "group": "Molecules",
-    "category": "molecules",
-    "props": [
-      {
-        "name": "title",
-        "type": "string",
-        "required": true,
-        "title": "Title",
-        "description": "Panel heading / question text."
+        "description": "Whether to expand all panels by default."
       },
       {
-        "name": "content",
-        "type": "string",
-        "required": true,
-        "title": "Content",
-        "description": "Panel body content (HTML)."
-      },
-      {
-        "name": "expanded",
+        "name": "with_background",
         "type": "boolean",
         "required": false,
-        "title": "Expanded",
-        "default": false
+        "title": "With background",
+        "description": "Whether to display with a background."
+      },
+      {
+        "name": "vertical_spacing",
+        "type": "string",
+        "required": false,
+        "title": "Vertical spacing",
+        "description": "Vertical spacing position (top, bottom, both).",
+        "enum": ["top", "bottom", "both"]
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
+    ],
+    "slots": [
+      { "name": "content_top", "description": "Accordion top content." },
+      { "name": "content_bottom", "description": "Accordion bottom content." }
     ]
   },
   {
     "id": "civictheme:breadcrumb",
     "name": "Breadcrumb",
-    "description": "Navigation breadcrumb trail.",
+    "description": "Navigation component displaying hierarchical path links",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
       {
-        "name": "items",
-        "type": "object",
-        "required": true,
-        "title": "Items",
-        "description": "Array of {text, url} breadcrumb items."
+        "name": "links",
+        "type": "array",
+        "required": false,
+        "title": "Links",
+        "description": "Breadcrumb links. Each item is an object with text (string) and url (string)."
+      },
+      {
+        "name": "active_is_link",
+        "type": "boolean",
+        "required": false,
+        "title": "Active is link",
+        "description": "Whether to show the active element as a link."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ]
   },
   {
     "id": "civictheme:callout",
     "name": "Callout",
-    "description": "Highlighted content callout block with optional CTA.",
+    "description": "Content component for highlighting important information with title, content and links",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
       {
-        "name": "title",
-        "type": "string",
-        "required": true,
-        "title": "Title"
+        "name": "links",
+        "type": "array",
+        "required": false,
+        "title": "Links",
+        "description": "Callout links. Each item is an object with text, url, is_new_window, is_external."
       },
       {
-        "name": "content",
+        "name": "vertical_spacing",
         "type": "string",
         "required": false,
-        "title": "Content",
-        "description": "Body text or HTML content."
+        "title": "Vertical spacing",
+        "description": "Vertical spacing position (top, bottom, both).",
+        "enum": ["top", "bottom", "both"]
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ],
     "slots": [
-      {
-        "name": "cta",
-        "description": "Call-to-action button(s)."
-      }
+      { "name": "title", "description": "Title text." },
+      { "name": "content", "description": "Content text." },
+      { "name": "content_top", "description": "Callout top content." },
+      { "name": "content_bottom", "description": "Callout bottom content." }
     ]
   },
   {
     "id": "civictheme:figure",
     "name": "Figure",
-    "description": "Image with optional caption.",
+    "description": "Component for displaying images with optional captions",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
       {
-        "name": "image",
-        "type": "object",
-        "required": true,
-        "title": "Image",
-        "description": "Image object with src, alt, width, height.",
-        "$ref": "json-schema-definitions://canvas.module/image"
-      },
-      {
-        "name": "caption",
+        "name": "url",
         "type": "string",
         "required": false,
-        "title": "Caption"
+        "title": "URL",
+        "description": "Image URL."
+      },
+      {
+        "name": "alt",
+        "type": "string",
+        "required": false,
+        "title": "Alt text",
+        "description": "Image alt text."
+      },
+      {
+        "name": "width",
+        "type": "string",
+        "required": false,
+        "title": "Width",
+        "description": "Image width."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "required": false,
+        "title": "Height",
+        "description": "Image height."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
+    ],
+    "slots": [
+      { "name": "caption", "description": "Image caption." }
     ]
   },
   {
     "id": "civictheme:navigation-card",
     "name": "Navigation Card",
-    "description": "Card for navigating to a section or page.",
+    "description": "Card component for navigation with title, summary, and link",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
-      {
-        "name": "title",
-        "type": "string",
-        "required": true,
-        "title": "Title"
-      },
-      {
-        "name": "summary",
-        "type": "string",
-        "required": false,
-        "title": "Summary"
-      },
       {
         "name": "image",
         "type": "object",
         "required": false,
         "title": "Image",
-        "$ref": "json-schema-definitions://canvas.module/image"
+        "description": "Card image object with url and alt properties."
       },
       {
-        "name": "url",
-        "type": "string",
-        "required": true,
-        "title": "URL"
+        "name": "link",
+        "type": "object",
+        "required": false,
+        "title": "Link",
+        "description": "Link object with text, url, is_new_window, is_external properties."
+      },
+      {
+        "name": "image_as_icon",
+        "type": "boolean",
+        "required": false,
+        "title": "Image as icon",
+        "description": "Whether to show the image as an icon."
+      },
+      {
+        "name": "is_title_click",
+        "type": "boolean",
+        "required": false,
+        "title": "Title click",
+        "description": "Whether to make only the title clickable instead of the whole card."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
+    ],
+    "slots": [
+      { "name": "icon", "description": "Icon name." },
+      { "name": "title", "description": "Card title text." },
+      { "name": "summary", "description": "Card summary." },
+      { "name": "content_top", "description": "Card top content." },
+      { "name": "image_over", "description": "Image overlay content." },
+      { "name": "content_middle", "description": "Card middle content." },
+      { "name": "content_bottom", "description": "Card bottom content." }
     ]
   },
   {
     "id": "civictheme:promo-card",
     "name": "Promo Card",
-    "description": "Promotional content card with optional date.",
+    "description": "Card component for displaying promotional content with image, title, summary, date, and tags",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
-      {
-        "name": "title",
-        "type": "string",
-        "required": true,
-        "title": "Title"
-      },
-      {
-        "name": "summary",
-        "type": "string",
-        "required": false,
-        "title": "Summary"
-      },
       {
         "name": "image",
         "type": "object",
         "required": false,
         "title": "Image",
-        "$ref": "json-schema-definitions://canvas.module/image"
+        "description": "Card image object with url and alt properties."
       },
       {
-        "name": "url",
-        "type": "string",
+        "name": "link",
+        "type": "object",
         "required": false,
-        "title": "URL"
+        "title": "Link",
+        "description": "Card link object with url, is_new_window, is_external properties."
       },
       {
         "name": "date",
         "type": "string",
         "required": false,
-        "title": "Date"
+        "title": "Date",
+        "description": "Start date and time."
+      },
+      {
+        "name": "date_iso",
+        "type": "string",
+        "required": false,
+        "title": "ISO Date",
+        "description": "Start date and time in ISO format."
+      },
+      {
+        "name": "date_end",
+        "type": "string",
+        "required": false,
+        "title": "End Date",
+        "description": "Formatted end time."
+      },
+      {
+        "name": "date_end_iso",
+        "type": "string",
+        "required": false,
+        "title": "ISO End Date",
+        "description": "End time in ISO format."
+      },
+      {
+        "name": "tags",
+        "type": "array",
+        "required": false,
+        "title": "Tags",
+        "description": "Card tags. Each item is an object with text, url, is_new_window."
+      },
+      {
+        "name": "is_title_click",
+        "type": "boolean",
+        "required": false,
+        "title": "Title click",
+        "description": "Whether to make only the title clickable instead of the whole card."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
+    ],
+    "slots": [
+      { "name": "subtitle", "description": "Subtitle text." },
+      { "name": "title", "description": "Card title text." },
+      { "name": "summary", "description": "Card summary." },
+      { "name": "content_top", "description": "Top content area." },
+      { "name": "image_over", "description": "Image overlay content." },
+      { "name": "content_middle", "description": "Middle content area." },
+      { "name": "content_bottom", "description": "Bottom content area." }
     ]
   },
   {
     "id": "civictheme:event-card",
     "name": "Event Card",
-    "description": "Card for event listings with date and location.",
+    "description": "Card component for displaying event information with date, location, and details",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
-      {
-        "name": "title",
-        "type": "string",
-        "required": true,
-        "title": "Title"
-      },
-      {
-        "name": "summary",
-        "type": "string",
-        "required": false,
-        "title": "Summary"
-      },
       {
         "name": "image",
         "type": "object",
         "required": false,
         "title": "Image",
-        "$ref": "json-schema-definitions://canvas.module/image"
+        "description": "Event image object with url and alt properties."
       },
       {
-        "name": "url",
-        "type": "string",
+        "name": "link",
+        "type": "object",
         "required": false,
-        "title": "URL"
+        "title": "Link",
+        "description": "Link object with url, is_new_window properties."
       },
       {
         "name": "date",
         "type": "string",
         "required": false,
-        "title": "Date"
+        "title": "Date",
+        "description": "Date area content."
       },
       {
-        "name": "location",
+        "name": "date_iso",
         "type": "string",
         "required": false,
-        "title": "Location"
+        "title": "ISO date",
+        "description": "Start date and time in ISO format."
+      },
+      {
+        "name": "date_end",
+        "type": "string",
+        "required": false,
+        "title": "End date",
+        "description": "End date and time."
+      },
+      {
+        "name": "date_end_iso",
+        "type": "string",
+        "required": false,
+        "title": "ISO end date",
+        "description": "End date and time in ISO format."
+      },
+      {
+        "name": "tags",
+        "type": "array",
+        "required": false,
+        "title": "Tags",
+        "description": "Event tags. Each item is an object with text, url, is_new_window."
+      },
+      {
+        "name": "is_title_click",
+        "type": "boolean",
+        "required": false,
+        "title": "Title click",
+        "description": "Whether to make only the title clickable instead of the whole card."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
+    ],
+    "slots": [
+      { "name": "image_over", "description": "Image overlay content." },
+      { "name": "content_top", "description": "Top content area." },
+      { "name": "title", "description": "Title area content." },
+      { "name": "content_middle", "description": "Middle content area." },
+      { "name": "location", "description": "Location area content." },
+      { "name": "summary", "description": "Summary area content." },
+      { "name": "content_bottom", "description": "Bottom content area." }
     ]
   },
   {
     "id": "civictheme:publication-card",
     "name": "Publication Card",
-    "description": "Card for publications, articles, blog posts.",
+    "description": "Card component for displaying publication information with downloadable file",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
-      {
-        "name": "title",
-        "type": "string",
-        "required": true,
-        "title": "Title"
-      },
-      {
-        "name": "summary",
-        "type": "string",
-        "required": false,
-        "title": "Summary"
-      },
       {
         "name": "image",
         "type": "object",
         "required": false,
         "title": "Image",
-        "$ref": "json-schema-definitions://canvas.module/image"
+        "description": "Card image object with url and alt properties."
       },
       {
-        "name": "url",
-        "type": "string",
-        "required": false,
-        "title": "URL"
-      },
-      {
-        "name": "date",
-        "type": "string",
-        "required": false,
-        "title": "Date"
-      },
-      {
-        "name": "categories",
+        "name": "file",
         "type": "object",
         "required": false,
-        "title": "Categories",
-        "description": "Array of category tag strings."
+        "title": "File",
+        "description": "File object for download with name, url, ext, size properties."
+      },
+      {
+        "name": "is_title_click",
+        "type": "boolean",
+        "required": false,
+        "title": "Title click",
+        "description": "Whether to make only the title clickable instead of the whole card."
+      },
+      {
+        "name": "filename_prefix",
+        "type": "string",
+        "required": false,
+        "title": "Filename Prefix",
+        "description": "Description of file details for accessibility."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
+    ],
+    "slots": [
+      { "name": "image_over", "description": "Image overlay content." },
+      { "name": "content_top", "description": "Top content area." },
+      { "name": "title", "description": "Card title text." },
+      { "name": "content_middle", "description": "Middle content area." },
+      { "name": "summary", "description": "Card summary." },
+      { "name": "content_bottom", "description": "Bottom content area." }
     ]
   },
   {
     "id": "civictheme:service-card",
     "name": "Service Card",
-    "description": "Card for service/contact information.",
+    "description": "Card component for displaying service information with links",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
       {
-        "name": "title",
-        "type": "string",
-        "required": true,
-        "title": "Title"
-      },
-      {
-        "name": "summary",
-        "type": "string",
+        "name": "links",
+        "type": "array",
         "required": false,
-        "title": "Summary"
-      },
-      {
-        "name": "image",
-        "type": "object",
-        "required": false,
-        "title": "Image",
-        "$ref": "json-schema-definitions://canvas.module/image"
-      },
-      {
-        "name": "url",
-        "type": "string",
-        "required": false,
-        "title": "URL"
+        "title": "Links",
+        "description": "Card links. Each item is an object with text, url, is_new_window, is_external."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
+    ],
+    "slots": [
+      { "name": "content_top", "description": "Top content area." },
+      { "name": "title", "description": "Card title text." },
+      { "name": "content_bottom", "description": "Bottom content area." }
     ]
   },
   {
     "id": "civictheme:subject-card",
     "name": "Subject Card",
-    "description": "Card for subject/topic navigation.",
+    "description": "Card component for displaying a subject with image and title",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
-      {
-        "name": "title",
-        "type": "string",
-        "required": true,
-        "title": "Title"
-      },
-      {
-        "name": "summary",
-        "type": "string",
-        "required": false,
-        "title": "Summary"
-      },
       {
         "name": "image",
         "type": "object",
         "required": false,
         "title": "Image",
-        "$ref": "json-schema-definitions://canvas.module/image"
+        "description": "Card image object with url and alt properties."
       },
       {
-        "name": "url",
-        "type": "string",
+        "name": "link",
+        "type": "object",
         "required": false,
-        "title": "URL"
+        "title": "Link",
+        "description": "Card link object with url, is_new_window properties."
+      },
+      {
+        "name": "is_title_click",
+        "type": "boolean",
+        "required": false,
+        "title": "Title click",
+        "description": "Whether to make only the title clickable instead of the whole card."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
+    ],
+    "slots": [
+      { "name": "image_over", "description": "Image overlay content." },
+      { "name": "title", "description": "Card title." }
     ]
   },
   {
-    "id": "civictheme:price-card",
-    "name": "Price Card",
-    "description": "Pricing plan card with features list.",
+    "id": "civictheme:fast-fact-card",
+    "name": "Fast Fact Card",
+    "description": "Fast fact card component with image, title, summary, and optional link",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
+      {
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "description": "Image data containing url and alt text."
+      },
       {
         "name": "title",
         "type": "string",
-        "required": true,
-        "title": "Title"
+        "required": false,
+        "title": "Title",
+        "description": "Title text for the card."
       },
       {
-        "name": "price",
-        "type": "string",
-        "required": true,
-        "title": "Price",
-        "description": "Price amount (e.g., '$29/mo')."
-      },
-      {
-        "name": "description",
+        "name": "summary",
         "type": "string",
         "required": false,
-        "title": "Description"
+        "title": "Summary",
+        "description": "Summary text content, can contain HTML."
       },
       {
-        "name": "features",
+        "name": "link",
         "type": "object",
         "required": false,
-        "title": "Features",
-        "description": "Array of feature strings."
+        "title": "Link",
+        "description": "Link object for making the title clickable with url and is_new_window."
       },
       {
-        "name": "url",
-        "type": "string",
-        "required": false,
-        "title": "URL"
-      },
-      {
-        "name": "button_text",
-        "type": "string",
-        "required": false,
-        "title": "Button Text",
-        "default": "Get Started"
-      },
-      {
-        "name": "highlighted",
+        "name": "is_title_click",
         "type": "boolean",
         "required": false,
-        "title": "Highlighted",
-        "default": false
+        "title": "Title click",
+        "description": "Whether to make only the title clickable instead of the whole card."
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
+        "description": "Theme variant (light or dark).",
         "enum": ["light", "dark"],
         "default": "light"
       }
@@ -800,406 +1040,696 @@
   {
     "id": "civictheme:snippet",
     "name": "Snippet",
-    "description": "Testimonial/quote snippet with author information.",
+    "description": "Component for displaying a content snippet with title, summary, tags, and link",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
-      {
-        "name": "quote",
-        "type": "string",
-        "required": true,
-        "title": "Quote",
-        "description": "Testimonial quote text."
-      },
-      {
-        "name": "author",
-        "type": "string",
-        "required": false,
-        "title": "Author"
-      },
-      {
-        "name": "author_image",
-        "type": "object",
-        "required": false,
-        "title": "Author Image",
-        "$ref": "json-schema-definitions://canvas.module/image"
-      },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
+    ],
+    "slots": [
+      { "name": "content_top", "description": "Top content area." },
+      { "name": "content_middle", "description": "Middle content area." },
+      { "name": "content_bottom", "description": "Bottom content area." },
+      { "name": "title", "description": "Snippet title text." },
+      { "name": "summary", "description": "Snippet summary text." },
+      { "name": "link", "description": "Snippet link object." },
+      { "name": "tags", "description": "Snippet tags." }
     ]
   },
   {
     "id": "civictheme:tabs",
     "name": "Tabs",
-    "description": "Tabbed content container.",
+    "description": "Component for tabbed content",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
+      {
+        "name": "panels",
+        "type": "array",
+        "required": false,
+        "title": "Panels",
+        "description": "Tab panels. Each panel is an object with title, content, id, and is_selected."
+      },
+      {
+        "name": "links",
+        "type": "array",
+        "required": false,
+        "title": "Links",
+        "description": "Optional links (if not provided, will be generated from panels)."
+      },
+      {
+        "name": "vertical_spacing",
+        "type": "string",
+        "required": false,
+        "title": "Vertical Spacing",
+        "description": "Vertical spacing for the tabs (none, top, bottom, both).",
+        "enum": ["none", "top", "bottom", "both"]
+      },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
-      }
-    ],
-    "slots": [
-      {
-        "name": "panels",
-        "description": "Tab panel items."
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ]
   },
   {
     "id": "civictheme:tooltip",
     "name": "Tooltip",
-    "description": "Contextual tooltip popup.",
+    "description": "Component for displaying tooltip information with an icon",
     "group": "Molecules",
-    "category": "molecules",
+    "category": "molecule",
     "props": [
-      {
-        "name": "text",
-        "type": "string",
-        "required": true,
-        "title": "Text",
-        "description": "Tooltip content."
-      },
       {
         "name": "position",
         "type": "string",
         "required": false,
         "title": "Position",
-        "enum": ["top", "bottom", "left", "right"],
-        "default": "top"
+        "description": "Tooltip position.",
+        "enum": ["auto", "auto-start", "auto-end", "top", "top-start", "top-end", "bottom", "bottom-start", "bottom-end", "right", "right-start", "right-end", "left", "left-start", "left-end"]
+      },
+      {
+        "name": "icon",
+        "type": "string",
+        "required": false,
+        "title": "Icon",
+        "description": "Symbol to use in the button. Defaults to information-mark."
+      },
+      {
+        "name": "icon_size",
+        "type": "string",
+        "required": false,
+        "title": "Icon Size",
+        "description": "Icon size.",
+        "enum": ["extra-large", "large", "regular", "small", "extra-small"]
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
+      }
+    ],
+    "slots": [
+      { "name": "title", "description": "Text used within the button title and for screen readers." },
+      { "name": "content", "description": "Text to display within the popup." }
+    ]
+  },
+  {
+    "id": "civictheme:tag-list",
+    "name": "Tag List",
+    "description": "Component for tags",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "tags",
+        "type": "array",
+        "required": false,
+        "title": "Tags",
+        "description": "Tags. Each item is an object with text, url, is_new_window."
+      },
+      {
+        "name": "vertical_spacing",
+        "type": "string",
+        "required": false,
+        "title": "Vertical Spacing",
+        "description": "Tag list vertical spacing (none, top, bottom, both).",
+        "enum": ["none", "top", "bottom", "both"]
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
+      }
+    ],
+    "slots": [
+      { "name": "content_top", "description": "Top content area." },
+      { "name": "content_bottom", "description": "Bottom content area." }
+    ]
+  },
+  {
+    "id": "civictheme:basic-content",
+    "name": "Basic Content",
+    "description": "Component for general HTML content with configurable container options",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "is_contained",
+        "type": "boolean",
+        "required": false,
+        "title": "Contained",
+        "description": "Whether to wrap the content in a container.",
+        "default": true
+      },
+      {
+        "name": "vertical_spacing",
+        "type": "string",
+        "required": false,
+        "title": "Vertical spacing",
+        "description": "Vertical spacing position (top, bottom, both).",
+        "enum": ["top", "bottom", "both"]
+      },
+      {
+        "name": "with_background",
+        "type": "boolean",
+        "required": false,
+        "title": "With background",
+        "description": "Whether to display with a background."
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
+      }
+    ],
+    "slots": [
+      { "name": "content", "description": "HTML content." }
+    ]
+  },
+  {
+    "id": "civictheme:social-links",
+    "name": "Social Links",
+    "description": "Component for social media links with icons",
+    "group": "Molecules",
+    "category": "molecule",
+    "props": [
+      {
+        "name": "items",
+        "type": "array",
+        "required": false,
+        "title": "Items",
+        "description": "Social media links. Each item is an object with icon, icon_html, url, and title."
+      },
+      {
+        "name": "with_border",
+        "type": "boolean",
+        "required": false,
+        "title": "With Border",
+        "description": "Whether icons have borders."
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ]
   },
   {
     "id": "civictheme:banner",
     "name": "Banner",
-    "description": "Page hero banner with title, breadcrumb, and content slot.",
+    "description": "Banner component with multiple content areas, breadcrumb, featured image and background",
     "group": "Organisms",
-    "category": "organisms",
+    "category": "organism",
     "props": [
-      {
-        "name": "title",
-        "type": "string",
-        "required": true,
-        "title": "Title"
-      },
-      {
-        "name": "theme",
-        "type": "string",
-        "required": false,
-        "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "dark"
-      },
-      {
-        "name": "background_image",
-        "type": "object",
-        "required": false,
-        "title": "Background Image",
-        "$ref": "json-schema-definitions://canvas.module/image"
-      },
       {
         "name": "breadcrumb",
         "type": "object",
         "required": false,
         "title": "Breadcrumb",
-        "description": "Array of {text, url} breadcrumb items."
-      }
-    ],
-    "slots": [
-      {
-        "name": "content",
-        "description": "Banner body content (paragraphs, buttons)."
-      }
-    ]
-  },
-  {
-    "id": "civictheme:campaign",
-    "name": "Campaign",
-    "description": "Full-width campaign hero with media support.",
-    "group": "Organisms",
-    "category": "organisms",
-    "props": [
-      {
-        "name": "title",
-        "type": "string",
-        "required": true,
-        "title": "Title"
+        "description": "Breadcrumb navigation object with links array and active_is_link."
       },
       {
-        "name": "theme",
-        "type": "string",
+        "name": "featured_image",
+        "type": "object",
         "required": false,
-        "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "dark"
+        "title": "Featured Image",
+        "description": "Featured image object with url and alt properties."
       },
       {
         "name": "background_image",
         "type": "object",
         "required": false,
         "title": "Background Image",
-        "$ref": "json-schema-definitions://canvas.module/image"
+        "description": "Background image object with url and alt properties."
       },
       {
-        "name": "video_url",
+        "name": "is_decorative",
+        "type": "boolean",
+        "required": false,
+        "title": "Decorative",
+        "description": "Whether to show as decorative."
+      },
+      {
+        "name": "background_image_blend_mode",
         "type": "string",
         "required": false,
-        "title": "Video URL",
-        "description": "URL to a background or featured video."
+        "title": "Background Image Blend Mode",
+        "description": "Background image blending type. Defaults to normal."
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ],
     "slots": [
-      {
-        "name": "content",
-        "description": "Campaign body content."
-      }
+      { "name": "title", "description": "Banner title." },
+      { "name": "content", "description": "Main content." },
+      { "name": "site_section", "description": "Site section name." },
+      { "name": "content_top1", "description": "Top section content." },
+      { "name": "content_top2", "description": "Second top section content." },
+      { "name": "content_top3", "description": "Third top section content." },
+      { "name": "content_middle", "description": "Middle section content." },
+      { "name": "content_bottom", "description": "Bottom section content." },
+      { "name": "content_below", "description": "Below banner section content." }
     ]
   },
   {
-    "id": "civictheme:promo",
-    "name": "Promo",
-    "description": "Pre-composed text+image organism. The primary component for content sections combining text, headings, images, and CTAs in a structured layout.",
+    "id": "civictheme:campaign",
+    "name": "Campaign",
+    "description": "Campaign component with image, content, and links for promotions",
     "group": "Organisms",
-    "category": "organisms",
+    "category": "organism",
     "props": [
-      {
-        "name": "title",
-        "type": "string",
-        "required": true,
-        "title": "Title"
-      },
-      {
-        "name": "content",
-        "type": "string",
-        "required": false,
-        "title": "Content",
-        "description": "Rich text / HTML body content."
-      },
       {
         "name": "image",
         "type": "object",
         "required": false,
         "title": "Image",
-        "$ref": "json-schema-definitions://canvas.module/image"
+        "description": "Campaign image object with url and alt properties."
       },
       {
-        "name": "url",
+        "name": "image_position",
         "type": "string",
         "required": false,
-        "title": "URL",
-        "description": "Link URL for the promo block."
+        "title": "Image Position",
+        "description": "Image position relative to content (left or right).",
+        "enum": ["left", "right"]
+      },
+      {
+        "name": "tags",
+        "type": "array",
+        "required": false,
+        "title": "Tags",
+        "description": "Campaign tags. Each item is an object with text, url, is_new_window."
+      },
+      {
+        "name": "links",
+        "type": "array",
+        "required": false,
+        "title": "Links",
+        "description": "Campaign links. Each item is an object with text, url, is_new_window, is_external."
+      },
+      {
+        "name": "vertical_spacing",
+        "type": "string",
+        "required": false,
+        "title": "Vertical Spacing",
+        "description": "Campaign vertical spacing (top, bottom, or both).",
+        "enum": ["top", "bottom", "both"]
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
-      }
-    ]
-  },
-  {
-    "id": "civictheme:carousel",
-    "name": "Carousel",
-    "description": "Sliding carousel container for cards or content.",
-    "group": "Organisms",
-    "category": "organisms",
-    "props": [
-      {
-        "name": "theme",
-        "type": "string",
-        "required": false,
-        "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ],
     "slots": [
+      { "name": "content_top", "description": "Top content." },
+      { "name": "title", "description": "Campaign title." },
+      { "name": "date", "description": "Campaign date." },
+      { "name": "content", "description": "Campaign main content." },
+      { "name": "content_bottom", "description": "Bottom campaign content." }
+    ]
+  },
+  {
+    "id": "civictheme:promo",
+    "name": "Promo",
+    "description": "Promotional component with title, content, and call-to-action link",
+    "group": "Organisms",
+    "category": "organism",
+    "props": [
       {
-        "name": "slides",
-        "description": "Carousel slide items."
+        "name": "link",
+        "type": "object",
+        "required": false,
+        "title": "Link",
+        "description": "Call-to-action link object with text, url, is_new_window, is_external."
+      },
+      {
+        "name": "is_contained",
+        "type": "boolean",
+        "required": false,
+        "title": "Contained",
+        "description": "Whether the content is contained in a container."
+      },
+      {
+        "name": "vertical_spacing",
+        "type": "string",
+        "required": false,
+        "title": "Vertical Spacing",
+        "description": "Vertical spacing for the promo (top, bottom, or both).",
+        "enum": ["top", "bottom", "both"]
+      },
+      {
+        "name": "with_background",
+        "type": "boolean",
+        "required": false,
+        "title": "With Background",
+        "description": "Whether to display with a background."
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
+    ],
+    "slots": [
+      { "name": "content_top", "description": "Top content area." },
+      { "name": "title", "description": "Title text." },
+      { "name": "content", "description": "Main content text." },
+      { "name": "content_bottom", "description": "Bottom promo content." }
     ]
   },
   {
     "id": "civictheme:slider",
     "name": "Slider",
-    "description": "Full-width slider for testimonials or featured content.",
+    "description": "Content carousel slider component",
     "group": "Organisms",
-    "category": "organisms",
+    "category": "organism",
     "props": [
+      {
+        "name": "slides",
+        "type": "string",
+        "required": false,
+        "title": "Slides",
+        "description": "Slides HTML content."
+      },
+      {
+        "name": "previous_label",
+        "type": "string",
+        "required": false,
+        "title": "Previous Label",
+        "description": "Text for previous button.",
+        "default": "Previous"
+      },
+      {
+        "name": "next_label",
+        "type": "string",
+        "required": false,
+        "title": "Next Label",
+        "description": "Text for next button.",
+        "default": "Next"
+      },
+      {
+        "name": "vertical_spacing",
+        "type": "string",
+        "required": false,
+        "title": "Vertical Spacing",
+        "description": "Slider vertical spacing (top, bottom, or both).",
+        "enum": ["top", "bottom", "both"]
+      },
+      {
+        "name": "with_background",
+        "type": "boolean",
+        "required": false,
+        "title": "With Background",
+        "description": "Whether to display with a background."
+      },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ],
     "slots": [
+      { "name": "content_top", "description": "Top content." },
+      { "name": "title", "description": "Slider title." },
+      { "name": "content_bottom", "description": "Bottom content." }
+    ]
+  },
+  {
+    "id": "civictheme:slide",
+    "name": "Slider Slide",
+    "description": "Slide component for use within the slider",
+    "group": "Organisms",
+    "category": "organism",
+    "props": [
       {
-        "name": "slides",
-        "description": "Slider slide items (snippets, cards)."
+        "name": "image",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "description": "Slide image object with url and alt properties."
+      },
+      {
+        "name": "image_position",
+        "type": "string",
+        "required": false,
+        "title": "Image Position",
+        "description": "Image position (left or right).",
+        "enum": ["left", "right"]
+      },
+      {
+        "name": "tags",
+        "type": "array",
+        "required": false,
+        "title": "Tags",
+        "description": "Tags array. Each item is an object with text, url, is_new_window."
+      },
+      {
+        "name": "links",
+        "type": "array",
+        "required": false,
+        "title": "Links",
+        "description": "Link objects array. Each item is an object with text, url, is_new_window, is_external."
+      },
+      {
+        "name": "date",
+        "type": "string",
+        "required": false,
+        "title": "Date",
+        "description": "Start date and time."
+      },
+      {
+        "name": "date_iso",
+        "type": "string",
+        "required": false,
+        "title": "ISO Date",
+        "description": "Start date and time in ISO format."
+      },
+      {
+        "name": "date_end",
+        "type": "string",
+        "required": false,
+        "title": "End Date",
+        "description": "Optional end date and time."
+      },
+      {
+        "name": "date_end_iso",
+        "type": "string",
+        "required": false,
+        "title": "ISO End Date",
+        "description": "Optional end date and time in ISO format."
+      },
+      {
+        "name": "theme",
+        "type": "string",
+        "required": false,
+        "title": "Theme",
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
+    ],
+    "slots": [
+      { "name": "content_top", "description": "Top content area." },
+      { "name": "title", "description": "Slide title." },
+      { "name": "content", "description": "Content text." },
+      { "name": "content_bottom", "description": "Bottom slide content." }
     ]
   },
   {
     "id": "civictheme:list",
     "name": "List",
-    "description": "Layout component for arranging cards or items in columns.",
+    "description": "List component for item collections with filtering and pagination",
     "group": "Organisms",
-    "category": "organisms",
+    "category": "organism",
     "props": [
+      {
+        "name": "link_above",
+        "type": "object",
+        "required": false,
+        "title": "Link Above",
+        "description": "Above list link object with text, url, is_new_window, is_external."
+      },
+      {
+        "name": "link_below",
+        "type": "object",
+        "required": false,
+        "title": "Link Below",
+        "description": "Below list link object with text, url, is_new_window, is_external."
+      },
+      {
+        "name": "rows_above",
+        "type": "array",
+        "required": false,
+        "title": "Rows Above",
+        "description": "Above rows content (array of strings)."
+      },
+      {
+        "name": "rows_below",
+        "type": "array",
+        "required": false,
+        "title": "Rows Below",
+        "description": "Below rows content (array of strings)."
+      },
+      {
+        "name": "vertical_spacing",
+        "type": "string",
+        "required": false,
+        "title": "Vertical Spacing",
+        "description": "List vertical spacing (top, bottom, or both).",
+        "enum": ["top", "bottom", "both"]
+      },
+      {
+        "name": "with_background",
+        "type": "boolean",
+        "required": false,
+        "title": "With Background",
+        "description": "Whether to display with a background."
+      },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
-      },
-      {
-        "name": "column_count",
-        "type": "integer",
-        "required": false,
-        "title": "Column Count",
-        "enum": [1, 2, 3, 4],
-        "default": 3
-      },
-      {
-        "name": "fill_width",
-        "type": "boolean",
-        "required": false,
-        "title": "Fill Width",
-        "default": true
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ],
     "slots": [
-      {
-        "name": "items",
-        "description": "List child items (cards, promos, etc.)."
-      }
+      { "name": "title", "description": "List title." },
+      { "name": "content", "description": "List main content." },
+      { "name": "filters", "description": "Exposed filters content." },
+      { "name": "results_count", "description": "Results count text." },
+      { "name": "rows", "description": "Rows content." },
+      { "name": "empty", "description": "No results content." },
+      { "name": "pagination", "description": "Pagination content." },
+      { "name": "footer", "description": "Footer content." }
     ]
   },
   {
-    "id": "civictheme:social-links",
-    "name": "Social Links",
-    "description": "Social media icon links.",
+    "id": "civictheme:alert",
+    "name": "Alert",
+    "description": "Component for alert messages with different types and themes",
     "group": "Organisms",
-    "category": "organisms",
+    "category": "organism",
     "props": [
       {
-        "name": "items",
-        "type": "object",
-        "required": true,
-        "title": "Items",
-        "description": "Array of {platform, url, icon} social link items."
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "title": "Type",
+        "description": "Alert type (information, error, warning, success).",
+        "enum": ["information", "error", "warning", "success"]
       },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
+    ],
+    "slots": [
+      { "name": "title", "description": "Alert title." },
+      { "name": "description", "description": "Alert description content." }
     ]
   },
   {
     "id": "civictheme:header",
     "name": "Header",
-    "description": "Site header with navigation, logo, and search.",
+    "description": "Header component with multiple content sections for site header",
     "group": "Organisms",
-    "category": "organisms",
+    "category": "organism",
     "props": [
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "light"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ],
     "slots": [
-      {
-        "name": "top_bar",
-        "description": "Top bar content (secondary links, utility nav)."
-      },
-      {
-        "name": "primary_navigation",
-        "description": "Primary navigation menu links."
-      },
-      {
-        "name": "secondary_navigation",
-        "description": "Secondary navigation and CTA buttons."
-      }
+      { "name": "content_top1", "description": "Top section first content slot." },
+      { "name": "content_top2", "description": "Top section second content slot." },
+      { "name": "content_top3", "description": "Top section third content slot." },
+      { "name": "content_middle1", "description": "Middle section first content slot." },
+      { "name": "content_middle2", "description": "Middle section second content slot." },
+      { "name": "content_middle3", "description": "Middle section third content slot." },
+      { "name": "content_bottom1", "description": "Bottom section content slot." }
     ]
   },
   {
     "id": "civictheme:footer",
     "name": "Footer",
-    "description": "Site footer with columns, social links, and copyright.",
+    "description": "Footer component with multiple content sections for site footer",
     "group": "Organisms",
-    "category": "organisms",
+    "category": "organism",
     "props": [
+      {
+        "name": "background_image",
+        "type": "string",
+        "required": false,
+        "title": "Background Image",
+        "description": "Content background inline image."
+      },
       {
         "name": "theme",
         "type": "string",
         "required": false,
         "title": "Theme",
-        "enum": ["light", "dark"],
-        "default": "dark"
-      },
-      {
-        "name": "acknowledgment",
-        "type": "string",
-        "required": false,
-        "title": "Acknowledgment",
-        "description": "Acknowledgment of country or similar text."
-      },
-      {
-        "name": "copyright",
-        "type": "string",
-        "required": false,
-        "title": "Copyright"
+        "description": "Theme variation (light or dark).",
+        "enum": ["light", "dark"]
       }
     ],
     "slots": [
-      {
-        "name": "columns",
-        "description": "Footer link columns."
-      },
-      {
-        "name": "social_links",
-        "description": "Social media links."
-      },
-      {
-        "name": "copyright_links",
-        "description": "Legal/policy links."
-      }
+      { "name": "content_top1", "description": "Top section first content slot." },
+      { "name": "content_top2", "description": "Top section second content slot." },
+      { "name": "content_middle1", "description": "Middle section first content slot." },
+      { "name": "content_middle2", "description": "Middle section second content slot." },
+      { "name": "content_middle3", "description": "Middle section third content slot." },
+      { "name": "content_middle4", "description": "Middle section fourth content slot." },
+      { "name": "content_middle5", "description": "Middle section fifth content slot." },
+      { "name": "content_bottom1", "description": "Bottom section first content slot." },
+      { "name": "content_bottom2", "description": "Bottom section second content slot." }
     ]
   }
 ]

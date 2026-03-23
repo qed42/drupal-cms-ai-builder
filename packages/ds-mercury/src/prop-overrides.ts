@@ -4,12 +4,20 @@
  */
 export const PROP_OVERRIDES: Record<string, Record<string, unknown>> = {
   "mercury:section": {
-    width: "boxed",
-    padding_block_start: "lg",
-    padding_block_end: "lg",
+    width: "100%",
+    padding_block_start: "32",
+    padding_block_end: "32",
+    margin_block_start: "0",
+    margin_block_end: "0",
+    mobile_columns: "1",
   },
-  "mercury:heading": { align: "left" },
-  "mercury:button": { variant: "primary" },
-  "mercury:cta": { background_color: "primary" },
-  "mercury:group": { direction: "row", gap: "md" },
+  "mercury:heading": { align: "left", text_color: "default", text_size: "heading-responsive-3xl" },
+  "mercury:button": { variant: "primary", size: "medium" },
+  "mercury:cta": { background_color: "primary", text_align: "center" },
+  "mercury:group": { flex_direction: "row", flex_gap: "md", items_align: "start", flex_align: "center" },
+  "mercury:card": { style: "framed", orientation: "vertical" },
+  "mercury:card-icon": { text_align: "center", icon_align: "center" },
+  "mercury:card-testimonial": { align: "center", style: "default" },
+  "mercury:card-pricing": { symbol_position: "before" },
+  "mercury:text": { text_size: "normal", text_color: "default" },
 };

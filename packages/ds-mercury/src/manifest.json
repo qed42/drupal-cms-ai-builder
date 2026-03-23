@@ -2,16 +2,25 @@
   {
     "id": "mercury:section",
     "name": "Section",
-    "description": "Combined container and grid layout component with 10 column split options and 3 slots.",
+    "description": "Combined container and grid layout component with column split options and 3 slots.",
     "group": "Layout",
     "category": "layout",
     "props": [
       {
+        "name": "width",
+        "type": "string",
+        "required": true,
+        "title": "Section width",
+        "enum": ["100%", "90%", "80%", "75%", "50%"],
+        "default": "100%",
+        "examples": ["100%"]
+      },
+      {
         "name": "columns",
         "type": "string",
         "required": true,
-        "title": "Columns",
-        "description": "Column split layout.",
+        "title": "Grid layout",
+        "description": "Layout selected applies on desktop and tablet.",
         "enum": [
           "100",
           "50-50",
@@ -24,81 +33,92 @@
           "25-25-50",
           "25-25-25-25"
         ],
-        "default": "100",
-        "examples": ["100"]
+        "default": "50-50",
+        "examples": ["50-50"]
       },
       {
-        "name": "width",
+        "name": "views_columns",
         "type": "string",
         "required": false,
-        "title": "Width",
-        "description": "Container width constraint.",
-        "enum": ["boxed", "full", "narrow"],
-        "default": "boxed",
-        "examples": ["boxed"]
+        "title": "Views grid",
+        "description": "If you are using a view in this section, select the grid layout.",
+        "enum": ["50-50", "33-33-33", "25-25-25-25"]
+      },
+      {
+        "name": "mobile_columns",
+        "type": "string",
+        "required": true,
+        "title": "Columns on mobile",
+        "enum": ["1", "2", "3"],
+        "examples": ["1"]
+      },
+      {
+        "name": "margin_block_start",
+        "type": "string",
+        "required": true,
+        "title": "Margin top",
+        "enum": ["0", "8", "20", "32", "48", "64", "96", "128"],
+        "examples": ["48"]
+      },
+      {
+        "name": "margin_block_end",
+        "type": "string",
+        "required": true,
+        "title": "Margin bottom",
+        "enum": ["0", "8", "20", "32", "48", "64", "96", "128"],
+        "examples": ["48"]
+      },
+      {
+        "name": "padding_block_start",
+        "type": "string",
+        "required": true,
+        "title": "Padding top",
+        "enum": ["0", "16", "32", "64"],
+        "examples": ["0"]
+      },
+      {
+        "name": "padding_block_end",
+        "type": "string",
+        "required": true,
+        "title": "Padding bottom",
+        "enum": ["0", "16", "32", "64"],
+        "examples": ["0"]
       },
       {
         "name": "background_color",
         "type": "string",
         "required": false,
-        "title": "Background Color",
-        "description": "Section background color using design token names.",
-        "enum": [
-          "transparent",
-          "background",
-          "primary",
-          "secondary",
-          "accent",
-          "muted"
-        ],
-        "default": "transparent",
-        "examples": ["transparent"]
+        "title": "Background color",
+        "enum": ["primary", "secondary", "accent", "muted"]
       },
       {
-        "name": "padding_block_start",
-        "type": "string",
+        "name": "background_media",
+        "type": "object",
         "required": false,
-        "title": "Padding Block Start",
-        "description": "Top padding.",
-        "enum": ["none", "sm", "md", "lg", "xl", "2xl"],
-        "default": "lg",
-        "examples": ["lg"]
+        "title": "Background image",
+        "$ref": "json-schema-definitions://canvas.module/image"
       },
       {
-        "name": "padding_block_end",
-        "type": "string",
+        "name": "section_header",
+        "type": "boolean",
         "required": false,
-        "title": "Padding Block End",
-        "description": "Bottom padding.",
-        "enum": ["none", "sm", "md", "lg", "xl", "2xl"],
-        "default": "lg",
-        "examples": ["lg"]
+        "title": "Show header region",
+        "default": true,
+        "examples": [true]
       },
       {
-        "name": "margin_block_start",
-        "type": "string",
+        "name": "section_footer",
+        "type": "boolean",
         "required": false,
-        "title": "Margin Block Start",
-        "description": "Top margin.",
-        "enum": ["none", "sm", "md", "lg", "xl", "2xl"],
-        "default": "none",
-        "examples": ["none"]
-      },
-      {
-        "name": "margin_block_end",
-        "type": "string",
-        "required": false,
-        "title": "Margin Block End",
-        "description": "Bottom margin.",
-        "enum": ["none", "sm", "md", "lg", "xl", "2xl"],
-        "default": "none",
-        "examples": ["none"]
+        "title": "Show footer region",
+        "default": true,
+        "examples": [true]
       }
     ],
     "slots": [
-      { "name": "header_slot", "description": "Section header area, typically for headings." },
-      { "name": "main_slot", "description": "Primary content area for child components." },
-      { "name": "footer_slot", "description": "Section footer area, typically for CTAs." }
+      { "name": "header_slot", "description": "Header" },
+      { "name": "main_slot", "description": "Grid" },
+      { "name": "footer_slot", "description": "Footer" }
     ]
   },
   {
@@ -109,160 +129,156 @@
     "category": "layout",
     "props": [
       {
-        "name": "direction",
+        "name": "flex_direction",
         "type": "string",
-        "required": false,
-        "title": "Direction",
-        "description": "Flex direction.",
-        "enum": ["row", "column"],
-        "default": "row",
-        "examples": ["row"]
+        "required": true,
+        "title": "Item direction",
+        "enum": ["column", "row"],
+        "default": "column",
+        "examples": ["column"]
       },
       {
-        "name": "gap",
+        "name": "flex_gap",
         "type": "string",
         "required": false,
-        "title": "Gap",
-        "description": "Space between children.",
+        "title": "Space between items",
         "enum": ["sm", "md", "lg", "xl"],
-        "default": "md",
         "examples": ["md"]
       },
       {
-        "name": "align",
+        "name": "items_align",
         "type": "string",
-        "required": false,
-        "title": "Align",
-        "description": "Cross-axis alignment.",
-        "enum": ["start", "center", "end", "stretch"],
+        "required": true,
+        "title": "Alignment within group",
+        "enum": ["start", "center", "end"],
         "default": "start",
         "examples": ["start"]
       },
       {
-        "name": "background_color",
+        "name": "flex_align",
+        "type": "string",
+        "required": true,
+        "title": "Alignment within parent",
+        "enum": ["start", "center", "end"],
+        "default": "center",
+        "examples": ["center"]
+      },
+      {
+        "name": "radius",
         "type": "string",
         "required": false,
-        "title": "Background Color",
-        "description": "Group background color.",
-        "enum": ["transparent", "background", "primary", "secondary", "accent", "muted"],
-        "default": "transparent",
-        "examples": ["transparent"]
+        "title": "Rounded corners",
+        "enum": ["sm", "md", "lg", "xl"],
+        "examples": ["sm"]
       },
       {
         "name": "padding",
         "type": "string",
         "required": false,
         "title": "Padding",
-        "description": "Internal padding.",
-        "enum": ["none", "sm", "md", "lg", "xl"],
-        "default": "none",
-        "examples": ["none"]
+        "enum": ["sm", "md", "lg", "xl"],
+        "examples": ["sm"]
       },
       {
-        "name": "border_radius",
+        "name": "background",
         "type": "string",
         "required": false,
-        "title": "Border Radius",
-        "description": "Corner rounding.",
-        "enum": ["none", "sm", "md", "lg", "full"],
-        "default": "none",
-        "examples": ["none"]
+        "title": "Background color",
+        "enum": ["primary", "secondary", "accent"]
       }
     ],
     "slots": [
-      { "name": "group_slot", "description": "Children rendered inside the flex container." }
+      { "name": "group_slot", "description": "Group items" }
     ]
   },
   {
     "id": "mercury:accordion-container",
     "name": "Accordion Container",
-    "description": "Wrapper for a group of accordion items.",
+    "description": "A container for any content, only one of whose accordions may be open at a time.",
     "group": "Layout",
     "category": "layout",
     "props": [],
     "slots": [
-      { "name": "content", "description": "Accordion items placed inside the container." }
+      { "name": "accordion_content", "description": "Only one of collapsible sections added can be open at a time." }
     ]
   },
   {
     "id": "mercury:accordion",
     "name": "Accordion",
-    "description": "A single collapsible accordion panel.",
+    "description": "A single section of content that can be collapsed and expanded.",
     "group": "Layout",
     "category": "layout",
     "props": [
       {
         "name": "title",
         "type": "string",
-        "required": true,
-        "title": "Title",
-        "description": "The accordion panel header text.",
-        "examples": ["What is your return policy?"]
+        "required": false,
+        "title": "Heading",
+        "examples": ["Section title"]
       },
       {
-        "name": "open",
+        "name": "heading_level",
+        "type": "number",
+        "required": true,
+        "title": "Heading level",
+        "enum": [2, 3, 4, 5, 6],
+        "examples": [3]
+      },
+      {
+        "name": "open_by_default",
         "type": "boolean",
         "required": false,
-        "title": "Open",
-        "description": "Whether the panel is initially expanded.",
-        "default": false,
+        "title": "Expanded by default",
         "examples": [false]
       }
     ],
     "slots": [
-      { "name": "content", "description": "Body content shown when expanded." }
+      { "name": "accordion_content", "description": "Content in this slot will be hidden when the accordion is collapsed." }
     ]
   },
   {
     "id": "mercury:navbar",
     "name": "Navbar",
     "description": "Site header navigation bar with logo, navigation links, and action links.",
-    "group": "Global",
+    "group": "Layout",
     "category": "global",
-    "props": [],
+    "props": [
+      {
+        "name": "menu_align",
+        "type": "string",
+        "required": false,
+        "title": "Menu alignment",
+        "enum": ["left", "center", "right"],
+        "default": "center",
+        "examples": ["center"]
+      }
+    ],
     "slots": [
-      { "name": "logo", "description": "Brand logo or site name." },
-      { "name": "navigation", "description": "Primary navigation links." },
-      { "name": "links", "description": "Action links (e.g., CTA buttons)." }
+      { "name": "logo", "description": "Site logo" },
+      { "name": "navigation", "description": "Navigation menu" },
+      { "name": "links", "description": "CTAs" }
     ]
   },
   {
     "id": "mercury:footer",
     "name": "Footer",
     "description": "Site footer with branding, CTA, utility links, and copyright.",
-    "group": "Global",
+    "group": "Layout",
     "category": "global",
     "props": [
       {
-        "name": "brand_name",
-        "type": "string",
+        "name": "align",
+        "type": "boolean",
         "required": false,
-        "title": "Brand Name",
-        "description": "Site or brand name displayed in the footer.",
-        "examples": ["Acme Corp"]
-      },
-      {
-        "name": "brand_description",
-        "type": "string",
-        "required": false,
-        "title": "Brand Description",
-        "description": "Short brand tagline or description.",
-        "examples": ["Building the future, one product at a time."]
-      },
-      {
-        "name": "copyright",
-        "type": "string",
-        "required": false,
-        "title": "Copyright",
-        "description": "Copyright text.",
-        "examples": ["2026 Acme Corp. All rights reserved."]
+        "title": "Display links horizontally",
+        "examples": [true]
       }
     ],
     "slots": [
-      { "name": "branding", "description": "Brand logo and description area." },
-      { "name": "cta_slot", "description": "Call-to-action area (newsletter signup, etc.)." },
-      { "name": "utility_links", "description": "Utility/navigation links." },
-      { "name": "copyright", "description": "Copyright and legal links area." }
+      { "name": "footer_first", "description": "Branding & Social" },
+      { "name": "footer_last", "description": "Call to action" },
+      { "name": "footer_utility_first", "description": "Utility links" },
+      { "name": "footer_utility_last", "description": "Copyright text" }
     ]
   },
   {
@@ -273,318 +289,544 @@
     "category": "hero",
     "props": [
       {
-        "name": "background_image",
-        "type": "object",
-        "required": false,
-        "title": "Background Image",
-        "description": "Full-width background image.",
-        "$ref": "json-schema-definitions://canvas.module/image",
-        "examples": [{ "src": "/images/hero.jpg", "alt": "Hero background" }]
+        "name": "height",
+        "type": "string",
+        "required": true,
+        "title": "Height",
+        "enum": ["full", "large", "ribbon"],
+        "default": "full",
+        "examples": ["full"]
+      },
+      {
+        "name": "flex_position",
+        "type": "string",
+        "required": true,
+        "title": "Content position",
+        "enum": ["top-left", "center-left", "bottom-left", "hero-center"],
+        "default": "center-left",
+        "examples": ["center-left"]
       },
       {
         "name": "overlay_opacity",
-        "type": "number",
+        "type": "string",
+        "required": true,
+        "title": "Overlay opacity",
+        "enum": ["0%", "20%", "40%", "60%", "75%"],
+        "default": "0%",
+        "examples": ["0%"]
+      },
+      {
+        "name": "object_position",
+        "type": "string",
+        "required": true,
+        "title": "Background image position",
+        "enum": ["top", "center", "bottom"],
+        "default": "center",
+        "examples": ["center"]
+      },
+      {
+        "name": "media",
+        "type": "object",
         "required": false,
-        "title": "Overlay Opacity",
-        "description": "Dark overlay opacity (0 to 1).",
-        "default": 0.5,
-        "examples": [0.5]
+        "title": "Background image",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [{ "src": "/images/hero.jpg", "alt": "Hero background", "width": 1920, "height": 1344 }]
+      },
+      {
+        "name": "overlap_navbar",
+        "type": "boolean",
+        "required": false,
+        "title": "Overlap header",
+        "description": "Enable this to place it behind the header, if it is the first item on the page.",
+        "default": false,
+        "examples": [false]
       }
     ],
     "slots": [
-      { "name": "hero_slot", "description": "Hero content (heading, text, buttons)." }
+      { "name": "hero_slot", "description": "Hero content" }
     ]
   },
   {
     "id": "mercury:hero-side-by-side",
     "name": "Hero Side by Side",
-    "description": "Split hero with content on one side and image on the other.",
+    "description": "Hero with side-by-side slots for media and content.",
     "group": "Hero",
     "category": "hero",
     "props": [
       {
-        "name": "image",
+        "name": "hero_flex_gap",
+        "type": "string",
+        "required": false,
+        "title": "Flex gap",
+        "enum": ["large", "extra-large"],
+        "default": "large",
+        "examples": ["large"]
+      },
+      {
+        "name": "hero_flex_direction_mobile",
+        "type": "string",
+        "required": false,
+        "title": "Mobile flex direction",
+        "enum": ["vertical", "vertical-reverse"],
+        "default": "vertical",
+        "examples": ["vertical"]
+      },
+      {
+        "name": "background",
+        "type": "string",
+        "required": false,
+        "title": "Background color",
+        "enum": ["primary", "secondary", "accent"]
+      },
+      {
+        "name": "padding_block_start",
+        "type": "string",
+        "required": true,
+        "title": "Padding top",
+        "enum": ["0", "16", "32", "64"],
+        "examples": ["0"]
+      },
+      {
+        "name": "padding_block_end",
+        "type": "string",
+        "required": true,
+        "title": "Padding bottom",
+        "enum": ["0", "16", "32", "64"],
+        "examples": ["0"]
+      },
+      {
+        "name": "image_size",
+        "type": "string",
+        "required": false,
+        "title": "Aspect ratio",
+        "enum": ["2:1", "16:9", "3:2", "4:3", "1:1"],
+        "default": "4:3",
+        "examples": ["4:3"]
+      },
+      {
+        "name": "image_position",
+        "type": "string",
+        "required": false,
+        "title": "Image position",
+        "enum": ["left", "right"],
+        "default": "left",
+        "examples": ["left"]
+      },
+      {
+        "name": "image_radius",
+        "type": "string",
+        "required": false,
+        "title": "Image border radius",
+        "enum": ["small", "large", "extra-large"],
+        "default": "small",
+        "examples": ["small"]
+      },
+      {
+        "name": "media",
         "type": "object",
         "required": false,
         "title": "Image",
-        "description": "Featured image displayed alongside the content.",
         "$ref": "json-schema-definitions://canvas.module/image",
-        "examples": [{ "src": "/images/hero-side.jpg", "alt": "Featured image" }]
+        "examples": [{ "src": "/images/hero-side.jpg", "alt": "Featured image", "width": 1920, "height": 1344 }]
       }
     ],
     "slots": [
-      { "name": "hero_slot", "description": "Hero content (heading, text, buttons)." }
+      { "name": "hero_slot", "description": "Content" }
     ]
   },
   {
     "id": "mercury:hero-blog",
     "name": "Hero Blog",
-    "description": "Blog-style hero with metadata (date, author, categories).",
+    "description": "Hero component for the blog content type.",
     "group": "Hero",
     "category": "hero",
     "props": [
       {
-        "name": "heading",
+        "name": "heading_text",
         "type": "string",
-        "required": true,
+        "required": false,
         "title": "Heading",
-        "description": "Blog post title.",
-        "examples": ["How to Build a Better Website"]
+        "default": "Enter the title",
+        "examples": ["Vivamus curae metus neque mollis orci ipsum sapien velit cursus"]
+      },
+      {
+        "name": "level",
+        "type": "integer",
+        "required": false,
+        "title": "Heading level",
+        "enum": [1, 2, 3, 4, 5, 6],
+        "examples": [1]
       },
       {
         "name": "date",
-        "type": "string",
+        "type": "integer",
         "required": false,
-        "title": "Date",
-        "description": "Publication date.",
-        "examples": ["March 15, 2026"]
+        "title": "Published Date",
+        "default": 1770856866,
+        "examples": [1770856866]
       },
       {
         "name": "author",
         "type": "string",
         "required": false,
         "title": "Author",
-        "description": "Author name.",
-        "examples": ["Jane Smith"]
+        "examples": ["John Smith"]
       },
       {
-        "name": "image",
+        "name": "author_url",
+        "type": "string",
+        "required": false,
+        "title": "Author link",
+        "default": ""
+      },
+      {
+        "name": "media",
         "type": "object",
         "required": false,
         "title": "Image",
-        "description": "Featured blog image.",
         "$ref": "json-schema-definitions://canvas.module/image",
-        "examples": [{ "src": "/images/blog-hero.jpg", "alt": "Blog featured image" }]
-      },
-      {
-        "name": "categories",
-        "type": "string",
-        "required": false,
-        "title": "Categories",
-        "description": "Comma-separated category names.",
-        "examples": ["Design, Development"]
+        "examples": [{ "src": "/images/blog-hero.jpg", "alt": "Blog featured image", "width": 1920, "height": 1344 }]
       }
     ]
   },
   {
     "id": "mercury:cta",
-    "name": "CTA",
-    "description": "Call-to-action banner with heading, text, and action buttons.",
-    "group": "CTA",
-    "category": "cta",
+    "name": "Hero CTA",
+    "description": "A call to action with a heading, description and slot for buttons.",
+    "group": "Hero",
+    "category": "hero",
     "props": [
       {
-        "name": "heading",
+        "name": "heading_text",
         "type": "string",
-        "required": true,
+        "required": false,
         "title": "Heading",
-        "description": "CTA headline.",
-        "examples": ["Ready to get started?"]
+        "examples": ["Your heading goes here"]
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "required": true,
+        "title": "Heading level",
+        "enum": [1, 2, 3, 4, 5, 6],
+        "examples": [2]
       },
       {
         "name": "text",
         "type": "string",
         "required": false,
         "title": "Text",
-        "description": "Supporting text or description.",
-        "examples": ["Join thousands of happy customers today."]
+        "examples": ["Lorem ipsum dolor sit amet."]
+      },
+      {
+        "name": "text_align",
+        "type": "string",
+        "required": true,
+        "title": "Text alignment",
+        "enum": ["center", "left", "right"],
+        "default": "center",
+        "examples": ["center"]
       },
       {
         "name": "background_color",
         "type": "string",
         "required": false,
-        "title": "Background Color",
-        "description": "CTA background color.",
-        "enum": ["primary", "secondary", "accent", "muted"],
-        "default": "primary",
-        "examples": ["primary"]
+        "title": "Background color",
+        "enum": ["primary", "secondary", "accent", "muted", "inverted"]
+      },
+      {
+        "name": "media",
+        "type": "object",
+        "required": false,
+        "title": "Background image",
+        "$ref": "json-schema-definitions://canvas.module/image"
       }
     ],
     "slots": [
-      { "name": "actions", "description": "CTA action buttons." }
+      { "name": "actions", "description": "Buttons" }
     ]
   },
   {
     "id": "mercury:card",
-    "name": "Card",
+    "name": "Image Card",
     "description": "Standard card with image, heading, text, and link.",
     "group": "Card",
     "category": "card",
     "props": [
       {
-        "name": "image",
-        "type": "object",
+        "name": "background",
+        "type": "string",
         "required": false,
-        "title": "Image",
-        "description": "Card image.",
-        "$ref": "json-schema-definitions://canvas.module/image",
-        "examples": [{ "src": "/images/card.jpg", "alt": "Card image" }]
+        "title": "Background",
+        "enum": ["default", "accent", "primary", "inverted"],
+        "examples": ["default"]
       },
       {
-        "name": "heading",
+        "name": "style",
+        "type": "string",
+        "required": true,
+        "title": "Style",
+        "enum": ["framed", "full"],
+        "examples": ["framed"]
+      },
+      {
+        "name": "orientation",
+        "type": "string",
+        "required": true,
+        "title": "Orientation",
+        "enum": ["vertical", "horizontal"],
+        "examples": ["vertical"]
+      },
+      {
+        "name": "heading_text",
         "type": "string",
         "required": true,
         "title": "Heading",
-        "description": "Card title.",
-        "examples": ["Feature Title"]
+        "examples": ["This is your card title"]
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "required": false,
+        "title": "Heading level",
+        "enum": [2, 3, 4],
+        "default": 3,
+        "examples": [3]
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "Link"
+      },
+      {
+        "name": "media",
+        "type": "object",
+        "required": false,
+        "title": "Image",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [{ "src": "/images/card.jpg", "alt": "Card image", "width": 1200, "height": 900 }]
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "required": false,
+        "title": "Description",
+        "examples": ["Quaerat laborum rerum dolores dolores dolor qui."]
+      },
+      {
+        "name": "is_text_centered",
+        "type": "boolean",
+        "required": false,
+        "title": "Center text",
+        "examples": [false]
+      }
+    ]
+  },
+  {
+    "id": "mercury:card-icon",
+    "name": "Icon Card",
+    "description": "Feature card with icon, heading, and description.",
+    "group": "Card",
+    "category": "card",
+    "props": [
+      {
+        "name": "tile_size",
+        "type": "string",
+        "required": false,
+        "title": "Aspect ratio",
+        "enum": ["square", "4:3", "16:9"],
+        "examples": ["square"]
+      },
+      {
+        "name": "background_color",
+        "type": "string",
+        "required": false,
+        "title": "Background color",
+        "enum": ["primary", "secondary", "accent", "muted"]
+      },
+      {
+        "name": "border_radius",
+        "type": "string",
+        "required": false,
+        "title": "Border radius",
+        "enum": ["small", "medium", "large"],
+        "default": "medium",
+        "examples": ["medium"]
+      },
+      {
+        "name": "icon",
+        "type": "string",
+        "required": false,
+        "title": "Icon name",
+        "description": "The ID of an icon from the Phosphor Icons library.",
+        "default": "rocket",
+        "examples": ["rocket"]
+      },
+      {
+        "name": "icon_size",
+        "type": "string",
+        "required": false,
+        "title": "Icon size",
+        "enum": ["small", "medium", "large", "extra-large"],
+        "examples": ["large"]
+      },
+      {
+        "name": "icon_align",
+        "type": "string",
+        "required": true,
+        "title": "Icon alignment",
+        "enum": ["left", "right", "center"],
+        "default": "center",
+        "examples": ["center"]
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "Link"
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "required": false,
+        "title": "Heading",
+        "examples": ["Your heading here"]
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "title": "Description",
+        "examples": ["<p>This is placeholder text.</p>"]
+      },
+      {
+        "name": "text_align",
+        "type": "string",
+        "required": true,
+        "title": "Text alignment",
+        "enum": ["left", "center", "right"],
+        "default": "center",
+        "examples": ["center"]
+      }
+    ]
+  },
+  {
+    "id": "mercury:card-logo",
+    "name": "Logo Card",
+    "description": "A component with an image and optional background and link.",
+    "group": "Card",
+    "category": "card",
+    "props": [
+      {
+        "name": "media",
+        "type": "object",
+        "required": false,
+        "title": "Logo",
+        "$ref": "json-schema-definitions://canvas.module/image",
+        "examples": [{ "src": "/images/logo.png", "alt": "Partner logo", "width": 188, "height": 113 }]
+      },
+      {
+        "name": "background_color",
+        "type": "string",
+        "required": false,
+        "title": "Background color",
+        "enum": ["primary", "secondary", "accent", "muted"]
+      },
+      {
+        "name": "border_radius",
+        "type": "string",
+        "required": false,
+        "title": "Border radius",
+        "enum": ["small", "medium", "large"],
+        "default": "small",
+        "examples": ["small"]
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "Link"
+      }
+    ]
+  },
+  {
+    "id": "mercury:card-pricing",
+    "name": "Pricing Card",
+    "description": "Pricing plan card with features list.",
+    "group": "Card",
+    "category": "card",
+    "props": [
+      {
+        "name": "heading_text",
+        "type": "string",
+        "required": false,
+        "title": "Heading",
+        "examples": ["Premium"]
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "title": "Description",
+        "examples": ["Curabitur nascetur non potenti pede luctus vivamus"]
+      },
+      {
+        "name": "price",
+        "type": "string",
+        "required": false,
+        "title": "Price",
+        "examples": ["159"]
+      },
+      {
+        "name": "currency_code",
+        "type": "string",
+        "required": false,
+        "title": "Currency code",
+        "examples": ["USD"]
+      },
+      {
+        "name": "currency_symbol",
+        "type": "string",
+        "required": false,
+        "title": "Currency symbol",
+        "examples": ["$"]
+      },
+      {
+        "name": "symbol_position",
+        "type": "string",
+        "required": true,
+        "title": "Symbol position",
+        "enum": ["before", "after"],
+        "default": "before",
+        "examples": ["before"]
       },
       {
         "name": "text",
         "type": "string",
         "required": false,
         "title": "Text",
-        "description": "Card body text.",
-        "examples": ["A brief description of this feature."]
+        "description": "Rich text content for features list (HTML).",
+        "examples": ["<ul><li>Example item 1</li><li>Example item 2</li></ul>"]
       },
       {
-        "name": "url",
+        "name": "button_url",
         "type": "string",
         "required": false,
-        "title": "URL",
-        "description": "Card link destination.",
-        "examples": ["/features/example"]
+        "title": "Link"
       },
       {
-        "name": "variant",
+        "name": "button_label",
         "type": "string",
         "required": false,
-        "title": "Variant",
-        "description": "Card visual style.",
-        "enum": ["default", "outline"],
-        "default": "default",
-        "examples": ["default"]
-      }
-    ]
-  },
-  {
-    "id": "mercury:card-icon",
-    "name": "Card Icon",
-    "description": "Feature card with icon, heading, and description.",
-    "group": "Card",
-    "category": "card",
-    "props": [
-      {
-        "name": "icon",
-        "type": "string",
-        "required": true,
-        "title": "Icon",
-        "description": "Icon name (Lucide icon set).",
-        "examples": ["rocket"]
+        "title": "Button label",
+        "examples": ["Choose this plan"]
       },
       {
-        "name": "heading",
-        "type": "string",
-        "required": true,
-        "title": "Heading",
-        "description": "Feature title.",
-        "examples": ["Fast Delivery"]
-      },
-      {
-        "name": "description",
-        "type": "string",
-        "required": false,
-        "title": "Description",
-        "description": "Feature description text.",
-        "examples": ["Get your order delivered within 24 hours."]
-      }
-    ]
-  },
-  {
-    "id": "mercury:card-logo",
-    "name": "Card Logo",
-    "description": "Logo card for client/partner showcase.",
-    "group": "Card",
-    "category": "card",
-    "props": [
-      {
-        "name": "image",
-        "type": "object",
-        "required": true,
-        "title": "Image",
-        "description": "Logo image.",
-        "$ref": "json-schema-definitions://canvas.module/image",
-        "examples": [{ "src": "/images/logo.png", "alt": "Partner logo" }]
-      },
-      {
-        "name": "name",
-        "type": "string",
-        "required": false,
-        "title": "Name",
-        "description": "Company or partner name.",
-        "examples": ["Acme Corp"]
-      },
-      {
-        "name": "url",
-        "type": "string",
-        "required": false,
-        "title": "URL",
-        "description": "Link to partner website.",
-        "examples": ["https://acme.example.com"]
-      }
-    ]
-  },
-  {
-    "id": "mercury:card-pricing",
-    "name": "Card Pricing",
-    "description": "Pricing plan card with features list.",
-    "group": "Card",
-    "category": "card",
-    "props": [
-      {
-        "name": "plan",
-        "type": "string",
-        "required": true,
-        "title": "Plan",
-        "description": "Plan name.",
-        "examples": ["Pro"]
-      },
-      {
-        "name": "price",
-        "type": "string",
-        "required": true,
-        "title": "Price",
-        "description": "Price display text.",
-        "examples": ["$29/mo"]
-      },
-      {
-        "name": "description",
-        "type": "string",
-        "required": false,
-        "title": "Description",
-        "description": "Plan description.",
-        "examples": ["Best for growing teams."]
-      },
-      {
-        "name": "features",
-        "type": "string",
-        "required": false,
-        "title": "Features",
-        "description": "Newline-separated list of included features.",
-        "examples": ["Unlimited projects\n10 team members\nPriority support"]
-      },
-      {
-        "name": "url",
-        "type": "string",
-        "required": false,
-        "title": "URL",
-        "description": "Signup link.",
-        "examples": ["/pricing/pro"]
-      },
-      {
-        "name": "button_text",
-        "type": "string",
-        "required": false,
-        "title": "Button Text",
-        "description": "CTA button label.",
-        "default": "Get Started",
-        "examples": ["Get Started"]
-      },
-      {
-        "name": "highlighted",
+        "name": "promote",
         "type": "boolean",
         "required": false,
-        "title": "Highlighted",
-        "description": "Whether this plan is visually highlighted.",
+        "title": "Highlight card",
         "default": false,
         "examples": [false]
       }
@@ -592,43 +834,63 @@
   },
   {
     "id": "mercury:card-testimonial",
-    "name": "Card Testimonial",
+    "name": "Testimonial Card",
     "description": "Testimonial card with quote, author, and avatar.",
     "group": "Card",
     "category": "card",
     "props": [
       {
-        "name": "quote",
-        "type": "string",
-        "required": true,
-        "title": "Quote",
-        "description": "Testimonial quote text.",
-        "examples": ["This product changed our workflow completely."]
-      },
-      {
-        "name": "author",
-        "type": "string",
-        "required": true,
-        "title": "Author",
-        "description": "Person giving the testimonial.",
-        "examples": ["Jane Smith"]
-      },
-      {
-        "name": "role",
+        "name": "text",
         "type": "string",
         "required": false,
-        "title": "Role",
-        "description": "Author's role or title.",
-        "examples": ["CEO, Acme Corp"]
+        "title": "Quote text",
+        "examples": ["My career's guidance was crucial in helping me understand the tech industry landscape."]
       },
       {
-        "name": "image",
+        "name": "cite_name",
+        "type": "string",
+        "required": false,
+        "title": "Citation name",
+        "examples": ["Isiah Julio"]
+      },
+      {
+        "name": "cite_text",
+        "type": "string",
+        "required": false,
+        "title": "Citation text",
+        "examples": ["Engineer, Technical Services"]
+      },
+      {
+        "name": "cite_url",
+        "type": "string",
+        "required": false,
+        "title": "Citation link"
+      },
+      {
+        "name": "align",
+        "type": "string",
+        "required": true,
+        "title": "Alignment",
+        "enum": ["center", "left"],
+        "default": "center",
+        "examples": ["center"]
+      },
+      {
+        "name": "style",
+        "type": "string",
+        "required": true,
+        "title": "Style",
+        "enum": ["default", "inverted"],
+        "default": "default",
+        "examples": ["default"]
+      },
+      {
+        "name": "media",
         "type": "object",
         "required": false,
         "title": "Image",
-        "description": "Author avatar image.",
         "$ref": "json-schema-definitions://canvas.module/image",
-        "examples": [{ "src": "/images/avatar.jpg", "alt": "Jane Smith" }]
+        "examples": [{ "src": "/images/avatar.jpg", "alt": "Portrait", "width": 100, "height": 100 }]
       }
     ]
   },
@@ -640,52 +902,60 @@
     "category": "base",
     "props": [
       {
-        "name": "text",
+        "name": "heading_text",
         "type": "string",
         "required": true,
-        "title": "Text",
-        "description": "Heading text content.",
-        "examples": ["Welcome to Our Site"]
+        "title": "Heading",
+        "default": "Enter title",
+        "examples": ["Your heading goes here"]
       },
       {
         "name": "level",
-        "type": "string",
-        "required": false,
-        "title": "Level",
-        "description": "HTML heading level.",
-        "enum": ["h1", "h2", "h3", "h4", "h5", "h6"],
-        "default": "h2",
-        "examples": ["h2"]
+        "type": "number",
+        "required": true,
+        "title": "Heading level",
+        "enum": [1, 2, 3, 4, 5, 6],
+        "examples": [2]
       },
       {
-        "name": "size",
+        "name": "text_size",
         "type": "string",
-        "required": false,
-        "title": "Size",
-        "description": "Visual size (independent of semantic level).",
-        "enum": ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl"],
-        "default": "lg",
-        "examples": ["lg"]
+        "required": true,
+        "title": "Text size",
+        "enum": [
+          "default",
+          "heading-responsive-8xl",
+          "heading-responsive-7xl",
+          "heading-responsive-6xl",
+          "heading-responsive-5xl",
+          "heading-responsive-4xl",
+          "heading-responsive-3xl",
+          "heading-responsive-2xl",
+          "heading-responsive-xl"
+        ],
+        "examples": ["heading-responsive-4xl"]
       },
       {
-        "name": "color",
+        "name": "text_color",
         "type": "string",
-        "required": false,
-        "title": "Color",
-        "description": "Text color variant.",
-        "enum": ["default", "primary", "secondary", "muted"],
-        "default": "default",
+        "required": true,
+        "title": "Text color",
+        "enum": ["default", "inverted", "primary"],
         "examples": ["default"]
       },
       {
         "name": "align",
         "type": "string",
-        "required": false,
-        "title": "Align",
-        "description": "Text alignment.",
+        "required": true,
+        "title": "Text alignment",
         "enum": ["left", "center", "right"],
-        "default": "left",
         "examples": ["left"]
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "title": "Link"
       }
     ]
   },
@@ -697,12 +967,27 @@
     "category": "base",
     "props": [
       {
-        "name": "content",
+        "name": "text",
+        "type": "string",
+        "required": false,
+        "title": "Rich text",
+        "examples": ["<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>"]
+      },
+      {
+        "name": "text_size",
         "type": "string",
         "required": true,
-        "title": "Content",
-        "description": "HTML content string.",
-        "examples": ["<p>Welcome to our website.</p>"]
+        "title": "Text size",
+        "enum": ["text-xs", "text-sm", "normal", "text-lg", "text-xl", "text-2xl", "text-3xl"],
+        "examples": ["normal"]
+      },
+      {
+        "name": "text_color",
+        "type": "string",
+        "required": true,
+        "title": "Text color",
+        "enum": ["default", "inverted", "primary"],
+        "examples": ["default"]
       }
     ]
   },
@@ -714,56 +999,65 @@
     "category": "base",
     "props": [
       {
-        "name": "text",
-        "type": "string",
-        "required": true,
-        "title": "Text",
-        "description": "Button label.",
-        "examples": ["Learn More"]
-      },
-      {
-        "name": "url",
-        "type": "string",
-        "required": false,
-        "title": "URL",
-        "description": "Link destination.",
-        "examples": ["/about"]
-      },
-      {
         "name": "variant",
         "type": "string",
-        "required": false,
-        "title": "Variant",
-        "description": "Visual style variant.",
-        "enum": ["primary", "secondary", "outline", "ghost", "link", "destructive"],
-        "default": "primary",
+        "required": true,
+        "title": "Style",
+        "enum": ["primary", "secondary", "primary-inverted", "secondary-inverted"],
         "examples": ["primary"]
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "required": false,
+        "title": "Label",
+        "default": "Button label",
+        "examples": ["Button label"]
+      },
+      {
+        "name": "href",
+        "type": "string",
+        "required": false,
+        "title": "Link"
       },
       {
         "name": "size",
         "type": "string",
-        "required": false,
-        "title": "Size",
-        "description": "Button size.",
-        "enum": ["sm", "default", "lg"],
-        "default": "default",
-        "examples": ["default"]
+        "required": true,
+        "title": "Button size",
+        "enum": ["small", "medium", "large"],
+        "examples": ["medium"]
       },
       {
-        "name": "icon_left",
+        "name": "icon",
         "type": "string",
         "required": false,
-        "title": "Icon Left",
-        "description": "Icon name for left side.",
-        "examples": ["arrow-left"]
-      },
-      {
-        "name": "icon_right",
-        "type": "string",
-        "required": false,
-        "title": "Icon Right",
-        "description": "Icon name for right side.",
+        "title": "Icon",
+        "enum": ["arrow-right", "arrow-left", "caret-right", "caret-left", "download", "user-plus"],
         "examples": ["arrow-right"]
+      },
+      {
+        "name": "mobile_width",
+        "type": "boolean",
+        "required": false,
+        "title": "Full width on mobile",
+        "default": false
+      },
+      {
+        "name": "icon_first",
+        "type": "boolean",
+        "required": false,
+        "title": "Display icon first",
+        "default": false,
+        "examples": [false]
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "required": false,
+        "title": "Disabled",
+        "default": false,
+        "examples": [false]
       }
     ]
   },
@@ -775,22 +1069,42 @@
     "category": "base",
     "props": [
       {
-        "name": "text",
+        "name": "label",
         "type": "string",
         "required": true,
-        "title": "Text",
-        "description": "Badge label text.",
-        "examples": ["New"]
+        "title": "Link text",
+        "examples": ["Badge text"]
       },
       {
-        "name": "variant",
+        "name": "url",
         "type": "string",
         "required": false,
-        "title": "Variant",
-        "description": "Badge style variant.",
-        "enum": ["default", "secondary", "outline", "destructive"],
-        "default": "default",
-        "examples": ["default"]
+        "title": "Link"
+      },
+      {
+        "name": "style",
+        "type": "string",
+        "required": true,
+        "title": "Style",
+        "enum": ["primary", "secondary"],
+        "examples": ["primary"]
+      },
+      {
+        "name": "icon",
+        "type": "string",
+        "required": false,
+        "title": "Icon name",
+        "description": "The ID of an icon from the Phosphor Icons library.",
+        "default": "rocket",
+        "examples": ["rocket"]
+      },
+      {
+        "name": "icon_first",
+        "type": "boolean",
+        "required": false,
+        "title": "Icon first",
+        "default": true,
+        "examples": [true]
       }
     ]
   },
@@ -802,28 +1116,32 @@
     "category": "base",
     "props": [
       {
-        "name": "quote",
-        "type": "string",
-        "required": true,
-        "title": "Quote",
-        "description": "The quoted text.",
-        "examples": ["The best way to predict the future is to invent it."]
-      },
-      {
-        "name": "author",
+        "name": "text",
         "type": "string",
         "required": false,
-        "title": "Author",
-        "description": "Attribution author.",
-        "examples": ["Alan Kay"]
+        "title": "Quotation text",
+        "examples": ["To confine our attention to terrestrial matters would be to limit the human spirit."]
       },
       {
-        "name": "cite",
+        "name": "cite_name",
         "type": "string",
         "required": false,
-        "title": "Cite",
-        "description": "Source or citation reference.",
-        "examples": ["1971 Xerox PARC meeting"]
+        "title": "Citation name",
+        "examples": ["Isiah Julio"]
+      },
+      {
+        "name": "cite_text",
+        "type": "string",
+        "required": false,
+        "title": "Citation text",
+        "default": "Engineer, Technical Services",
+        "examples": ["Engineer, Technical Services"]
+      },
+      {
+        "name": "cite_url",
+        "type": "string",
+        "required": false,
+        "title": "Citation link"
       }
     ]
   },
@@ -835,118 +1153,75 @@
     "category": "base",
     "props": [
       {
-        "name": "image",
+        "name": "media",
         "type": "object",
-        "required": true,
+        "required": false,
         "title": "Image",
-        "description": "Image source and alt text.",
         "$ref": "json-schema-definitions://canvas.module/image",
-        "examples": [{ "src": "/images/photo.jpg", "alt": "A beautiful photo" }]
+        "examples": [{ "src": "/images/photo.jpg", "alt": "A beautiful photo", "width": 1920, "height": 1014 }]
       },
       {
-        "name": "aspect_ratio",
+        "name": "size",
         "type": "string",
         "required": false,
-        "title": "Aspect Ratio",
-        "description": "Display aspect ratio.",
-        "enum": ["auto", "1:1", "4:3", "16:9", "3:2"],
-        "default": "auto",
-        "examples": ["auto"]
+        "title": "Aspect ratio",
+        "enum": ["2:1", "16:9", "3:2", "4:3", "1:1"],
+        "default": "4:3",
+        "examples": ["4:3"]
+      },
+      {
+        "name": "radius",
+        "type": "string",
+        "required": false,
+        "title": "Corner radius",
+        "enum": ["small", "large", "extra-large"],
+        "examples": ["small"]
       },
       {
         "name": "caption",
         "type": "string",
         "required": false,
-        "title": "Caption",
-        "description": "Optional image caption.",
-        "examples": ["Photo by Jane Doe"]
+        "title": "Caption"
       },
-      {
-        "name": "link",
-        "type": "string",
-        "required": false,
-        "title": "Link",
-        "description": "Optional link wrapping the image.",
-        "examples": ["/gallery/photo-1"]
-      }
-    ]
-  },
-  {
-    "id": "mercury:video",
-    "name": "Video",
-    "description": "Embedded video component (YouTube, Vimeo, or self-hosted).",
-    "group": "Base",
-    "category": "base",
-    "props": [
       {
         "name": "url",
         "type": "string",
-        "required": true,
-        "title": "URL",
-        "description": "Video URL (YouTube, Vimeo, or direct).",
-        "examples": ["https://www.youtube.com/watch?v=example"]
-      },
-      {
-        "name": "title",
-        "type": "string",
         "required": false,
-        "title": "Title",
-        "description": "Video title for accessibility.",
-        "examples": ["Product Demo"]
-      },
-      {
-        "name": "aspect_ratio",
-        "type": "string",
-        "required": false,
-        "title": "Aspect Ratio",
-        "description": "Video aspect ratio.",
-        "enum": ["16:9", "4:3", "1:1"],
-        "default": "16:9",
-        "examples": ["16:9"]
+        "title": "Link"
       }
     ]
   },
   {
     "id": "mercury:icon",
     "name": "Icon",
-    "description": "SVG icon component from Lucide icon set.",
+    "description": "SVG icon component from Phosphor Icons library.",
     "group": "Base",
     "category": "base",
     "props": [
       {
-        "name": "name",
+        "name": "icon",
         "type": "string",
         "required": true,
-        "title": "Name",
-        "description": "Lucide icon name.",
+        "title": "Icon name",
+        "description": "The ID of an icon from the Phosphor Icons library.",
+        "default": "rocket",
         "examples": ["rocket"]
       },
       {
-        "name": "size",
+        "name": "icon_size",
         "type": "string",
-        "required": false,
-        "title": "Size",
-        "description": "Icon size.",
-        "enum": ["sm", "md", "lg", "xl"],
-        "default": "md",
-        "examples": ["md"]
-      },
-      {
-        "name": "color",
-        "type": "string",
-        "required": false,
-        "title": "Color",
-        "description": "Icon color.",
-        "enum": ["default", "primary", "secondary", "muted"],
-        "default": "default",
-        "examples": ["default"]
+        "required": true,
+        "title": "Icon size",
+        "enum": ["extra-small", "small", "medium", "large", "extra-large"],
+        "default": "small",
+        "examples": ["small"]
       }
     ]
   },
   {
     "id": "mercury:anchor",
     "name": "Anchor",
-    "description": "Invisible anchor point for in-page navigation.",
+    "description": "An invisible element with an ID you can link to with a URL fragment.",
     "group": "Base",
     "category": "base",
     "props": [
@@ -954,9 +1229,9 @@
         "name": "id",
         "type": "string",
         "required": true,
-        "title": "ID",
-        "description": "Anchor ID for hash-based navigation.",
-        "examples": ["features"]
+        "title": "ID for in-page link",
+        "description": "String to use in the URL. Should begin with a letter and contain only lowercase letters, numerals, and hyphens.",
+        "examples": ["anchor-id"]
       }
     ]
   }

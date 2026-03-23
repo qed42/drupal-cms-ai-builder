@@ -6,107 +6,114 @@ import type { CompositionPattern } from "@ai-builder/ds-types";
  * KEY DIFFERENCE from Space DS: CivicTheme patterns map to pre-composed
  * organisms (promo, list, callout) rather than container+grid+atoms.
  * The tree builder uses the pattern name to select the correct organism.
+ *
+ * IMPORTANT: Many organism props have changed:
+ * - title/content are SLOTS on promo, callout, banner, campaign, list, cards
+ * - accordion panels is a PROP (array of objects), not child components
+ * - list uses "rows" slot (not "items"), no column_count/fill_width
+ * - slider slides is a PROP (HTML string)
+ * - callout uses links PROP (array), not a cta slot
  */
 export const COMPOSITION_PATTERNS: Record<string, CompositionPattern> = {
   "text-image-split-50-50": {
     name: "text-image-split-50-50",
-    description: "Text content with image — maps to civictheme:promo organism",
+    description: "Text content with image — maps to civictheme:promo organism (title/content are SLOTS)",
     childRoles: ["heading", "text", "button", "image"],
     applicablePageTypes: ["home", "about", "services", "landing", "generic"],
   },
   "text-image-split-66-33": {
     name: "text-image-split-66-33",
-    description: "Wider text with narrow image — maps to civictheme:promo organism",
+    description: "Wider text with narrow image — maps to civictheme:promo organism (title/content are SLOTS)",
     childRoles: ["heading", "text", "button", "image"],
     applicablePageTypes: ["home", "about", "services", "landing", "generic"],
   },
   "image-text-split-33-66": {
     name: "image-text-split-33-66",
-    description: "Image first, then text (reversed) — maps to civictheme:promo organism",
+    description: "Image first, then text (reversed) — maps to civictheme:promo organism (title/content are SLOTS)",
     childRoles: ["image", "heading", "text", "button"],
     applicablePageTypes: ["home", "about", "services", "landing", "generic"],
   },
   "features-grid-3col": {
     name: "features-grid-3col",
-    description: "Three feature columns — maps to civictheme:list with navigation-cards",
+    description: "Three feature columns — maps to civictheme:list with navigation-cards in rows slot",
     childRoles: ["icon", "heading", "text"],
     applicablePageTypes: ["home", "services", "landing", "generic"],
   },
   "features-grid-4col": {
     name: "features-grid-4col",
-    description: "Four feature columns — maps to civictheme:list with navigation-cards",
+    description: "Four feature columns — maps to civictheme:list with navigation-cards in rows slot",
     childRoles: ["icon", "heading", "text"],
     applicablePageTypes: ["home", "services", "landing"],
   },
   "stats-row": {
     name: "stats-row",
-    description: "Row of key statistics — maps to civictheme:list with heading+paragraph items",
+    description: "Row of key statistics — maps to civictheme:list with fast-fact-cards in rows slot",
     childRoles: ["heading", "text"],
     applicablePageTypes: ["home", "about", "services", "landing"],
   },
   "testimonials-carousel": {
     name: "testimonials-carousel",
-    description: "Testimonial carousel — maps to civictheme:slider with snippets",
+    description: "Testimonial carousel — maps to civictheme:slider with slide children",
     childRoles: ["testimonial-card"],
     applicablePageTypes: ["home", "services", "landing", "about"],
   },
   "team-grid-4col": {
     name: "team-grid-4col",
-    description: "Team member grid (4 cols) — maps to civictheme:list with promo-cards",
+    description: "Team member grid (4 cols) — maps to civictheme:list with promo-cards in rows slot",
     childRoles: ["user-card"],
     applicablePageTypes: ["team", "about"],
   },
   "team-grid-3col": {
     name: "team-grid-3col",
-    description: "Team member grid (3 cols) — maps to civictheme:list with promo-cards",
+    description: "Team member grid (3 cols) — maps to civictheme:list with promo-cards in rows slot",
     childRoles: ["user-card"],
     applicablePageTypes: ["team", "about"],
   },
   "card-grid-3col": {
     name: "card-grid-3col",
-    description: "Grid of content cards — maps to civictheme:list with promo-cards",
+    description: "Grid of content cards — maps to civictheme:list with promo-cards in rows slot",
     childRoles: ["card"],
     applicablePageTypes: ["portfolio", "home", "services", "generic"],
   },
   "card-carousel": {
     name: "card-carousel",
-    description: "Sliding carousel of cards — maps to civictheme:carousel with promo-cards",
+    description: "Sliding carousel of cards — maps to civictheme:slider with slide children",
     childRoles: ["card"],
     applicablePageTypes: ["portfolio", "home", "generic"],
   },
   "contact-info": {
     name: "contact-info",
-    description: "Contact cards — maps to civictheme:list with service-cards",
+    description: "Contact cards — maps to civictheme:list with service-cards in rows slot (title is SLOT, links is PROP)",
     childRoles: ["contact-card"],
     applicablePageTypes: ["contact"],
   },
   "faq-accordion": {
     name: "faq-accordion",
-    description: "Collapsible FAQ — maps to civictheme:accordion with accordion-panels",
+    description: "Collapsible FAQ — maps to civictheme:accordion (panels is a PROP, array of {title, content, expanded})",
     childRoles: ["accordion", "accordion-item"],
     applicablePageTypes: ["faq", "contact", "services"],
   },
   "logo-showcase": {
     name: "logo-showcase",
-    description: "Logo/partner showcase — maps to civictheme:list with navigation-cards",
+    description: "Logo/partner showcase — maps to civictheme:list with navigation-cards in rows slot",
     childRoles: ["card"],
     applicablePageTypes: ["home", "landing", "about"],
   },
   "full-width-text": {
     name: "full-width-text",
-    description: "Full-width text section — maps to civictheme:callout (simple variant)",
+    description: "Full-width text section — maps to civictheme:callout (title/content are SLOTS)",
     childRoles: ["heading", "text"],
     applicablePageTypes: ["about", "generic", "faq", "team", "portfolio"],
   },
   "blog-grid": {
     name: "blog-grid",
-    description: "Blog post grid — maps to civictheme:list with publication-cards",
+    description: "Blog post grid — maps to civictheme:list with publication-cards in rows slot",
     childRoles: ["card"],
     applicablePageTypes: ["home", "landing", "generic"],
   },
   "cta-banner": {
     name: "cta-banner",
-    description: "Call-to-action banner — maps to civictheme:callout",
+    description: "Call-to-action banner — maps to civictheme:callout (title/content SLOTS, links PROP)",
     childRoles: ["heading", "text", "button"],
     applicablePageTypes: ["home", "about", "services", "landing", "generic"],
   },

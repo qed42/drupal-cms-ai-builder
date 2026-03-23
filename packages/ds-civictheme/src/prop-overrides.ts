@@ -8,5 +8,4 @@ export const PROP_OVERRIDES: Record<string, Record<string, unknown>> = {
   "civictheme:campaign": { theme: "dark" },
   "civictheme:callout": { theme: "dark" },
   "civictheme:footer": { theme: "dark" },
-  "civictheme:list": { column_count: 3, fill_width: true },
 };

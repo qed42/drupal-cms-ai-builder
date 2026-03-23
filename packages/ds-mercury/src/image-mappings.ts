@@ -2,38 +2,48 @@ import type { ImagePropMapping } from "@ai-builder/ds-types";
 
 export const IMAGE_PROP_MAPPINGS: Record<string, ImagePropMapping> = {
   "mercury:hero-billboard": {
-    props: ["background_image"],
-    dimensions: { width: 1920, height: 1080 },
+    props: ["media"],
+    dimensions: { width: 1920, height: 1344 },
     orientation: "landscape",
   },
   "mercury:hero-side-by-side": {
-    props: ["image"],
-    dimensions: { width: 800, height: 600 },
+    props: ["media"],
+    dimensions: { width: 1920, height: 1344 },
     orientation: "landscape",
   },
   "mercury:hero-blog": {
-    props: ["image"],
-    dimensions: { width: 1200, height: 630 },
+    props: ["media"],
+    dimensions: { width: 1920, height: 1344 },
+    orientation: "landscape",
+  },
+  "mercury:cta": {
+    props: ["media"],
+    dimensions: { width: 1920, height: 1080 },
     orientation: "landscape",
   },
   "mercury:card": {
-    props: ["image"],
-    dimensions: { width: 600, height: 400 },
+    props: ["media"],
+    dimensions: { width: 1200, height: 900 },
     orientation: "landscape",
   },
   "mercury:card-logo": {
-    props: ["image"],
-    dimensions: { width: 200, height: 100 },
+    props: ["media"],
+    dimensions: { width: 188, height: 113 },
     orientation: "landscape",
   },
   "mercury:card-testimonial": {
-    props: ["image"],
-    dimensions: { width: 200, height: 200 },
+    props: ["media"],
+    dimensions: { width: 100, height: 100 },
     orientation: "square",
   },
   "mercury:image": {
-    props: ["image"],
-    dimensions: { width: 1080, height: 600 },
+    props: ["media"],
+    dimensions: { width: 1920, height: 1014 },
+    orientation: "landscape",
+  },
+  "mercury:section": {
+    props: ["background_media"],
+    dimensions: { width: 1920, height: 1080 },
     orientation: "landscape",
   },
 };
