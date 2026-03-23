@@ -15,6 +15,12 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }
   expired: { label: "Expired", color: "text-gray-400", bg: "bg-gray-400/10" },
 };
 
+const PLAN_LABELS: Record<string, string> = {
+  trial: "Free Trial",
+  basic: "Basic",
+  pro: "Pro Plan",
+};
+
 interface SiteCardProps {
   site: {
     id: string;
@@ -23,9 +29,13 @@ interface SiteCardProps {
     subdomain: string | null;
     drupalUrl: string | null;
   };
+  subscription?: {
+    plan: string;
+    status: string;
+  } | null;
 }
 
-export default function SiteCard({ site }: SiteCardProps) {
+export default function SiteCard({ site, subscription }: SiteCardProps) {
   const router = useRouter();
   const [editLoading, setEditLoading] = useState(false);
   const [retryLoading, setRetryLoading] = useState(false);
@@ -246,6 +256,11 @@ export default function SiteCard({ site }: SiteCardProps) {
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${config.color} ${config.bg}`}>
               {config.label}
             </span>
+            {subscription && (
+              <span className="px-3 py-1 rounded-full text-xs font-medium text-white/60 bg-white/5 border border-white/10">
+                {PLAN_LABELS[subscription.plan] || subscription.plan}
+              </span>
+            )}
 
             {/* Overflow menu for developer actions */}
             {hasBlueprintReady && (

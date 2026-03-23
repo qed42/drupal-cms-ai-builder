@@ -96,7 +96,7 @@ export const PageSectionSchema = z.object({
     title: z.string(),
     description: z.string().describe("Description text, empty string if none"),
   }).describe("Section heading config. Use empty strings for organism sections."),
-  container_background: z.string().describe("Background color for container (transparent|white|base-brand|option-1..option-10). Empty string for organism sections."),
+  container_background: z.string().describe("Background color for container. Use values from the design system's color palette. Empty string for organism sections."),
   children: z.array(PageSectionChildSchema).describe("Child components for slots. Empty array if none."),
 });
 

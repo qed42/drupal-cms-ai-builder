@@ -1,27 +1,8 @@
 @import "tailwindcss";
 
-/* ================================================================
- * TASK-339: Color System Spike
- *
- * Testing three approaches for custom colors in Tailwind v4:
- *
- * Option A — :root CSS vars + @theme inline var() reference
- *   Defined in :root below, referenced in @theme inline via var()
- *
- * Option B — @theme (without inline)
- *   NOT tested here — Tailwind v4 only supports @theme inline
- *   when using @import "tailwindcss". Skipping.
- *
- * Option C — @theme inline with direct hex values
- *   This is what we already use for brand-* and what we're testing
- *   with new indigo/cyan hues.
- * ================================================================ */
-
-/* Option A: Define a test color in :root, reference in @theme inline */
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --test-a-color: #FF6B6B;
 }
 
 @theme inline {
@@ -30,7 +11,7 @@
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
 
-  /* ---- Option C: Brand Primary (indigo) — direct hex in @theme inline ---- */
+  /* Brand Primary (indigo) */
   --color-brand-50: #EEF2FF;
   --color-brand-100: #E0E7FF;
   --color-brand-200: #C7D2FE;
@@ -43,7 +24,7 @@
   --color-brand-900: #1E1B4B;
   --color-brand-950: #0F0D2E;
 
-  /* ---- Option C: Accent (cyan) — direct hex in @theme inline ---- */
+  /* Accent (cyan) */
   --color-accent-50: #ECFEFF;
   --color-accent-100: #CFFAFE;
   --color-accent-200: #A5F3FC;
@@ -55,9 +36,6 @@
   --color-accent-800: #155E75;
   --color-accent-900: #164E63;
   --color-accent-950: #083344;
-
-  /* ---- Option A: Test color via var() reference ---- */
-  --color-test-a: var(--test-a-color);
 }
 
 @media (prefers-color-scheme: dark) {

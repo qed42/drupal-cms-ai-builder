@@ -44,7 +44,7 @@ Sections are composed from organisms, molecules, and atoms placed in layout grid
 - **Organism sections** (heroes, CTAs, accordions, sliders) are placed directly as full-width page sections
 - **Composed sections** use a container + layout grid with atoms/molecules placed in column slots
 - Common patterns:
-  - "text-image-split-50-50": two columns (text in column_one, image in column_two)
+  - "text-image-split-50-50": two columns (text component + image component)
   - "three-card-grid": three columns, each holding a card molecule
   - "stats-row": four columns, each holding a stats/KPI component
   - "testimonial-slider": slider organism with testimonial card children
@@ -75,7 +75,7 @@ For EACH page, generate a layout as a JSON object with:
   B. **Composed section** (text+image, features, stats, team, cards):
      - "pattern": composition pattern name
      - "section_heading": { "label": string, "title": string, "description": string }
-     - "container_background": background color (transparent|white|base-brand|option-1..option-10)
+     - "container_background": background color ({background_colors})
      - "children": array of atom/molecule components with slot assignments
 
 {design_guidance}
@@ -107,14 +107,17 @@ export function buildPageLayoutPrompt(data: {
 }): string {
   const adapter = getDefaultAdapter();
 
+  const palette = adapter.getColorPalette();
+  const accentBg = palette.lightBackgrounds[0] || palette.values[0] || "muted";
+
   let compliance = "";
   if (data.compliance_flags.includes("hipaa")) {
     compliance +=
-      '\n- Add a composed section with a text atom containing a HIPAA compliance notice to healthcare-related pages (use container_background: "option-1" for visibility)';
+      `\n- Add a composed section with a text atom containing a HIPAA compliance notice to healthcare-related pages (use container_background: "${accentBg}" for visibility)`;
   }
   if (data.compliance_flags.includes("attorney_advertising")) {
     compliance +=
-      '\n- Add a composed section with a text atom containing an attorney advertising disclaimer to the homepage (use container_background: "option-1" for visibility)';
+      `\n- Add a composed section with a text atom containing an attorney advertising disclaimer to the homepage (use container_background: "${accentBg}" for visibility)`;
   }
 
   const pagesList = data.pages
@@ -124,6 +127,7 @@ export function buildPageLayoutPrompt(data: {
   return PAGE_LAYOUT_PROMPT.replace("{component_manifest}", getManifestContext())
     .replace("{ds_name}", adapter.name)
     .replace("{design_guidance}", adapter.buildPromptDesignGuidance())
+    .replace("{background_colors}", palette.values.join("|"))
     .replace(/\{name\}/g, data.name)
     .replace(/\{industry\}/g, data.industry)
     .replace("{tone}", data.tone)
