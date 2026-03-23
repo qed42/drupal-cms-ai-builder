@@ -131,6 +131,31 @@ const FULL_WIDTH_ORGANISMS = new Set([
   "space_ds:space-cta-banner-type-1",
 ]);
 
+/** Valid slot names per component — derived from SDC .component.yml definitions.
+ *  Canvas crashes if a child references a slot its parent doesn't define. */
+const COMPONENT_SLOTS: Record<string, string[]> = {
+  "space_ds:space-container": ["content"],
+  "space_ds:space-flexi": ["content", "column_one", "column_two", "column_three", "column_four"],
+  "space_ds:space-content-detail": ["content", "image"],
+  "space_ds:space-logo-section": ["content"],
+  "space_ds:space-stats-kpi": ["link"],
+  "space_ds:space-accordion": ["items"],
+  "space_ds:space-cta-banner-type-1": ["cta_content"],
+  "space_ds:space-footer": ["social_links", "columns", "footer_bottom_links", "cookie_section"],
+  "space_ds:space-header": ["logo", "navigation", "links"],
+  "space_ds:space-hero-banner-style-02": ["content", "items"],
+  "space_ds:space-slider": ["slide_item"],
+};
+
+/** Validate a slot name against a parent component's slot definitions.
+ *  Returns the slot if valid, or the first defined slot as fallback, or null. */
+function resolveSlot(parentComponentId: string, slot: string | null): string | null {
+  const validSlots = COMPONENT_SLOTS[parentComponentId];
+  if (!validSlots || validSlots.length === 0) return slot;
+  if (slot && validSlots.includes(slot)) return slot;
+  return validSlots[0];
+}
+
 /** Background colors cycled for visual rhythm across composed sections. */
 const SECTION_BACKGROUNDS = ["white", "option-1", "transparent", "option-2"];
 
@@ -627,6 +652,9 @@ export function buildContentSection(
         slot = COLUMN_SLOTS[i];
       }
     }
+    // Validate slot against space-flexi's actual slot definitions.
+    slot = resolveSlot("space_ds:space-flexi", slot) ??
+      (expectedColumns === 1 ? "content" : (COLUMN_SLOTS[i % expectedColumns] ?? "content"));
 
     const childProps = { ...child.props };
 
@@ -755,7 +783,7 @@ export function buildOrganismSection(
           createItem(
             child.componentId,
             organism.uuid,
-            child.slot ?? null,
+            resolveSlot(componentId, child.slot ?? null),
             { ...child.props },
             labelFromId(child.componentId)
           )
@@ -777,7 +805,7 @@ export function buildOrganismSection(
         createItem(
           child.componentId,
           organism.uuid,
-          child.slot ?? null,
+          resolveSlot(componentId, child.slot ?? null),
           { ...child.props },
           labelFromId(child.componentId)
         )
