@@ -41,6 +41,30 @@ for (const comp of typedManifest) {
   MANIFEST_PROP_INDEX.set(comp.id, new Set(comp.props.map((p) => p.name)));
 }
 
+/** Index of prop types per component: prop name -> type string. */
+const MANIFEST_PROP_TYPES = new Map<string, Map<string, string>>();
+for (const comp of typedManifest) {
+  const types = new Map<string, string>();
+  for (const prop of comp.props) {
+    types.set(prop.name, prop.type);
+  }
+  MANIFEST_PROP_TYPES.set(comp.id, types);
+}
+
+/** Index of enum-constrained props per component: prop name -> allowed values. */
+const MANIFEST_ENUM_INDEX = new Map<string, Map<string, Set<string | number | boolean>>>();
+for (const comp of typedManifest) {
+  const enumProps = new Map<string, Set<string | number | boolean>>();
+  for (const prop of comp.props) {
+    if (prop.enum && prop.enum.length > 0) {
+      enumProps.set(prop.name, new Set(prop.enum));
+    }
+  }
+  if (enumProps.size > 0) {
+    MANIFEST_ENUM_INDEX.set(comp.id, enumProps);
+  }
+}
+
 /** Index of image-type props per component. */
 const MANIFEST_IMAGE_PROPS = new Map<string, string[]>();
 for (const comp of typedManifest) {
@@ -48,10 +72,8 @@ for (const comp of typedManifest) {
     .filter(
       (p) =>
         p.type === "object" &&
-        (p.name.includes("image") ||
-          p.name.includes("logo") ||
-          (p as unknown as { $ref?: string }).$ref ===
-            "json-schema-definitions://canvas.module/image")
+        (p as unknown as { $ref?: string }).$ref ===
+          "json-schema-definitions://canvas.module/image"
     )
     .map((p) => p.name);
   if (imgProps.length > 0) {
@@ -64,7 +86,9 @@ function buildRequiredPropDefaults(): Map<string, Record<string, unknown>> {
   for (const comp of typedManifest) {
     const defaults: Record<string, unknown> = {};
     for (const prop of comp.props) {
-      if (!prop.required) continue;
+      // Include ALL props (required + optional) so Canvas hydration never
+      // encounters missing keys. Canvas iterates every schema-defined prop
+      // and crashes with null if the key is absent from inputs.
       if (prop.default !== undefined) {
         defaults[prop.name] = prop.default;
       } else if (prop.enum && prop.enum.length > 0) {
@@ -76,6 +100,8 @@ function buildRequiredPropDefaults(): Map<string, Record<string, unknown>> {
       } else if (prop.type === "boolean") {
         defaults[prop.name] = false;
       }
+      // object/array types intentionally omitted — Canvas handles absent
+      // objects gracefully, but chokes on null scalars.
     }
     if (Object.keys(defaults).length > 0) {
       map.set(comp.id, defaults);
@@ -105,8 +131,17 @@ const FULL_WIDTH_ORGANISMS = new Set([
   "mercury:cta",
 ]);
 
+/** Default child slot per organism — ensures children go to the correct SDC slot. */
+const ORGANISM_CHILD_SLOT: Record<string, string> = {
+  "mercury:hero-billboard": "hero_slot",
+  "mercury:hero-side-by-side": "hero_slot",
+  "mercury:cta": "actions",
+  "mercury:accordion-container": "accordion_content",
+  "mercury:accordion": "accordion_content",
+};
+
 /** Background colors cycled for visual rhythm across composed sections. */
-const SECTION_BACKGROUNDS = ["transparent", "muted", "background", "transparent"];
+const SECTION_BACKGROUNDS = ["transparent", "muted", "transparent"];
 
 /**
  * Pattern name to section columns mapping.
@@ -158,11 +193,26 @@ export function createItem(
   // Layer 3: user/AI-provided inputs take final precedence
   const mergedInputs = { ...manifestDefaults, ...overrides, ...inputs };
 
-  // Sanitize null/undefined props
-  for (const [key, value] of Object.entries(mergedInputs)) {
+  // Sanitize null/undefined props using manifest type info.
+  // - String/number/boolean: null → "" / 0 / false (Canvas expects the key to exist)
+  // - Object/array: null → delete (Canvas breaks on "" where it expects {}/[])
+  const propTypes = MANIFEST_PROP_TYPES.get(componentId);
+  for (const key of Object.keys(mergedInputs)) {
+    const value = mergedInputs[key];
     if (value === null || value === undefined) {
-      mergedInputs[key] = "";
-    } else if (typeof value === "object" && !Array.isArray(value)) {
+      const ptype = propTypes?.get(key) ?? "string";
+      if (ptype === "object" || ptype === "array") {
+        delete mergedInputs[key];
+      } else if (ptype === "number" || ptype === "integer") {
+        mergedInputs[key] = 0;
+      } else if (ptype === "boolean") {
+        mergedInputs[key] = false;
+      } else {
+        mergedInputs[key] = "";
+      }
+    } else if (Array.isArray(value)) {
+      mergedInputs[key] = value.filter((v) => v !== null && v !== undefined);
+    } else if (typeof value === "object") {
       const obj = value as Record<string, unknown>;
       const keys = Object.keys(obj);
       if (
@@ -173,7 +223,7 @@ export function createItem(
       } else {
         for (const k of keys) {
           if (obj[k] === null || obj[k] === undefined) {
-            obj[k] = "";
+            delete obj[k];
           }
         }
       }
@@ -187,12 +237,34 @@ export function createItem(
     }
   }
 
+  // Strip invalid URL values — Canvas rejects "#", "javascript:", empty fragments
+  const URL_PROP_NAMES = /^(url|href|cite_url|button_url|link|download_paper_link)$/;
+  for (const [key, value] of Object.entries(mergedInputs)) {
+    if (URL_PROP_NAMES.test(key) && typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed === "#" || trimmed === "" || trimmed.startsWith("javascript:")) {
+        delete mergedInputs[key];
+      }
+    }
+  }
+
   // Strip any prop not defined in the manifest
   const validProps = MANIFEST_PROP_INDEX.get(componentId);
   if (validProps) {
     for (const key of Object.keys(mergedInputs)) {
       if (!validProps.has(key)) {
         delete mergedInputs[key];
+      }
+    }
+  }
+
+  // Validate enum-constrained props — replace invalid values with the first allowed value
+  const enumProps = MANIFEST_ENUM_INDEX.get(componentId);
+  if (enumProps) {
+    for (const [propName, allowed] of enumProps) {
+      const val = mergedInputs[propName];
+      if (val !== undefined && !allowed.has(val as string | number | boolean)) {
+        mergedInputs[propName] = [...allowed][0];
       }
     }
   }
@@ -215,8 +287,8 @@ export function createItem(
         mergedInputs[propName] = {
           src: PLACEHOLDER_IMAGE_PATH,
           alt: typeof val === "string" ? val : label || "Image",
-          width: propName === "background_image" ? 1920 : 1080,
-          height: propName === "background_image" ? 1080 : 600,
+          width: propName === "background_media" ? 1920 : 1080,
+          height: propName === "background_media" ? 1080 : 600,
         };
       }
     }
@@ -261,16 +333,17 @@ function labelFromId(componentId: string): string {
 function createSectionHeading(
   parentUuid: string,
   heading: { title: string; label?: string; description?: string; alignment?: string },
-  tagName: string = "h2"
+  tagLevel: number = 2
 ): ComponentTreeItem {
   return createItem(
     "mercury:heading",
     parentUuid,
     "header_slot",
     {
-      text: heading.title,
-      level: tagName,
-      size: "xl",
+      heading_text: heading.title,
+      level: tagLevel,
+      text_size: "heading-responsive-3xl",
+      text_color: "default",
       align: heading.alignment ?? "left",
     },
     `Section Heading: ${heading.title}`
@@ -287,7 +360,7 @@ function createSectionHeading(
  * Structure:
  *   mercury:navbar (root)
  *     mercury:image (slot="logo")
- *     mercury:button x N (slot="navigation") — nav links as ghost buttons
+ *     mercury:button x N (slot="navigation") — nav links as secondary-inverted buttons
  *     mercury:button (slot="links") — CTA
  */
 export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
@@ -297,7 +370,7 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
     "mercury:navbar",
     null,
     null,
-    {},
+    { menu_align: "center" },
     "Navbar"
   );
 
@@ -311,7 +384,7 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
         navbar.uuid,
         "logo",
         {
-          image: {
+          media: {
             src: logo.url,
             alt: logo.alt || `${siteName} logo`,
             width: 160,
@@ -323,14 +396,14 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
     );
   }
 
-  // Navigation slot — one button (link variant) per page
+  // Navigation slot — one button per page
   for (const page of pages) {
     items.push(
       createItem(
         "mercury:button",
         navbar.uuid,
         "navigation",
-        { text: page.title, url: `/${page.slug}`, variant: "link", size: "sm" },
+        { label: page.title, href: `/${page.slug}`, variant: "secondary-inverted", size: "small" },
         `Nav: ${page.title}`
       )
     );
@@ -343,7 +416,7 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
         "mercury:button",
         navbar.uuid,
         "links",
-        { text: ctaText, url: ctaUrl, variant: "primary", size: "sm" },
+        { label: ctaText, href: ctaUrl, variant: "primary", size: "small" },
         "Header CTA"
       )
     );
@@ -356,11 +429,11 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
  * Build a Canvas-ready component tree for the site footer.
  *
  * Structure:
- *   mercury:footer (root, brand props populated)
- *     mercury:image (slot="branding")
- *     mercury:button x N (slot="utility_links") — nav links
- *     mercury:button x N (slot="cta_slot") — CTA or newsletter
- *     mercury:button x N (slot="copyright") — legal links
+ *   mercury:footer (root)
+ *     mercury:text (slot="footer_first") — brand description
+ *     mercury:button x N (slot="footer_utility_first") — nav links
+ *     mercury:button x N (slot="footer_last") — CTA or newsletter
+ *     mercury:text (slot="footer_utility_last") — copyright
  */
 export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
   const {
@@ -380,14 +453,30 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
     null,
     null,
     {
-      brand_name: siteName,
-      brand_description: brandDescription || tagline || "",
-      copyright: `\u00A9 ${currentYear} ${siteName}. All rights reserved.`,
+      align: true,
     },
     "Footer"
   );
 
   const items: ComponentTreeItem[] = [footer];
+
+  // Branding in footer_first slot
+  const brandText = brandDescription || tagline || siteName;
+  if (brandText) {
+    items.push(
+      createItem(
+        "mercury:text",
+        footer.uuid,
+        "footer_first",
+        {
+          text: `<p><strong>${siteName}</strong></p><p>${brandText}</p>`,
+          text_size: "normal",
+          text_color: "default",
+        },
+        "Footer Branding"
+      )
+    );
+  }
 
   // Utility links slot — navigation links
   for (const link of navLinks) {
@@ -395,44 +484,58 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
       createItem(
         "mercury:button",
         footer.uuid,
-        "utility_links",
-        { text: link.title, url: link.url, variant: "link", size: "sm" },
+        "footer_utility_first",
+        { label: link.title, href: link.url, variant: "secondary-inverted", size: "small" },
         `Footer Nav: ${link.title}`
       )
     );
   }
 
-  // Social links in utility_links slot
+  // Social links in footer_utility_first slot
   for (const social of socialLinks) {
     items.push(
       createItem(
         "mercury:button",
         footer.uuid,
-        "utility_links",
+        "footer_utility_first",
         {
-          text: social.platform,
-          url: social.url,
-          variant: "ghost",
-          size: "sm",
-          icon_left: social.icon,
+          label: social.platform,
+          href: social.url,
+          variant: "secondary-inverted",
+          size: "small",
         },
         `Social: ${social.platform}`
       )
     );
   }
 
-  // Legal links in copyright slot
+  // Legal links in footer_utility_last slot
   for (const link of legalLinks) {
     items.push(
       createItem(
         "mercury:button",
         footer.uuid,
-        "copyright",
-        { text: link.title, url: link.url, variant: "link", size: "sm" },
+        "footer_utility_last",
+        { label: link.title, href: link.url, variant: "secondary-inverted", size: "small" },
         `Legal: ${link.title}`
       )
     );
   }
+
+  // Copyright in footer_utility_last slot
+  items.push(
+    createItem(
+      "mercury:text",
+      footer.uuid,
+      "footer_utility_last",
+      {
+        text: `<p>\u00A9 ${currentYear} ${siteName}. All rights reserved.</p>`,
+        text_size: "text-sm",
+        text_color: "default",
+      },
+      "Copyright"
+    )
+  );
 
   return items;
 }
@@ -458,8 +561,10 @@ export function buildContentSection(
   children: SectionChildData[],
   options?: SectionBuildOptions
 ): ComponentTreeItem[] {
-  const bg = options?.backgroundColor ?? "transparent";
-  const sectionTag = options?.sectionTag ?? "h2";
+  const bg = options?.backgroundColor ?? undefined;
+  const sectionTagLevel = options?.sectionTag
+    ? parseInt(options.sectionTag.replace("h", ""))
+    : 2;
 
   // Resolve columns from pattern name
   let columns = PATTERN_COLUMN_WIDTHS[pattern] ?? "100";
@@ -488,10 +593,13 @@ export function buildContentSection(
     null,
     {
       columns,
-      width: "boxed",
-      padding_block_start: "lg",
-      padding_block_end: "lg",
-      ...(bg && bg !== "transparent" ? { background_color: bg } : {}),
+      width: "100%",
+      mobile_columns: "1",
+      padding_block_start: "32",
+      padding_block_end: "32",
+      margin_block_start: "0",
+      margin_block_end: "0",
+      ...(bg ? { background_color: bg } : {}),
     },
     `Section: ${label}`
   );
@@ -501,7 +609,7 @@ export function buildContentSection(
   // Add section heading in header_slot
   if (options?.sectionHeading) {
     items.push(
-      createSectionHeading(section.uuid, options.sectionHeading, sectionTag)
+      createSectionHeading(section.uuid, options.sectionHeading, sectionTagLevel)
     );
   }
 
@@ -511,24 +619,38 @@ export function buildContentSection(
 
     // Set level on heading children
     if (child.componentId === "mercury:heading" && !childProps.level) {
-      const childLevel = `h${Math.min(parseInt(sectionTag.replace("h", "")) + 1, 6)}`;
-      childProps.level = childLevel;
+      childProps.level = Math.min(sectionTagLevel + 1, 6);
+      if (!childProps.text_size) {
+        childProps.text_size = "heading-responsive-2xl";
+      }
+      if (!childProps.text_color) {
+        childProps.text_color = "default";
+      }
+      if (!childProps.align) {
+        childProps.align = "left";
+      }
     }
 
-    // Mercury Text: ensure HTML wrapping of content prop
+    // Mercury Text: ensure the prop is "text" and HTML-wrapped
     if (child.componentId === "mercury:text") {
       // Remap common aliases
-      if (childProps.rich_text && !childProps.content) {
-        childProps.content = childProps.rich_text;
+      if (childProps.rich_text && !childProps.text) {
+        childProps.text = childProps.rich_text;
         delete childProps.rich_text;
       }
-      if (childProps.text && !childProps.content) {
-        childProps.content = childProps.text;
-        delete childProps.text;
+      if (childProps.content && !childProps.text) {
+        childProps.text = childProps.content;
+        delete childProps.content;
       }
-      const textVal = childProps.content;
+      const textVal = childProps.text;
       if (typeof textVal === "string" && !textVal.startsWith("<")) {
-        childProps.content = `<p>${textVal}</p>`;
+        childProps.text = `<p>${textVal}</p>`;
+      }
+      if (!childProps.text_size) {
+        childProps.text_size = "normal";
+      }
+      if (!childProps.text_color) {
+        childProps.text_color = "default";
       }
     }
 
@@ -536,7 +658,7 @@ export function buildContentSection(
       createItem(
         child.componentId,
         section.uuid,
-        child.slot ?? "main_slot",
+        "main_slot",
         childProps,
         labelFromId(child.componentId)
       )
@@ -568,7 +690,7 @@ export function buildOrganismSection(
 
   // Set level on components that support it
   if (!("level" in inputs) && componentHasProp(componentId, "level")) {
-    inputs.level = sectionTag;
+    inputs.level = parseInt(sectionTag.replace("h", "")) || 2;
   }
 
   if (isFullWidth) {
@@ -576,13 +698,14 @@ export function buildOrganismSection(
     const items: ComponentTreeItem[] = [organism];
 
     if (children?.length) {
+      const defaultSlot = ORGANISM_CHILD_SLOT[componentId] ?? "hero_slot";
       for (const child of children) {
         if (child.componentId === componentId) continue;
         items.push(
           createItem(
             child.componentId,
             organism.uuid,
-            child.slot ?? "hero_slot",
+            defaultSlot,
             { ...child.props },
             labelFromId(child.componentId)
           )
@@ -600,9 +723,12 @@ export function buildOrganismSection(
     null,
     {
       columns: "100",
-      width: "boxed",
-      padding_block_start: "lg",
-      padding_block_end: "lg",
+      width: "100%",
+      mobile_columns: "1",
+      padding_block_start: "32",
+      padding_block_end: "32",
+      margin_block_start: "0",
+      margin_block_end: "0",
     },
     `Section: ${label}`
   );
@@ -618,13 +744,14 @@ export function buildOrganismSection(
   const items: ComponentTreeItem[] = [section, organism];
 
   if (children?.length) {
+    const defaultSlot = ORGANISM_CHILD_SLOT[componentId] ?? "accordion_content";
     for (const child of children) {
       if (child.componentId === componentId) continue;
       items.push(
         createItem(
           child.componentId,
           organism.uuid,
-          child.slot ?? "content",
+          defaultSlot,
           { ...child.props },
           labelFromId(child.componentId)
         )
@@ -647,9 +774,15 @@ export function buildHeroSection(
   children?: SectionChildData[],
   sectionTag: string = "h1"
 ): ComponentTreeItem[] {
+  const tagLevel = parseInt(sectionTag.replace("h", "")) || 1;
+
   // hero-blog is props-only, no slots
   if (componentId === "mercury:hero-blog") {
-    const hero = createItem(componentId, null, null, props, "Hero Blog");
+    const blogProps = { ...props };
+    if (!blogProps.level) {
+      blogProps.level = tagLevel;
+    }
+    const hero = createItem(componentId, null, null, blogProps, "Hero Blog");
     return [hero];
   }
 
@@ -664,9 +797,15 @@ export function buildHeroSection(
 
       // Set heading level for hero child headings
       if (child.componentId === "mercury:heading" && !childProps.level) {
-        childProps.level = sectionTag;
-        if (!childProps.size) {
-          childProps.size = "4xl";
+        childProps.level = tagLevel;
+        if (!childProps.text_size) {
+          childProps.text_size = "heading-responsive-5xl";
+        }
+        if (!childProps.text_color) {
+          childProps.text_color = "default";
+        }
+        if (!childProps.align) {
+          childProps.align = "left";
         }
       }
 
@@ -674,7 +813,7 @@ export function buildHeroSection(
         createItem(
           child.componentId,
           hero.uuid,
-          child.slot ?? "hero_slot",
+          "hero_slot",
           childProps,
           labelFromId(child.componentId)
         )

@@ -41,6 +41,30 @@ for (const comp of typedManifest) {
   MANIFEST_PROP_INDEX.set(comp.id, new Set(comp.props.map((p) => p.name)));
 }
 
+/** Index of prop types per component: prop name -> type string. */
+const MANIFEST_PROP_TYPES = new Map<string, Map<string, string>>();
+for (const comp of typedManifest) {
+  const types = new Map<string, string>();
+  for (const prop of comp.props) {
+    types.set(prop.name, prop.type);
+  }
+  MANIFEST_PROP_TYPES.set(comp.id, types);
+}
+
+/** Index of enum-constrained props per component: prop name -> allowed values. */
+const MANIFEST_ENUM_INDEX = new Map<string, Map<string, Set<string | number | boolean>>>();
+for (const comp of typedManifest) {
+  const enumProps = new Map<string, Set<string | number | boolean>>();
+  for (const prop of comp.props) {
+    if (prop.enum && prop.enum.length > 0) {
+      enumProps.set(prop.name, new Set(prop.enum));
+    }
+  }
+  if (enumProps.size > 0) {
+    MANIFEST_ENUM_INDEX.set(comp.id, enumProps);
+  }
+}
+
 /** Index of image-type props per component. */
 const MANIFEST_IMAGE_PROPS = new Map<string, string[]>();
 for (const comp of typedManifest) {
@@ -64,7 +88,8 @@ function buildRequiredPropDefaults(): Map<string, Record<string, unknown>> {
   for (const comp of typedManifest) {
     const defaults: Record<string, unknown> = {};
     for (const prop of comp.props) {
-      if (!prop.required) continue;
+      // Include ALL props (required + optional) so Canvas hydration never
+      // encounters missing keys — Canvas crashes on null scalar lookups.
       if (prop.default !== undefined) {
         defaults[prop.name] = prop.default;
       } else if (prop.enum && prop.enum.length > 0) {
@@ -86,7 +111,7 @@ function buildRequiredPropDefaults(): Map<string, Record<string, unknown>> {
 
 /** Placeholder image path within the CivicTheme theme. */
 const PLACEHOLDER_IMAGE_PATH =
-  "/themes/contrib/civictheme/assets/images/placeholder.png";
+  "/themes/contrib/civictheme/assets/backgrounds/civictheme_background_1.png";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -126,11 +151,24 @@ export function createItem(
   // Layer 3: user/AI-provided inputs take final precedence
   const mergedInputs = { ...manifestDefaults, ...overrides, ...inputs };
 
-  // Sanitize null/undefined props
-  for (const [key, value] of Object.entries(mergedInputs)) {
+  // Sanitize null/undefined props using manifest type info.
+  const propTypes = MANIFEST_PROP_TYPES.get(componentId);
+  for (const key of Object.keys(mergedInputs)) {
+    const value = mergedInputs[key];
     if (value === null || value === undefined) {
-      mergedInputs[key] = "";
-    } else if (typeof value === "object" && !Array.isArray(value)) {
+      const ptype = propTypes?.get(key) ?? "string";
+      if (ptype === "object" || ptype === "array") {
+        delete mergedInputs[key];
+      } else if (ptype === "number" || ptype === "integer") {
+        mergedInputs[key] = 0;
+      } else if (ptype === "boolean") {
+        mergedInputs[key] = false;
+      } else {
+        mergedInputs[key] = "";
+      }
+    } else if (Array.isArray(value)) {
+      mergedInputs[key] = value.filter((v) => v !== null && v !== undefined);
+    } else if (typeof value === "object") {
       const obj = value as Record<string, unknown>;
       const keys = Object.keys(obj);
       if (
@@ -141,9 +179,20 @@ export function createItem(
       } else {
         for (const k of keys) {
           if (obj[k] === null || obj[k] === undefined) {
-            obj[k] = "";
+            delete obj[k];
           }
         }
+      }
+    }
+  }
+
+  // Strip invalid URL values — Canvas rejects "#", "javascript:", empty fragments
+  const URL_PROP_NAMES = /^(url|href|cite_url|button_url|link|download_paper_link)$/;
+  for (const [key, value] of Object.entries(mergedInputs)) {
+    if (URL_PROP_NAMES.test(key) && typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed === "#" || trimmed === "" || trimmed.startsWith("javascript:")) {
+        delete mergedInputs[key];
       }
     }
   }
@@ -154,6 +203,29 @@ export function createItem(
     for (const key of Object.keys(mergedInputs)) {
       if (!validProps.has(key)) {
         delete mergedInputs[key];
+      }
+    }
+  }
+
+  // Validate enum-constrained props — replace invalid values with the first allowed value
+  const enumProps = MANIFEST_ENUM_INDEX.get(componentId);
+  if (enumProps) {
+    for (const [propName, allowed] of enumProps) {
+      const val = mergedInputs[propName];
+      if (val !== undefined && !allowed.has(val as string | number | boolean)) {
+        mergedInputs[propName] = [...allowed][0];
+      }
+    }
+  }
+
+  // Fill missing boolean props with false — CivicTheme Twig templates pass
+  // optional boolean props (is_new_window, is_external, etc.) to sub-components
+  // like text-icon. Canvas schema validation rejects NULL booleans, so every
+  // boolean prop defined in the manifest must have an explicit value.
+  if (propTypes) {
+    for (const [propName, ptype] of propTypes) {
+      if (ptype === "boolean" && mergedInputs[propName] === undefined) {
+        mergedInputs[propName] = false;
       }
     }
   }
@@ -169,15 +241,13 @@ export function createItem(
         typeof val === "string" ||
         (typeof val === "object" &&
           !Array.isArray(val) &&
-          (!(val as Record<string, unknown>).src ||
-            (val as Record<string, unknown>).src === "" ||
-            (val as Record<string, unknown>).src === null));
+          (!(val as Record<string, unknown>).url ||
+            (val as Record<string, unknown>).url === "" ||
+            (val as Record<string, unknown>).url === null));
       if (needsFill) {
         mergedInputs[propName] = {
-          src: PLACEHOLDER_IMAGE_PATH,
+          url: PLACEHOLDER_IMAGE_PATH,
           alt: typeof val === "string" ? val : label || "Image",
-          width: propName === "background_image" ? 1920 : 800,
-          height: propName === "background_image" ? 1080 : 600,
         };
       }
     }
@@ -245,10 +315,10 @@ function getSectionTheme(options?: SectionBuildOptions): string {
 /**
  * Build a Canvas-ready component tree for the site header.
  *
- * Structure:
- *   civictheme:header (root)
- *     content-link x N (slot="primary_navigation")
- *     button (slot="secondary_navigation") — CTA
+ * CivicTheme header uses numbered slots:
+ *   content_top1/2/3, content_middle1/2/3, content_bottom1
+ *
+ * We place navigation links in content_middle1 and CTA in content_middle2.
  */
 export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
   const { siteName, logo, pages, ctaText, ctaUrl } = data;
@@ -263,26 +333,26 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
 
   const items: ComponentTreeItem[] = [header];
 
-  // Primary navigation — one link per page
+  // Primary navigation — one link per page in content_middle1
   for (const page of pages) {
     items.push(
       createItem(
         "civictheme:content-link",
         header.uuid,
-        "primary_navigation",
+        "content_middle1",
         { text: page.title, url: `/${page.slug}` },
         `Nav: ${page.title}`
       )
     );
   }
 
-  // CTA button in secondary navigation slot
+  // CTA button in content_middle2 slot
   if (ctaText && ctaUrl) {
     items.push(
       createItem(
         "civictheme:button",
         header.uuid,
-        "secondary_navigation",
+        "content_middle2",
         { text: ctaText, url: ctaUrl, type: "primary", size: "small" },
         "Header CTA"
       )
@@ -295,11 +365,11 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
 /**
  * Build a Canvas-ready component tree for the site footer.
  *
- * Structure:
- *   civictheme:footer (root)
- *     content-link x N (slot="columns")
- *     social-links (slot="social_links")
- *     content-link x N (slot="copyright_links")
+ * CivicTheme footer uses numbered slots:
+ *   content_top1/2, content_middle1-5, content_bottom1/2
+ *
+ * We place navigation in content_middle1, social links in content_middle2,
+ * and legal/copyright in content_bottom1.
  */
 export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
   const {
@@ -319,38 +389,36 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
     null,
     {
       theme: "dark",
-      copyright: `\u00A9 ${currentYear} ${siteName}. All rights reserved.`,
-      ...(disclaimer ? { acknowledgment: disclaimer } : {}),
     },
     "Footer"
   );
 
   const items: ComponentTreeItem[] = [footer];
 
-  // Navigation links in columns slot
+  // Navigation links in content_middle1 slot
   for (const link of navLinks) {
     items.push(
       createItem(
         "civictheme:content-link",
         footer.uuid,
-        "columns",
+        "content_middle1",
         { text: link.title, url: link.url },
         `Footer Nav: ${link.title}`
       )
     );
   }
 
-  // Social links slot
+  // Social links in content_middle2 slot
   if (socialLinks.length > 0) {
     const socialLinksComponent = createItem(
       "civictheme:social-links",
       footer.uuid,
-      "social_links",
+      "content_middle2",
       {
         items: socialLinks.map((s) => ({
-          platform: s.platform,
-          url: s.url,
           icon: s.icon,
+          url: s.url,
+          title: s.platform,
         })),
         theme: "dark",
       },
@@ -359,18 +427,30 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
     items.push(socialLinksComponent);
   }
 
-  // Legal/copyright links slot
+  // Legal/copyright links in content_bottom1 slot
   for (const link of legalLinks) {
     items.push(
       createItem(
         "civictheme:content-link",
         footer.uuid,
-        "copyright_links",
+        "content_bottom1",
         { text: link.title, url: link.url },
         `Legal: ${link.title}`
       )
     );
   }
+
+  // Copyright/disclaimer in content_bottom2 slot as paragraph
+  const copyrightText = `\u00A9 ${currentYear} ${siteName}. All rights reserved.`;
+  items.push(
+    createItem(
+      "civictheme:paragraph",
+      footer.uuid,
+      "content_bottom2",
+      { content: disclaimer ? `${copyrightText} ${disclaimer}` : copyrightText, theme: "dark" },
+      "Copyright"
+    )
+  );
 
   return items;
 }
@@ -386,17 +466,17 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
  * Instead of container + flexi grid + atoms, CivicTheme maps each
  * pattern to a pre-composed organism:
  *
- *   text-image-*       -> civictheme:promo
- *   features-grid-*    -> civictheme:list + navigation-cards
- *   testimonials-*     -> civictheme:slider + snippets
- *   team-grid-*        -> civictheme:list + promo-cards
- *   card-grid-*        -> civictheme:list + promo-cards
- *   stats-row          -> civictheme:list + promo-cards (stat values)
- *   faq-accordion      -> civictheme:accordion + accordion-panels
- *   contact-info       -> civictheme:list + service-cards
- *   logo-showcase      -> civictheme:list + navigation-cards
- *   blog-grid          -> civictheme:list + publication-cards
- *   cta-banner         -> civictheme:callout
+ *   text-image-*       -> civictheme:promo (title/content are SLOTS)
+ *   features-grid-*    -> civictheme:list + navigation-cards (in rows slot)
+ *   testimonials-*     -> civictheme:slider (slides is a prop, HTML string)
+ *   team-grid-*        -> civictheme:list + promo-cards (in rows slot)
+ *   card-grid-*        -> civictheme:list + promo-cards (in rows slot)
+ *   stats-row          -> civictheme:list + fast-fact-cards (in rows slot)
+ *   faq-accordion      -> civictheme:accordion (panels is a prop, array of objects)
+ *   contact-info       -> civictheme:list + service-cards (in rows slot)
+ *   logo-showcase      -> civictheme:list + navigation-cards (in rows slot)
+ *   blog-grid          -> civictheme:list + publication-cards (in rows slot)
+ *   cta-banner         -> civictheme:callout (title/content are SLOTS)
  *   full-width-text    -> civictheme:callout (simple)
  */
 export function buildContentSection(
@@ -411,36 +491,34 @@ export function buildContentSection(
     return buildPromoSection(children, theme, options);
   }
   if (pattern.startsWith("features-grid")) {
-    const colCount = pattern.includes("4col") ? 4 : 3;
-    return buildListSection(children, "civictheme:navigation-card", colCount, theme, options);
+    return buildListSection(children, "civictheme:navigation-card", theme, options);
   }
   if (pattern === "testimonials-carousel") {
-    return buildSliderSection(children, "civictheme:snippet", theme, options);
+    return buildSliderSection(children, theme, options);
   }
   if (pattern.startsWith("team-grid")) {
-    const colCount = pattern.includes("4col") ? 4 : 3;
-    return buildListSection(children, "civictheme:promo-card", colCount, theme, options);
+    return buildListSection(children, "civictheme:promo-card", theme, options);
   }
   if (pattern === "card-grid-3col") {
-    return buildListSection(children, "civictheme:promo-card", 3, theme, options);
+    return buildListSection(children, "civictheme:promo-card", theme, options);
   }
   if (pattern === "card-carousel") {
-    return buildCarouselSection(children, "civictheme:promo-card", theme, options);
+    return buildSliderSection(children, theme, options);
   }
   if (pattern === "stats-row") {
-    return buildListSection(children, "civictheme:promo-card", 4, theme, options);
+    return buildListSection(children, "civictheme:fast-fact-card", theme, options);
   }
   if (pattern === "faq-accordion") {
     return buildAccordionSection(children, theme, options);
   }
   if (pattern === "contact-info") {
-    return buildListSection(children, "civictheme:service-card", 3, theme, options);
+    return buildListSection(children, "civictheme:service-card", theme, options);
   }
   if (pattern === "logo-showcase") {
-    return buildListSection(children, "civictheme:navigation-card", 4, theme, options);
+    return buildListSection(children, "civictheme:navigation-card", theme, options);
   }
   if (pattern === "blog-grid") {
-    return buildListSection(children, "civictheme:publication-card", 3, theme, options);
+    return buildListSection(children, "civictheme:publication-card", theme, options);
   }
   if (pattern === "cta-banner") {
     return buildCalloutSection(children, "dark", options);
@@ -459,49 +537,43 @@ export function buildContentSection(
 
 /**
  * Build a civictheme:promo section for text+image patterns.
- * Extracts heading, text, image, and button from children and maps to promo props.
+ *
+ * IMPORTANT: In CivicTheme, promo's title and content are SLOTS, not props.
+ * The promo only has link (object), is_contained, vertical_spacing,
+ * with_background, and theme as props.
+ *
+ * We place heading and paragraph children into the title and content slots.
  */
 function buildPromoSection(
   children: SectionChildData[],
   theme: string,
   options?: SectionBuildOptions
 ): ComponentTreeItem[] {
-  // Extract content from children to populate promo props
   let title = "";
   let content = "";
-  let imageData: Record<string, unknown> | undefined;
-  let url = "";
+  let linkData: Record<string, unknown> | undefined;
 
   for (const child of children) {
     if (child.componentId.includes("heading") || child.componentId.includes("section-heading")) {
-      title = (child.props.text ?? child.props.title ?? "") as string;
+      title = (child.props.content ?? child.props.text ?? child.props.title ?? "") as string;
     } else if (child.componentId.includes("text") || child.componentId.includes("paragraph")) {
-      const rawContent = (child.props.text ?? child.props.content ?? child.props.rich_text ?? "") as string;
+      const rawContent = (child.props.content ?? child.props.text ?? child.props.rich_text ?? "") as string;
       content = rawContent.startsWith("<") ? rawContent : `<p>${rawContent}</p>`;
-    } else if (child.componentId.includes("image") || child.componentId.includes("figure")) {
-      imageData = child.props.image as Record<string, unknown> ?? {
-        src: PLACEHOLDER_IMAGE_PATH,
-        alt: "Image",
-        width: 800,
-        height: 600,
-      };
     } else if (child.componentId.includes("button")) {
-      url = (child.props.url ?? "") as string;
+      const url = (child.props.url ?? "") as string;
+      const text = (child.props.text ?? "Learn more") as string;
+      if (url) {
+        linkData = { text, url };
+      }
     }
   }
 
-  // Use section heading if available
   if (!title && options?.sectionHeading) {
     title = options.sectionHeading.title;
   }
 
-  const promoProps: Record<string, unknown> = {
-    title: title || "Section Title",
-    theme,
-  };
-  if (content) promoProps.content = content;
-  if (imageData) promoProps.image = imageData;
-  if (url) promoProps.url = url;
+  const promoProps: Record<string, unknown> = { theme };
+  if (linkData) promoProps.link = linkData;
 
   const promo = createItem(
     "civictheme:promo",
@@ -511,65 +583,28 @@ function buildPromoSection(
     `Promo: ${title || "Content Section"}`
   );
 
-  return [promo];
-}
+  const items: ComponentTreeItem[] = [promo];
 
-/**
- * Build a civictheme:list section with card children.
- */
-function buildListSection(
-  children: SectionChildData[],
-  cardType: string,
-  columnCount: number,
-  theme: string,
-  options?: SectionBuildOptions
-): ComponentTreeItem[] {
-  const items: ComponentTreeItem[] = [];
-
-  // Add a heading if section heading is provided
-  if (options?.sectionHeading) {
-    const heading = createItem(
+  // Place title in the title slot
+  items.push(
+    createItem(
       "civictheme:heading",
-      null,
-      null,
-      {
-        text: options.sectionHeading.title,
-        level: 2,
-        theme,
-      },
-      `Section Heading: ${options.sectionHeading.title}`
-    );
-    items.push(heading);
-  }
-
-  const list = createItem(
-    "civictheme:list",
-    null,
-    null,
-    {
-      theme,
-      column_count: columnCount,
-      fill_width: true,
-    },
-    `List: ${cardType.split(":")[1]}`
+      promo.uuid,
+      "title",
+      { content: title || "Section Title", level: "2", theme },
+      `Promo Title`
+    )
   );
-  items.push(list);
 
-  // Add children as cards in the items slot
-  for (const child of children) {
-    const childComponentId = child.componentId === cardType
-      ? cardType
-      : cardType; // Normalize to the expected card type
-
-    const childProps = { ...child.props, theme };
-
+  // Place content in the content slot
+  if (content) {
     items.push(
       createItem(
-        childComponentId,
-        list.uuid,
-        "items",
-        childProps,
-        labelFromId(childComponentId)
+        "civictheme:paragraph",
+        promo.uuid,
+        "content",
+        { content, theme },
+        `Promo Content`
       )
     );
   }
@@ -578,31 +613,79 @@ function buildListSection(
 }
 
 /**
- * Build a civictheme:slider section with slide children.
+ * Build a civictheme:list section with card children.
+ *
+ * IMPORTANT: CivicTheme list does NOT have column_count or fill_width props.
+ * Cards go in the "rows" slot (not "items").
+ * The list title is a SLOT.
  */
-function buildSliderSection(
+function buildListSection(
   children: SectionChildData[],
-  slideType: string,
+  cardType: string,
   theme: string,
   options?: SectionBuildOptions
 ): ComponentTreeItem[] {
   const items: ComponentTreeItem[] = [];
 
-  // Add a heading if section heading is provided
+  const list = createItem(
+    "civictheme:list",
+    null,
+    null,
+    { theme },
+    `List: ${cardType.split(":")[1]}`
+  );
+  items.push(list);
+
+  // Add section heading in the title slot
   if (options?.sectionHeading) {
-    const heading = createItem(
-      "civictheme:heading",
-      null,
-      null,
-      {
-        text: options.sectionHeading.title,
-        level: 2,
-        theme,
-      },
-      `Section Heading: ${options.sectionHeading.title}`
+    items.push(
+      createItem(
+        "civictheme:heading",
+        list.uuid,
+        "title",
+        {
+          content: options.sectionHeading.title,
+          level: "2",
+          theme,
+        },
+        `Section Heading: ${options.sectionHeading.title}`
+      )
     );
-    items.push(heading);
   }
+
+  // Add children as cards in the rows slot
+  for (const child of children) {
+    const childProps = { ...child.props, theme };
+
+    items.push(
+      createItem(
+        cardType,
+        list.uuid,
+        "rows",
+        childProps,
+        labelFromId(cardType)
+      )
+    );
+  }
+
+  return items;
+}
+
+/**
+ * Build a civictheme:slider section.
+ *
+ * IMPORTANT: In CivicTheme, "slides" is a PROP (HTML string), not a slot.
+ * The slider title is a SLOT.
+ * Individual slides use civictheme:slide component.
+ * For simplicity in tree building, we place slide components in content_top slot
+ * and the slides HTML prop is populated during rendering.
+ */
+function buildSliderSection(
+  children: SectionChildData[],
+  theme: string,
+  options?: SectionBuildOptions
+): ComponentTreeItem[] {
+  const items: ComponentTreeItem[] = [];
 
   const slider = createItem(
     "civictheme:slider",
@@ -613,68 +696,35 @@ function buildSliderSection(
   );
   items.push(slider);
 
-  // Add children as slides
-  for (const child of children) {
-    const childProps = { ...child.props, theme };
-
-    items.push(
-      createItem(
-        slideType,
-        slider.uuid,
-        "slides",
-        childProps,
-        labelFromId(slideType)
-      )
-    );
-  }
-
-  return items;
-}
-
-/**
- * Build a civictheme:carousel section with slide children.
- */
-function buildCarouselSection(
-  children: SectionChildData[],
-  slideType: string,
-  theme: string,
-  options?: SectionBuildOptions
-): ComponentTreeItem[] {
-  const items: ComponentTreeItem[] = [];
-
+  // Add section heading in the title slot
   if (options?.sectionHeading) {
-    const heading = createItem(
-      "civictheme:heading",
-      null,
-      null,
-      {
-        text: options.sectionHeading.title,
-        level: 2,
-        theme,
-      },
-      `Section Heading: ${options.sectionHeading.title}`
-    );
-    items.push(heading);
-  }
-
-  const carousel = createItem(
-    "civictheme:carousel",
-    null,
-    null,
-    { theme },
-    "Carousel"
-  );
-  items.push(carousel);
-
-  for (const child of children) {
-    const childProps = { ...child.props, theme };
     items.push(
       createItem(
-        slideType,
-        carousel.uuid,
-        "slides",
+        "civictheme:heading",
+        slider.uuid,
+        "title",
+        {
+          content: options.sectionHeading.title,
+          level: "2",
+          theme,
+        },
+        `Section Heading: ${options.sectionHeading.title}`
+      )
+    );
+  }
+
+  // Add children as slide components in content_top slot
+  // (slides prop is HTML that gets rendered from these)
+  for (const child of children) {
+    const childProps = { ...child.props, theme };
+
+    items.push(
+      createItem(
+        "civictheme:slide",
+        slider.uuid,
+        "content_top",
         childProps,
-        labelFromId(slideType)
+        labelFromId("civictheme:slide")
       )
     );
   }
@@ -683,7 +733,11 @@ function buildCarouselSection(
 }
 
 /**
- * Build a civictheme:accordion section with panel children.
+ * Build a civictheme:accordion section.
+ *
+ * IMPORTANT: In CivicTheme, "panels" is a PROP (array of objects), NOT a slot.
+ * Each panel object has: title (string), content (string), expanded (boolean).
+ * There is no separate accordion-panel component.
  */
 function buildAccordionSection(
   children: SectionChildData[],
@@ -692,42 +746,46 @@ function buildAccordionSection(
 ): ComponentTreeItem[] {
   const items: ComponentTreeItem[] = [];
 
-  if (options?.sectionHeading) {
-    const heading = createItem(
-      "civictheme:heading",
-      null,
-      null,
-      {
-        text: options.sectionHeading.title,
-        level: 2,
-        theme,
-      },
-      `Section Heading: ${options.sectionHeading.title}`
-    );
-    items.push(heading);
+  // Build panels array from children
+  const panels: Array<{ title: string; content: string; expanded: boolean }> = [];
+  for (const child of children) {
+    if (child.componentId === "civictheme:accordion") continue;
+
+    const title = (child.props.title ?? child.props.content ?? "Item") as string;
+    const content = (child.props.content ?? child.props.text ?? child.props.rich_text ?? "") as string;
+    const formattedContent = content.startsWith("<") ? content : `<p>${content}</p>`;
+
+    panels.push({
+      title,
+      content: formattedContent,
+      expanded: false,
+    });
   }
+
+  const accordionProps: Record<string, unknown> = { theme, panels };
 
   const accordion = createItem(
     "civictheme:accordion",
     null,
     null,
-    { theme },
+    accordionProps,
     "Accordion"
   );
   items.push(accordion);
 
-  for (const child of children) {
-    // Skip if the child is the accordion container itself
-    if (child.componentId === "civictheme:accordion") continue;
-
-    const childProps = { ...child.props, theme };
+  // Add section heading in content_top slot
+  if (options?.sectionHeading) {
     items.push(
       createItem(
-        "civictheme:accordion-panel",
+        "civictheme:heading",
         accordion.uuid,
-        "panels",
-        childProps,
-        `Panel: ${child.props.title ?? "Item"}`
+        "content_top",
+        {
+          content: options.sectionHeading.title,
+          level: "2",
+          theme,
+        },
+        `Section Heading: ${options.sectionHeading.title}`
       )
     );
   }
@@ -737,6 +795,9 @@ function buildAccordionSection(
 
 /**
  * Build a civictheme:callout section for CTA or full-width text.
+ *
+ * IMPORTANT: In CivicTheme, callout's title and content are SLOTS, not props.
+ * The callout has a links prop (array) for CTA links, and no "cta" slot.
  */
 function buildCalloutSection(
   children: SectionChildData[],
@@ -749,9 +810,9 @@ function buildCalloutSection(
 
   for (const child of children) {
     if (child.componentId.includes("heading") || child.componentId.includes("section-heading")) {
-      title = (child.props.text ?? child.props.title ?? "") as string;
+      title = (child.props.content ?? child.props.text ?? child.props.title ?? "") as string;
     } else if (child.componentId.includes("text") || child.componentId.includes("paragraph")) {
-      const rawContent = (child.props.text ?? child.props.content ?? child.props.rich_text ?? "") as string;
+      const rawContent = (child.props.content ?? child.props.text ?? child.props.rich_text ?? "") as string;
       content = rawContent.startsWith("<") ? rawContent : `<p>${rawContent}</p>`;
     } else if (child.componentId.includes("button")) {
       buttonChild = child;
@@ -762,29 +823,45 @@ function buildCalloutSection(
     title = options.sectionHeading.title;
   }
 
+  // Build links prop from button child
+  const calloutProps: Record<string, unknown> = { theme };
+  if (buttonChild) {
+    calloutProps.links = [{
+      text: (buttonChild.props.text ?? "Learn more") as string,
+      url: (buttonChild.props.url ?? "#") as string,
+    }];
+  }
+
   const callout = createItem(
     "civictheme:callout",
     null,
     null,
-    {
-      title: title || "Call to Action",
-      content: content || undefined,
-      theme,
-    },
+    calloutProps,
     `Callout: ${title || "CTA"}`
   );
 
   const items: ComponentTreeItem[] = [callout];
 
-  // Add button in the CTA slot
-  if (buttonChild) {
+  // Place title in the title slot
+  items.push(
+    createItem(
+      "civictheme:heading",
+      callout.uuid,
+      "title",
+      { content: title || "Call to Action", level: "2", theme },
+      `Callout Title`
+    )
+  );
+
+  // Place content in the content slot
+  if (content) {
     items.push(
       createItem(
-        "civictheme:button",
+        "civictheme:paragraph",
         callout.uuid,
-        "cta",
-        { ...buttonChild.props, theme },
-        "CTA Button"
+        "content",
+        { content, theme },
+        `Callout Content`
       )
     );
   }
@@ -833,6 +910,8 @@ export function buildOrganismSection(
 /**
  * Build tree items for a hero section.
  * CivicTheme heroes: civictheme:banner (standard) or civictheme:campaign (landing).
+ *
+ * IMPORTANT: Both banner and campaign have title as a SLOT.
  */
 export function buildHeroSection(
   componentId: string,

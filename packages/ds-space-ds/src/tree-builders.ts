@@ -41,6 +41,30 @@ for (const comp of typedManifest) {
   MANIFEST_PROP_INDEX.set(comp.id, new Set(comp.props.map((p) => p.name)));
 }
 
+/** Index of prop types per component: prop name -> type string. */
+const MANIFEST_PROP_TYPES = new Map<string, Map<string, string>>();
+for (const comp of typedManifest) {
+  const types = new Map<string, string>();
+  for (const prop of comp.props) {
+    types.set(prop.name, prop.type);
+  }
+  MANIFEST_PROP_TYPES.set(comp.id, types);
+}
+
+/** Index of enum-constrained props per component: prop name -> allowed values. */
+const MANIFEST_ENUM_INDEX = new Map<string, Map<string, Set<string | number | boolean>>>();
+for (const comp of typedManifest) {
+  const enumProps = new Map<string, Set<string | number | boolean>>();
+  for (const prop of comp.props) {
+    if (prop.enum && prop.enum.length > 0) {
+      enumProps.set(prop.name, new Set(prop.enum));
+    }
+  }
+  if (enumProps.size > 0) {
+    MANIFEST_ENUM_INDEX.set(comp.id, enumProps);
+  }
+}
+
 /** Index of image-type props per component. */
 const MANIFEST_IMAGE_PROPS = new Map<string, string[]>();
 for (const comp of typedManifest) {
@@ -64,7 +88,8 @@ function buildRequiredPropDefaults(): Map<string, Record<string, unknown>> {
   for (const comp of typedManifest) {
     const defaults: Record<string, unknown> = {};
     for (const prop of comp.props) {
-      if (!prop.required) continue;
+      // Include ALL props (required + optional) so Canvas hydration never
+      // encounters missing keys — Canvas crashes on null scalar lookups.
       if (prop.default !== undefined) {
         defaults[prop.name] = prop.default;
       } else if (prop.enum && prop.enum.length > 0) {
@@ -164,11 +189,24 @@ export function createItem(
   // Layer 3: user/AI-provided inputs take final precedence
   const mergedInputs = { ...manifestDefaults, ...overrides, ...inputs };
 
-  // Sanitize null/undefined props
-  for (const [key, value] of Object.entries(mergedInputs)) {
+  // Sanitize null/undefined props using manifest type info.
+  const propTypes = MANIFEST_PROP_TYPES.get(componentId);
+  for (const key of Object.keys(mergedInputs)) {
+    const value = mergedInputs[key];
     if (value === null || value === undefined) {
-      mergedInputs[key] = "";
-    } else if (typeof value === "object" && !Array.isArray(value)) {
+      const ptype = propTypes?.get(key) ?? "string";
+      if (ptype === "object" || ptype === "array") {
+        delete mergedInputs[key];
+      } else if (ptype === "number" || ptype === "integer") {
+        mergedInputs[key] = 0;
+      } else if (ptype === "boolean") {
+        mergedInputs[key] = false;
+      } else {
+        mergedInputs[key] = "";
+      }
+    } else if (Array.isArray(value)) {
+      mergedInputs[key] = value.filter((v) => v !== null && v !== undefined);
+    } else if (typeof value === "object") {
       const obj = value as Record<string, unknown>;
       const keys = Object.keys(obj);
       if (
@@ -179,7 +217,7 @@ export function createItem(
       } else {
         for (const k of keys) {
           if (obj[k] === null || obj[k] === undefined) {
-            obj[k] = "";
+            delete obj[k];
           }
         }
       }
@@ -193,12 +231,34 @@ export function createItem(
     }
   }
 
+  // Strip invalid URL values — Canvas rejects "#", "javascript:", empty fragments
+  const URL_PROP_NAMES = /^(url|href|cite_url|button_url|link|download_paper_link)$/;
+  for (const [key, value] of Object.entries(mergedInputs)) {
+    if (URL_PROP_NAMES.test(key) && typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed === "#" || trimmed === "" || trimmed.startsWith("javascript:")) {
+        delete mergedInputs[key];
+      }
+    }
+  }
+
   // Strip any prop not defined in the manifest
   const validProps = MANIFEST_PROP_INDEX.get(componentId);
   if (validProps) {
     for (const key of Object.keys(mergedInputs)) {
       if (!validProps.has(key)) {
         delete mergedInputs[key];
+      }
+    }
+  }
+
+  // Validate enum-constrained props — replace invalid values with the first allowed value
+  const enumProps = MANIFEST_ENUM_INDEX.get(componentId);
+  if (enumProps) {
+    for (const [propName, allowed] of enumProps) {
+      const val = mergedInputs[propName];
+      if (val !== undefined && !allowed.has(val as string | number | boolean)) {
+        mergedInputs[propName] = [...allowed][0];
       }
     }
   }
