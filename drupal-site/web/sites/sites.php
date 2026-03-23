@@ -80,3 +80,5 @@ $sites['food-hub-39-c5ia.ai-site-builder.ddev.site'] = 'food-hub-39-c5ia.ai-site
 $sites['food-hub-40-64et.ai-site-builder.ddev.site'] = 'food-hub-40-64et.ai-site-builder.ddev.site';
 $sites['food-hub-41-rfkq.ai-site-builder.ddev.site'] = 'food-hub-41-rfkq.ai-site-builder.ddev.site';
 $sites['food-hub-42-085d.ai-site-builder.ddev.site'] = 'food-hub-42-085d.ai-site-builder.ddev.site';
+$sites['food-hub-44-5o47.ai-site-builder.ddev.site'] = 'food-hub-44-5o47.ai-site-builder.ddev.site';
+$sites['food-hub-44-4ew8.ai-site-builder.ddev.site'] = 'food-hub-44-4ew8.ai-site-builder.ddev.site';
