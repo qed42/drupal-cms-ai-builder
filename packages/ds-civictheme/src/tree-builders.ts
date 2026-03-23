@@ -186,13 +186,14 @@ export function createItem(
     }
   }
 
-  // Strip invalid URL values — Canvas rejects "#", "javascript:", empty fragments
+  // Sanitize invalid URL values — Canvas rejects "#", "javascript:", empty strings.
+  // Use "/" as fallback instead of deleting, since Canvas may require the prop.
   const URL_PROP_NAMES = /^(url|href|cite_url|button_url|link|download_paper_link)$/;
   for (const [key, value] of Object.entries(mergedInputs)) {
     if (URL_PROP_NAMES.test(key) && typeof value === "string") {
       const trimmed = value.trim();
       if (trimmed === "#" || trimmed === "" || trimmed.startsWith("javascript:")) {
-        delete mergedInputs[key];
+        mergedInputs[key] = "/";
       }
     }
   }
