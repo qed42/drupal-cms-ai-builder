@@ -244,6 +244,8 @@ export function buildFooterTree(
     navLinks?: Array<{ title: string; url: string }>;
     socialLinks?: Array<{ platform: string; url: string; icon: string }>;
     legalLinks?: Array<{ title: string; url: string }>;
+    ctaPrimary?: { label: string; url: string };
+    ctaSecondary?: { label: string; url: string };
   }
 ): ComponentTreeItem[] {
   const adapter = getDefaultAdapter();
@@ -255,5 +257,7 @@ export function buildFooterTree(
     navLinks: options?.navLinks,
     socialLinks: options?.socialLinks,
     legalLinks: options?.legalLinks,
+    ctaPrimary: options?.ctaPrimary,
+    ctaSecondary: options?.ctaSecondary,
   });
 }

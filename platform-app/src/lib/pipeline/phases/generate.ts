@@ -361,6 +361,13 @@ export async function runGeneratePhase(
     { title: "Terms of Service", url: "/terms" },
   ];
 
+  // Derive footer CTAs from available pages
+  const aboutPage = pages.find((p) => p.slug === "about" || p.slug === "about-us");
+  const footerPrimaryCta = { label: ctaText, url: ctaUrl };
+  const footerSecondaryCta = aboutPage
+    ? { label: aboutPage.title, url: `/${aboutPage.slug}` }
+    : undefined;
+
   const footerTree = buildFooterTree(
     { name: data.name || plan.siteName, tagline: plan.tagline },
     {
@@ -368,6 +375,8 @@ export async function runGeneratePhase(
       navLinks: footerNavLinks,
       socialLinks: defaultSocialLinks,
       legalLinks: defaultLegalLinks,
+      ctaPrimary: footerPrimaryCta,
+      ctaSecondary: footerSecondaryCta,
     }
   );
 

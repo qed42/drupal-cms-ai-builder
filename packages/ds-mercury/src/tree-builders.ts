@@ -430,10 +430,16 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
  *
  * Structure:
  *   mercury:footer (root)
- *     mercury:text (slot="footer_first") — brand description
- *     mercury:button x N (slot="footer_utility_first") — nav links
- *     mercury:button x N (slot="footer_last") — CTA or newsletter
- *     mercury:text (slot="footer_utility_last") — copyright
+ *     mercury:group (slot="footer_first") — brand (vertical)
+ *       mercury:text (group_slot) — site name + description
+ *     mercury:group (slot="footer_utility_first") — nav + social links (horizontal)
+ *       mercury:button x N (group_slot) — plain links (secondary-inverted)
+ *     mercury:group (slot="footer_last") — CTAs (horizontal)
+ *       mercury:button (group_slot) — primary CTA
+ *       mercury:button (group_slot) — secondary CTA
+ *     mercury:group (slot="footer_utility_last") — legal + copyright (horizontal)
+ *       mercury:button x N (group_slot) — plain links
+ *       mercury:text (group_slot) — copyright
  */
 export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
   const {
@@ -444,6 +450,8 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
     navLinks = [],
     socialLinks = [],
     legalLinks = [],
+    ctaPrimary,
+    ctaSecondary,
   } = data;
 
   const currentYear = new Date().getFullYear();
@@ -452,22 +460,29 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
     "mercury:footer",
     null,
     null,
-    {
-      align: true,
-    },
+    { align: true },
     "Footer"
   );
 
   const items: ComponentTreeItem[] = [footer];
 
-  // Branding in footer_first slot
+  // ── Brand description (footer_first, vertical) ──
   const brandText = brandDescription || tagline || siteName;
   if (brandText) {
+    const brandGroup = createItem(
+      "mercury:group",
+      footer.uuid,
+      "footer_first",
+      { flex_direction: "column", flex_gap: "sm", flex_align: "start", items_align: "start" },
+      "Brand Group"
+    );
+    items.push(brandGroup);
+
     items.push(
       createItem(
         "mercury:text",
-        footer.uuid,
-        "footer_first",
+        brandGroup.uuid,
+        "group_slot",
         {
           text: `<p><strong>${siteName}</strong></p><p>${brandText}</p>`,
           text_size: "normal",
@@ -478,56 +493,108 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
     );
   }
 
-  // Utility links slot — navigation links
-  for (const link of navLinks) {
-    items.push(
-      createItem(
-        "mercury:button",
-        footer.uuid,
-        "footer_utility_first",
-        { label: link.title, href: link.url, variant: "secondary-inverted", size: "small" },
-        `Footer Nav: ${link.title}`
-      )
+  // ── Navigation + social links (footer_utility_first, horizontal) ──
+  if (navLinks.length > 0 || socialLinks.length > 0) {
+    const linksGroup = createItem(
+      "mercury:group",
+      footer.uuid,
+      "footer_utility_first",
+      { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center" },
+      "Footer Links"
     );
+    items.push(linksGroup);
+
+    for (const link of navLinks) {
+      items.push(
+        createItem(
+          "mercury:button",
+          linksGroup.uuid,
+          "group_slot",
+          { label: link.title, href: link.url, variant: "secondary-inverted", size: "small" },
+          `Footer Nav: ${link.title}`
+        )
+      );
+    }
+
+    for (const social of socialLinks) {
+      items.push(
+        createItem(
+          "mercury:button",
+          linksGroup.uuid,
+          "group_slot",
+          { label: social.platform, href: social.url, variant: "secondary-inverted", size: "small" },
+          `Social: ${social.platform}`
+        )
+      );
+    }
   }
 
-  // Social links in footer_utility_first slot
-  for (const social of socialLinks) {
-    items.push(
-      createItem(
-        "mercury:button",
-        footer.uuid,
-        "footer_utility_first",
-        {
-          label: social.platform,
-          href: social.url,
-          variant: "secondary-inverted",
-          size: "small",
-        },
-        `Social: ${social.platform}`
-      )
+  // ── CTAs (footer_last, horizontal) — 1 primary + 1 secondary ──
+  const primaryCta = ctaPrimary ?? (navLinks.length > 0 ? { label: "Contact Us", url: "/contact" } : undefined);
+  const secondaryCta = ctaSecondary ?? (navLinks.length > 0 ? { label: "About Us", url: "/about" } : undefined);
+
+  if (primaryCta || secondaryCta) {
+    const ctaGroup = createItem(
+      "mercury:group",
+      footer.uuid,
+      "footer_last",
+      { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center" },
+      "Footer CTAs"
     );
+    items.push(ctaGroup);
+
+    if (primaryCta) {
+      items.push(
+        createItem(
+          "mercury:button",
+          ctaGroup.uuid,
+          "group_slot",
+          { label: primaryCta.label, href: primaryCta.url, variant: "primary", size: "medium" },
+          "Footer Primary CTA"
+        )
+      );
+    }
+
+    if (secondaryCta) {
+      items.push(
+        createItem(
+          "mercury:button",
+          ctaGroup.uuid,
+          "group_slot",
+          { label: secondaryCta.label, href: secondaryCta.url, variant: "secondary", size: "medium" },
+          "Footer Secondary CTA"
+        )
+      );
+    }
   }
 
-  // Legal links in footer_utility_last slot
+  // ── Legal links + copyright (footer_utility_last, horizontal) ──
+  const legalGroup = createItem(
+    "mercury:group",
+    footer.uuid,
+    "footer_utility_last",
+    { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center" },
+    "Legal & Copyright"
+  );
+  items.push(legalGroup);
+
   for (const link of legalLinks) {
     items.push(
       createItem(
         "mercury:button",
-        footer.uuid,
-        "footer_utility_last",
+        legalGroup.uuid,
+        "group_slot",
         { label: link.title, href: link.url, variant: "secondary-inverted", size: "small" },
         `Legal: ${link.title}`
       )
     );
   }
 
-  // Copyright in footer_utility_last slot
   items.push(
     createItem(
       "mercury:text",
-      footer.uuid,
-      "footer_utility_last",
+      legalGroup.uuid,
+      "group_slot",
       {
         text: `<p>\u00A9 ${currentYear} ${siteName}. All rights reserved.</p>`,
         text_size: "text-sm",

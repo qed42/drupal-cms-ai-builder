@@ -461,6 +461,10 @@ export async function generateBlueprint(
     { platform: "LinkedIn", url: "https://linkedin.com", icon: "linkedin-logo" },
   ];
 
+  const aboutPage = pages.find(
+    (p) => p.slug === "about" || p.slug === "about-us"
+  );
+
   const footerTree = buildFooterTree(
     { name: data.name!, tagline: siteTagline },
     {
@@ -469,6 +473,10 @@ export async function generateBlueprint(
       navLinks: footerNavLinks,
       socialLinks: defaultSocialLinks,
       legalLinks: defaultLegalLinks,
+      ctaPrimary: { label: ctaText, url: ctaUrl },
+      ctaSecondary: aboutPage
+        ? { label: aboutPage.title, url: `/${aboutPage.slug}` }
+        : undefined,
     }
   );
 

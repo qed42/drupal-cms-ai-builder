@@ -413,7 +413,6 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
       $headerValues = [
         'title' => 'Header',
         'status' => TRUE,
-        'path' => ['alias' => '/__header'],
         'components' => $this->prepareComponentTree($headerData['component_tree']),
       ];
       $headerPage = $pageStorage->create($headerValues);
@@ -434,7 +433,6 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
       $footerValues = [
         'title' => 'Footer',
         'status' => TRUE,
-        'path' => ['alias' => '/__footer'],
         'components' => $this->prepareComponentTree($footerData['component_tree']),
       ];
       $footerPage = $pageStorage->create($footerValues);
@@ -642,17 +640,34 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
    *   The media entity ID, or NULL if creation failed.
    */
   protected function createMediaEntityFromImage(string $webPath, string $alt): ?int {
-    // Convert web path to stream wrapper URI.
-    // Pattern: /sites/{domain}/files/{path} → public://{path}
-    if (preg_match('#/sites/[^/]+/files/(.+)$#', $webPath, $matches)) {
-      $uri = 'public://' . $matches[1];
-    }
-    else {
-      $uri = $webPath;
-    }
-
     $filename = basename($webPath);
     $mime = $this->guessMimeType($filename);
+
+    // Convert web path to a valid stream wrapper URI.
+    if (preg_match('#/sites/[^/]+/files/(.+)$#', $webPath, $matches)) {
+      // Stock/uploaded images already in Drupal files: /sites/{domain}/files/{path}
+      $uri = 'public://' . $matches[1];
+    }
+    elseif (str_starts_with($webPath, '/themes/') || str_starts_with($webPath, '/core/')) {
+      // Theme-relative paths (e.g., placeholder images): copy to public://.
+      $drupalRoot = \Drupal::root();
+      $sourcePath = $drupalRoot . $webPath;
+      if (!file_exists($sourcePath)) {
+        $this->logger->warning('Theme image not found at "@path".', ['@path' => $sourcePath]);
+        return NULL;
+      }
+      $destUri = 'public://imported/' . $filename;
+      $this->fileSystem?->prepareDirectory('public://imported', FileSystemInterface::CREATE_DIRECTORY);
+      $this->fileSystem?->copy($sourcePath, $destUri, FileSystemInterface::EXISTS_REPLACE);
+      $uri = $destUri;
+    }
+    else {
+      // Unknown path format — cannot create a valid stream wrapper URI.
+      $this->logger->warning('Unrecognized image path format "@path", skipping media creation.', [
+        '@path' => $webPath,
+      ]);
+      return NULL;
+    }
 
     try {
       // Create file entity.
