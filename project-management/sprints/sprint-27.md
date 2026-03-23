@@ -12,10 +12,10 @@ Ship the foundational UI infrastructure: new color palette, 3-tier layout system
 
 | ID | Task | Priority | Effort | Assignee Persona | Status | Depends On |
 |----|------|----------|--------|-------------------|--------|------------|
-| TASK-343 | Implement color palette (proven approach) | P0 | M | `/dev` | TODO | TASK-339 |
-| TASK-344 | ProgressStepper component | P0 | S | `/dev` | TODO | — |
-| TASK-345 | Dashboard subscription card dedup | P1 | S | `/dev` | TODO | — |
-| TASK-346 | StepLayout 3-tier layout refactor | P0 | L | `/dev` | TODO | TASK-342 |
+| TASK-343 | Implement color palette (proven approach) | P0 | M | `/dev` | DONE | TASK-339 |
+| TASK-344 | ProgressStepper component | P0 | S | `/dev` | DONE | — |
+| TASK-345 | Dashboard subscription card dedup | P1 | S | `/dev` | DONE | — |
+| TASK-346 | StepLayout 3-tier layout refactor | P0 | L | `/dev` | DONE | TASK-342 |
 
 ## Execution Order
 

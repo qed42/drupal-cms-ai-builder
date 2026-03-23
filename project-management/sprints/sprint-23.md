@@ -4,7 +4,7 @@
 **Duration:** 3 days
 **Predecessor:** Sprint 22 (v2 Pipeline Stabilization)
 **Requirement:** REQ-onboarding-brand-refresh
-**Status:** CLOSED (2026-03-21) — Not started; deferred pending pipeline stabilization (Sprint 24)
+**Status:** PLANNED (2026-03-21) — First attempt reverted due to Tailwind v4 @theme color rendering issues. Needs investigation before re-implementing.
 
 ## Sprint Goal
 
