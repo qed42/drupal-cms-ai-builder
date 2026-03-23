@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import StepIcon from "@/components/onboarding/StepIcon";
-import ProgressDots from "@/components/onboarding/ProgressDots";
+import ProgressStepper from "@/components/onboarding/ProgressStepper";
 import { INDUSTRY_LABELS } from "@/lib/ai/prompts";
 
 interface SessionData {
@@ -119,10 +119,10 @@ export default function ReviewSettingsPage() {
 
         {data.colors && Object.keys(data.colors).length > 0 && (
           <SummarySection label="Colors">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {Object.entries(data.colors).map(([key, value]) => (
                 <div key={key} className="flex items-center gap-1.5">
-                  <div className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: value }} />
+                  <div className="w-4 h-4 rounded-full border border-white/20 shrink-0" style={{ backgroundColor: value }} />
                   <span className="text-xs text-white/50">{key}</span>
                 </div>
               ))}
@@ -141,10 +141,14 @@ export default function ReviewSettingsPage() {
         </SummarySection>
       </div>
 
-      {/* Time estimate */}
-      <p className="text-white/30 text-sm mb-6">
-        Generation takes approximately 2-3 minutes
-      </p>
+      {/* How your inputs are used */}
+      <div className="w-full rounded-lg border border-white/5 bg-white/[0.02] p-4 mb-6">
+        <p className="text-xs text-white/30 leading-relaxed">
+          <span className="text-white/50 font-medium">How your inputs shape your site:</span>{" "}
+          Your business idea and audience drive page content and tone. Brand colors and fonts are applied to your chosen theme.
+          Pages are structured with SEO-optimized layouts tailored to your industry. Generation takes approximately 2-3 minutes.
+        </p>
+      </div>
 
       {/* Actions */}
       <div className="flex items-center gap-4">
@@ -175,7 +179,7 @@ export default function ReviewSettingsPage() {
       </div>
 
       <div className="mt-12">
-        <ProgressDots currentStep="review-settings" />
+        <ProgressStepper currentStep="review-settings" />
       </div>
     </div>
   );

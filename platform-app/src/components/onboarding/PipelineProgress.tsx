@@ -122,12 +122,19 @@ function PhaseCard({ phase, status }: { phase: typeof PHASES[number]; status: Ph
 }
 
 export default function PipelineProgress({ pipeline, progress, error }: PipelineProgressProps) {
+  const allComplete = pipeline.research.status === "complete" &&
+    pipeline.plan.status === "complete" &&
+    pipeline.generate.status === "complete" &&
+    (!pipeline.enhance || pipeline.enhance.status === "complete");
+  const hasFailure = error !== null;
+  const barColor = hasFailure ? "bg-red-500" : allComplete ? "bg-emerald-500" : "bg-brand-500";
+
   return (
     <div className="w-full space-y-3" role="status" aria-live="polite" aria-label="Content generation progress">
       {/* Overall progress bar */}
       <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
         <div
-          className="h-full bg-brand-500 rounded-full transition-all duration-500"
+          className={`h-full rounded-full transition-all duration-500 ${barColor}`}
           style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
         />
       </div>

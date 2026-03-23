@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { PageLayout, PageSection, PageSectionChild } from "@/lib/blueprint/types";
+import type { PageLayout, PageSection } from "@/lib/blueprint/types";
 import { getComponentLabel } from "@/lib/blueprint/markdown-renderer";
 import { getDefaultAdapter } from "@/lib/design-systems/setup";
-import RegenerateButton from "./RegenerateButton";
 
 interface PagePreviewProps {
   siteId: string;
@@ -419,9 +418,6 @@ function SectionView({
   onEdit,
   onDone,
   onChange,
-  siteId,
-  pageIndex,
-  onRegenerated,
 }: {
   section: PageLayout["sections"][number];
   sectionIndex: number;
@@ -429,26 +425,10 @@ function SectionView({
   onEdit: () => void;
   onDone: () => void;
   onChange: (field: string, value: string) => void;
-  siteId: string;
-  pageIndex: number;
-  onRegenerated: (newSection: PageSection, previousSection: PageSection) => void;
 }) {
-  const [undoSection, setUndoSection] = useState<PageSection | null>(null);
   const label = getComponentLabel(section.component_id);
   const hasChildren = section.children && section.children.length > 0;
   const isComposed = !!section.pattern || hasChildren;
-
-  function handleRegenerated(newSection: PageSection, previousSection: PageSection) {
-    setUndoSection(previousSection);
-    onRegenerated(newSection, previousSection);
-  }
-
-  function handleUndo() {
-    if (undoSection) {
-      onRegenerated(undoSection, { component_id: section.component_id, props: section.props });
-      setUndoSection(null);
-    }
-  }
 
   return (
     <div className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
@@ -462,21 +442,6 @@ function SectionView({
           )}
         </div>
         <div className="flex items-center gap-2">
-          {undoSection && (
-            <button
-              type="button"
-              onClick={handleUndo}
-              className="text-xs px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-colors"
-            >
-              ↶ Undo
-            </button>
-          )}
-          <RegenerateButton
-            siteId={siteId}
-            pageIndex={pageIndex}
-            sectionIndex={sectionIndex}
-            onRegenerated={handleRegenerated}
-          />
           <button
             type="button"
             onClick={isEditing ? onDone : onEdit}
@@ -581,11 +546,6 @@ export default function PagePreview({
               onEdit={() => onEditSection(sectionIndex)}
               onDone={() => onEditSection(null)}
               onChange={(field, value) => onSectionChange(sectionIndex, field, value)}
-              siteId={siteId}
-              pageIndex={pageIndex}
-              onRegenerated={(newSection) => {
-                onSectionRegenerated(sectionIndex, newSection);
-              }}
             />
           ))}
         </div>

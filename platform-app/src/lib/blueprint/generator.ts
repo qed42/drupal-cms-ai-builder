@@ -487,9 +487,30 @@ export async function generateBlueprint(
   };
 
   // Map onboarding colors via the active adapter's brand token pipeline.
-  const brandColors = mapColorsToSpaceDS(data.colors || {});
-  // TODO(M19): Replace mapColorsToSpaceDS with adapter.prepareBrandPayload()
-  // once all adapters implement full brand token mapping.
+  const activeAdapterForBrand = getDefaultAdapter();
+  const brandPayload = activeAdapterForBrand.prepareBrandPayload({
+    colors: {
+      primary: data.colors?.primary || data.colors?.accent || "#6366F1",
+      secondary: data.colors?.secondary || data.colors?.muted || "#4F46E5",
+      accent: data.colors?.accent,
+      neutral: data.colors?.neutral || data.colors?.muted,
+      background: data.colors?.light || data.colors?.background,
+    },
+    fonts: {
+      heading: data.fonts?.heading,
+      body: data.fonts?.body,
+    },
+    logo: data.logo_url ? { url: data.logo_url, alt: data.name || "Logo" } : undefined,
+  });
+  // Extract color values from the brand payload for the blueprint.
+  const brandColors: Record<string, string> =
+    brandPayload.type === "drupal-config"
+      ? Object.fromEntries(
+          Object.entries(brandPayload.values).filter(
+            ([, v]) => typeof v === "string" && (v as string).startsWith("#")
+          )
+        ) as Record<string, string>
+      : mapColorsToSpaceDS(data.colors || {});
 
   // Assemble blueprint
   const blueprint: BlueprintBundle = {

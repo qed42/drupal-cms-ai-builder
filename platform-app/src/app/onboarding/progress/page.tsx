@@ -38,6 +38,7 @@ export default function ProgressPage() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [downloadLoading, setDownloadLoading] = useState(false);
+  const [retrying, setRetrying] = useState(false);
   const [provisioningProgress, setProvisioningProgress] = useState<{
     currentStep: number;
     totalSteps: number;
@@ -59,6 +60,7 @@ export default function ProgressPage() {
   }
 
   const pollStatus = useCallback(async () => {
+    if (retrying) return;
     try {
       const url = siteId
         ? `/api/provision/status?siteId=${siteId}`
@@ -95,7 +97,7 @@ export default function ProgressPage() {
     } catch {
       // Silently retry on network errors
     }
-  }, [siteId]);
+  }, [siteId, retrying]);
 
   useEffect(() => {
     pollStatus();
@@ -114,6 +116,8 @@ export default function ProgressPage() {
     // Determine what to retry based on where the failure occurred.
     const isProvisioningFailure = siteStatus === "provisioning_failed";
 
+    // Suppress polling while the retry API processes to avoid stale error state
+    setRetrying(true);
     setError(null);
     setDone(false);
 
@@ -143,6 +147,9 @@ export default function ProgressPage() {
         setError("Failed to restart generation. Please try again.");
       }
     }
+
+    // Resume polling after a short delay for the backend to update
+    setTimeout(() => setRetrying(false), 3000);
   }
 
   // Extract page names from the generate phase summary if available
