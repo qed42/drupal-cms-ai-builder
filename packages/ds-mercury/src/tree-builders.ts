@@ -117,7 +117,7 @@ function componentHasProp(componentId: string, propName: string): boolean {
 
 /** Placeholder image path within the Mercury theme. */
 const PLACEHOLDER_IMAGE_PATH =
-  "/themes/contrib/mercury/images/placeholder.jpg";
+  "/themes/contrib/mercury/components/image/assets/pexels-felix-mittermeier-1209650.jpg";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -397,7 +397,7 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
 
   const items: ComponentTreeItem[] = [section, navbar];
 
-  // Logo slot — use card-logo instead of plain image
+  // Logo slot — use card-logo without any background color
   if (logo?.url) {
     items.push(
       createItem(
@@ -412,6 +412,7 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
             height: 40,
           },
           url: "/",
+          background: "none",
         },
         "Logo Card"
       )
@@ -495,7 +496,7 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
       "mercury:group",
       footer.uuid,
       "footer_first",
-      { flex_direction: "column", flex_gap: "sm", flex_align: "start", items_align: "start" },
+      { flex_direction: "column", flex_gap: "sm", flex_align: "start", items_align: "start", background: "none" },
       "Brand Group"
     );
     items.push(brandGroup);
@@ -521,7 +522,7 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
       "mercury:group",
       footer.uuid,
       "footer_utility_first",
-      { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center" },
+      { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center", background: "none" },
       "Footer Links"
     );
     items.push(linksGroup);
@@ -560,7 +561,7 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
       "mercury:group",
       footer.uuid,
       "footer_last",
-      { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center" },
+      { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center", background: "none" },
       "Footer CTAs"
     );
     items.push(ctaGroup);
@@ -595,7 +596,7 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
     "mercury:group",
     footer.uuid,
     "footer_utility_last",
-    { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center" },
+    { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center", background: "none" },
     "Legal & Copyright"
   );
   items.push(legalGroup);
