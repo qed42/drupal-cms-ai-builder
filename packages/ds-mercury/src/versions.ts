@@ -30,6 +30,10 @@ export const COMPONENT_VERSIONS: Record<string, string> = {
   "sdc.mercury.card-pricing": "0000000000000000",
   "sdc.mercury.card-testimonial": "0000000000000000",
 
+  // Block components (Drupal menu blocks)
+  "block.system_menu_block.main": "0000000000000000",
+  "block.system_menu_block.footer": "0000000000000000",
+
   // Base
   "sdc.mercury.heading": "0000000000000000",
   "sdc.mercury.text": "0000000000000000",
@@ -45,13 +49,17 @@ export const COMPONENT_VERSIONS: Record<string, string> = {
 /**
  * Convert an SDC component ID (e.g. "mercury:hero-billboard")
  * to a Canvas component ID (e.g. "sdc.mercury.hero-billboard").
+ *
+ * Block component IDs (e.g. "block.system_menu_block.main") are
+ * already in Canvas format and pass through unchanged.
  */
 export function toCanvasComponentId(sdcId: string): string {
+  if (sdcId.startsWith("block.")) return sdcId;
   return `sdc.${sdcId.replace(":", ".")}`;
 }
 
 /**
- * Look up the version hash for a given SDC-format component ID.
+ * Look up the version hash for a given component ID.
  * Returns "0000000000000000" if the component is not found.
  */
 export function getComponentVersion(sdcId: string): string {

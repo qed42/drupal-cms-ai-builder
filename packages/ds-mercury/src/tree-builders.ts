@@ -270,10 +270,17 @@ export function createItem(
     }
   }
 
-  // Fill empty/missing image props with a valid placeholder
+  // Fill empty/missing image props with a valid placeholder.
+  // Skip background_media on sections — it causes visual noise and is rarely
+  // intentional in AI-generated trees.
   const imageProps = MANIFEST_IMAGE_PROPS.get(componentId);
   if (imageProps) {
     for (const propName of imageProps) {
+      // Omit section background images entirely
+      if (propName === "background_media" && componentId === "mercury:section") {
+        delete mergedInputs[propName];
+        continue;
+      }
       const val = mergedInputs[propName];
       const needsFill =
         !val ||
@@ -288,8 +295,8 @@ export function createItem(
         mergedInputs[propName] = {
           src: PLACEHOLDER_IMAGE_PATH,
           alt: typeof val === "string" ? val : label || "Image",
-          width: propName === "background_media" ? 1920 : 1080,
-          height: propName === "background_media" ? 1080 : 600,
+          width: 1080,
+          height: 600,
         };
       }
     }
@@ -313,6 +320,34 @@ export function createItem(
     slot,
     inputs: mergedInputs,
     label: autoLabel,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Block component helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a ComponentTreeItem for a Drupal block component (e.g., menu blocks).
+ *
+ * Block components use their Canvas ID directly (e.g., "block.system_menu_block.main")
+ * and bypass manifest validation since they aren't SDC components.
+ */
+function createBlockItem(
+  blockId: string,
+  parentUuid: string | null,
+  slot: string | null,
+  inputs: Record<string, unknown>,
+  label: string
+): ComponentTreeItem {
+  return {
+    uuid: randomUUID(),
+    component_id: blockId,
+    component_version: getComponentVersion(blockId),
+    parent_uuid: parentUuid,
+    slot,
+    inputs,
+    label,
   };
 }
 
@@ -412,15 +447,21 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
             height: 40,
           },
           url: "/",
-          background: "none",
+          background: "_none",
         },
         "Logo Card"
       )
     );
   }
 
-  // Navigation slot — left empty for Drupal's Main Navigation menu system
-  // Canvas renders the main menu block into this slot at runtime.
+  // Navigation slot — Main Navigation menu block
+  items.push(createBlockItem(
+    "block.system_menu_block.main",
+    navbar.uuid,
+    "navigation",
+    { label: "Main Navigation", label_display: "0", level: 1, depth: 0, expand_all_items: false },
+    "Main Navigation"
+  ));
 
   // CTA button in links slot
   if (ctaText && ctaUrl) {
@@ -506,8 +547,21 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
     );
   }
 
-  // ── Utility links (footer_utility_first) — empty, Drupal's Main Navigation
-  // and Footer menus are rendered into this slot at runtime by Canvas.
+  // ── Utility links (footer_utility_first) — Drupal menu blocks ──
+  items.push(createBlockItem(
+    "block.system_menu_block.main",
+    footer.uuid,
+    "footer_utility_first",
+    { label: "Main Navigation", label_display: "0", level: 1, depth: 0, expand_all_items: false },
+    "Main Navigation"
+  ));
+  items.push(createBlockItem(
+    "block.system_menu_block.footer",
+    footer.uuid,
+    "footer_utility_first",
+    { label: "Footer", label_display: "0", level: 1, depth: 0, expand_all_items: false },
+    "Footer Menu"
+  ));
 
   // ── CTAs (footer_last, horizontal) — 1 primary + 1 secondary ──
   const primaryCta = ctaPrimary ?? { label: "Contact Us", url: "/contact" };
@@ -518,7 +572,7 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
       "mercury:group",
       footer.uuid,
       "footer_last",
-      { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center", background: "none" },
+      { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center", background: "_none" },
       "Footer CTAs"
     );
     items.push(ctaGroup);
@@ -813,8 +867,40 @@ export function buildHeroSection(
   }
 
   // hero-billboard and hero-side-by-side have hero_slot
-  const hero = createItem(componentId, null, null, props, labelFromId(componentId));
+  const heroInputs = { ...props };
+
+  // Hero billboard: enforce overlay for text readability
+  if (componentId === "mercury:hero-billboard") {
+    if (!heroInputs.overlay_opacity || heroInputs.overlay_opacity === "0%") {
+      heroInputs.overlay_opacity = "40%";
+    }
+  }
+
+  const hero = createItem(componentId, null, null, heroInputs, labelFromId(componentId));
   const items: ComponentTreeItem[] = [hero];
+
+  // Ensure hero_slot has at minimum an h1 heading (for hero-billboard)
+  const hasHeadingChild = children?.some(
+    (c) => c.componentId === "mercury:heading"
+  );
+
+  if (componentId === "mercury:hero-billboard" && !hasHeadingChild) {
+    items.push(
+      createItem(
+        "mercury:heading",
+        hero.uuid,
+        "hero_slot",
+        {
+          heading_text: heroInputs.heading_text || "Welcome",
+          level: tagLevel,
+          text_size: "heading-responsive-5xl",
+          text_color: "inverted",
+          align: "left",
+        },
+        "Hero Heading"
+      )
+    );
+  }
 
   if (children?.length) {
     for (const child of children) {
@@ -828,11 +914,16 @@ export function buildHeroSection(
           childProps.text_size = "heading-responsive-5xl";
         }
         if (!childProps.text_color) {
-          childProps.text_color = "default";
+          childProps.text_color = "inverted";
         }
         if (!childProps.align) {
           childProps.align = "left";
         }
+      }
+
+      // Ensure text in hero uses inverted color for contrast
+      if (child.componentId === "mercury:text" && !childProps.text_color) {
+        childProps.text_color = "inverted";
       }
 
       items.push(
