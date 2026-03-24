@@ -12,6 +12,8 @@ export interface ImageIntent {
   pageIndex: number;
   /** Index of the section within the page */
   sectionIndex: number;
+  /** Index of the child within a composed section (undefined for top-level) */
+  childIndex?: number;
   /** The prop name to inject the image into (e.g., "image", "background_image", "image_1") */
   propName: string;
   /** Search query for stock image API */
@@ -26,7 +28,8 @@ export interface ImageIntent {
 /**
  * Extract image intents from all pages in a blueprint.
  * Analyzes each section's component type and text content to generate
- * contextually relevant search queries.
+ * contextually relevant search queries. Also scans section children
+ * (composed sections) for image-capable components like cards.
  */
 export function extractImageIntents(
   pages: PageLayout[],
@@ -41,25 +44,49 @@ export function extractImageIntents(
 
     for (let secIdx = 0; secIdx < page.sections.length; secIdx++) {
       const section = page.sections[secIdx];
+
+      // Top-level section image props
       const mapping = adapter.getImageMapping(section.component_id);
+      if (mapping) {
+        for (const propName of mapping.props) {
+          if (section.props[propName]) continue;
 
-      if (!mapping) continue;
+          const query = buildSearchQuery(section, page, industry, audience);
+          intents.push({
+            pageIndex: pageIdx,
+            sectionIndex: secIdx,
+            propName,
+            query,
+            orientation: mapping.orientation,
+            targetWidth: mapping.dimensions.width,
+            targetHeight: mapping.dimensions.height,
+          });
+        }
+      }
 
-      for (const propName of mapping.props) {
-        // Skip if the section already has an image for this prop
-        if (section.props[propName]) continue;
+      // Children in composed sections (e.g., cards in a grid)
+      if (section.children) {
+        for (let childIdx = 0; childIdx < section.children.length; childIdx++) {
+          const child = section.children[childIdx];
+          const childMapping = adapter.getImageMapping(child.component_id);
+          if (!childMapping) continue;
 
-        const query = buildSearchQuery(section, page, industry, audience);
+          for (const propName of childMapping.props) {
+            if (child.props[propName]) continue;
 
-        intents.push({
-          pageIndex: pageIdx,
-          sectionIndex: secIdx,
-          propName,
-          query,
-          orientation: mapping.orientation,
-          targetWidth: mapping.dimensions.width,
-          targetHeight: mapping.dimensions.height,
-        });
+            const query = buildSearchQuery(section, page, industry, audience);
+            intents.push({
+              pageIndex: pageIdx,
+              sectionIndex: secIdx,
+              childIndex: childIdx,
+              propName,
+              query,
+              orientation: childMapping.orientation,
+              targetWidth: childMapping.dimensions.width,
+              targetHeight: childMapping.dimensions.height,
+            });
+          }
+        }
       }
     }
   }
@@ -70,7 +97,7 @@ export function extractImageIntents(
 /**
  * Build a search query from section content, page context, and business info.
  */
-function buildSearchQuery(
+export function buildSearchQuery(
   section: PageSection,
   page: PageLayout,
   industry: string,
@@ -110,7 +137,7 @@ function buildSearchQuery(
   return `${industry} ${pageContext} ${typeHint}`.trim();
 }
 
-function getComponentTypeHint(componentId: string): string {
+export function getComponentTypeHint(componentId: string): string {
   if (componentId.includes("hero")) return "professional";
   if (componentId.includes("user-card") || componentId.includes("testimon")) return "portrait person";
   if (componentId.includes("cta")) return "business";

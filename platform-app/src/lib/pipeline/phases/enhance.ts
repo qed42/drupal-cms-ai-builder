@@ -89,10 +89,14 @@ export async function runEnhancePhase(
         height: intent.targetHeight,
       };
 
-      // Inject into the section's props
+      // Inject into the section's props (or child props for composed sections)
       const page = blueprint.pages[intent.pageIndex];
       const section = page.sections[intent.sectionIndex];
-      section.props[intent.propName] = imageObj;
+      if (intent.childIndex !== undefined && section.children?.[intent.childIndex]) {
+        section.children[intent.childIndex].props[intent.propName] = imageObj;
+      } else {
+        section.props[intent.propName] = imageObj;
+      }
 
       imagesAdded++;
     } catch (err) {
