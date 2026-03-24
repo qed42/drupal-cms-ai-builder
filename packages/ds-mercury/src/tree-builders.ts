@@ -358,30 +358,50 @@ function createSectionHeading(
 /**
  * Build a Canvas-ready component tree for the site header.
  *
- * Structure:
- *   mercury:navbar (root)
- *     mercury:image (slot="logo")
- *     mercury:button x N (slot="navigation") — nav links as secondary-inverted buttons
- *     mercury:button (slot="links") — CTA
+ * Structure (matches Mercury Canvas global region layout):
+ *   mercury:section (root, background_color="accent")
+ *     main_slot → mercury:navbar
+ *       logo → mercury:card-logo
+ *       navigation → mercury:button x N (nav links)
+ *       links → mercury:button (CTA)
  */
 export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
   const { siteName, logo, pages, ctaText, ctaUrl } = data;
 
+  // Wrapping section with accent background
+  const section = createItem(
+    "mercury:section",
+    null,
+    null,
+    {
+      columns: "100",
+      mobile_columns: "1",
+      width: "100%",
+      margin_block_start: "0",
+      margin_block_end: "0",
+      padding_block_start: "0",
+      padding_block_end: "0",
+      background_color: "accent",
+    },
+    "Section"
+  );
+
+  // Navbar in main_slot of the section
   const navbar = createItem(
     "mercury:navbar",
-    null,
-    null,
+    section.uuid,
+    "main_slot",
     { menu_align: "center" },
     "Navbar"
   );
 
-  const items: ComponentTreeItem[] = [navbar];
+  const items: ComponentTreeItem[] = [section, navbar];
 
-  // Logo slot
+  // Logo slot — use card-logo instead of plain image
   if (logo?.url) {
     items.push(
       createItem(
-        "mercury:image",
+        "mercury:card-logo",
         navbar.uuid,
         "logo",
         {
@@ -391,8 +411,9 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
             width: 160,
             height: 40,
           },
+          url: "/",
         },
-        "Site Logo"
+        "Logo Card"
       )
     );
   }
@@ -410,7 +431,7 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
     );
   }
 
-  // CTA button slot
+  // CTA button in links slot
   if (ctaText && ctaUrl) {
     items.push(
       createItem(
