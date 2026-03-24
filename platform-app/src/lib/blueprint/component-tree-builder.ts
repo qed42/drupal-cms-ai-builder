@@ -204,8 +204,11 @@ export function buildComponentTree(
         slot: c.slot,
         props: { ...c.props },
       }));
+      const isHero = section.component_id.includes("hero");
+      const builder = isHero ? adapter.buildHeroSection : adapter.buildOrganismSection;
       items.push(
-        ...adapter.buildOrganismSection(
+        ...builder.call(
+          adapter,
           section.component_id,
           { ...section.props },
           children,
