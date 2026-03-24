@@ -1,0 +1,9 @@
+services:
+  platform:
+    build:
+      context: .
+      dockerfile: platform-app/Dockerfile.prod
+    volumes:
+      - ./provisioning:/provisioning
+      - ./drupal-site:/drupal-site
+      - /var/run/docker.sock:/var/run/docker.sock

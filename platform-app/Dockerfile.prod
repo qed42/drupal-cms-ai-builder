@@ -1,0 +1,27 @@
+FROM node:22-alpine
+
+RUN apk add --no-cache docker-cli
+
+WORKDIR /workspace
+
+# Copy root workspace config and package directories
+COPY package.json ./
+COPY packages/ ./packages/
+COPY platform-app/package*.json ./platform-app/
+
+# Install all workspace dependencies
+RUN npm install
+
+WORKDIR /workspace/platform-app
+
+COPY platform-app/prisma ./prisma
+RUN npx prisma generate
+
+COPY platform-app/ .
+
+# Build the Next.js app
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start"]

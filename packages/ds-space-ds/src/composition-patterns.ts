@@ -28,14 +28,14 @@ export const COMPOSITION_PATTERNS: Record<string, CompositionPattern> = {
   },
   "features-grid-3col": {
     name: "features-grid-3col",
-    description: "Three feature columns with icon, heading, and text each",
-    childRoles: ["icon", "heading", "text"],
+    description: "Three feature columns — one molecule per column (content-detail, card, stats-kpi, or contact-card)",
+    childRoles: ["content-detail", "card", "stats-kpi"],
     applicablePageTypes: ["home", "services", "landing", "generic"],
   },
   "features-grid-4col": {
     name: "features-grid-4col",
-    description: "Four feature columns for compact display",
-    childRoles: ["icon", "heading", "text"],
+    description: "Four feature columns — one molecule per column (content-detail, card, stats-kpi, or contact-card)",
+    childRoles: ["content-detail", "card", "stats-kpi"],
     applicablePageTypes: ["home", "services", "landing"],
   },
   "stats-row": {

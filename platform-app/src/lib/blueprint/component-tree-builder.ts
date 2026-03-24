@@ -142,13 +142,27 @@ export function buildComponentTree(
     // Heading hierarchy: first section gets h1, all others get h2.
     const sectionTag = sIdx === 0 ? "h1" : "h2";
 
-    // Anti-monotony: if this pattern matches the previous one, try to swap
-    if (currentPattern && currentPattern === prevPattern && section.pattern) {
-      const alternate = TEXT_IMAGE_ALTERNATES[section.pattern];
-      if (alternate && PATTERN_COLUMN_WIDTHS[alternate]) {
-        section.pattern = alternate;
-        currentPattern = alternate;
+    // Anti-monotony: if this pattern/component matches the previous one, try to swap or skip
+    if (currentPattern && currentPattern === prevPattern) {
+      if (section.pattern) {
+        const alternate = TEXT_IMAGE_ALTERNATES[section.pattern];
+        if (alternate && PATTERN_COLUMN_WIDTHS[alternate]) {
+          section.pattern = alternate;
+          currentPattern = alternate;
+        }
+      } else if (section.component_id) {
+        // Skip consecutive duplicate organism sections (e.g., back-to-back CTA banners)
+        continue;
       }
+    }
+
+    // Enforce section heading on composed sections (Type B) that aren't heroes/CTAs.
+    // If the AI omitted the section_heading, synthesize one from the pattern name.
+    if (section.pattern && !section.section_heading && section.children) {
+      const patternLabel = section.pattern
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+      section.section_heading = { title: patternLabel };
     }
 
     // Route to appropriate builder
