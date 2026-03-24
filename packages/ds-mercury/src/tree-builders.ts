@@ -92,7 +92,12 @@ function buildRequiredPropDefaults(): Map<string, Record<string, unknown>> {
       if (prop.default !== undefined) {
         defaults[prop.name] = prop.default;
       } else if (prop.enum && prop.enum.length > 0) {
-        defaults[prop.name] = prop.enum[0];
+        // Only default required enum props to their first value.
+        // Optional enums (e.g. background, background_color) should remain
+        // absent — defaulting to "primary" applies an unintended visible style.
+        if (prop.required) {
+          defaults[prop.name] = prop.enum[0];
+        }
       } else if (prop.type === "string") {
         defaults[prop.name] = "";
       } else if (prop.type === "integer" || prop.type === "number") {
@@ -446,8 +451,7 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
             width: 160,
             height: 40,
           },
-          url: "/",
-          background: "_none",
+          url: "/"
         },
         "Logo Card"
       )
@@ -572,7 +576,7 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
       "mercury:group",
       footer.uuid,
       "footer_last",
-      { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center", background: "_none" },
+      { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center" },
       "Footer CTAs"
     );
     items.push(ctaGroup);
