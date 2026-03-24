@@ -408,34 +408,17 @@ function createSectionHeading(
 export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
   const { siteName, logo, pages, ctaText, ctaUrl } = data;
 
-  // Wrapping section with accent background
-  const section = createItem(
-    "mercury:section",
-    null,
-    null,
-    {
-      columns: "100",
-      mobile_columns: "1",
-      width: "100%",
-      margin_block_start: "0",
-      margin_block_end: "0",
-      padding_block_start: "0",
-      padding_block_end: "0",
-      background_color: "accent",
-    },
-    "Section"
-  );
-
-  // Navbar in main_slot of the section
+  // Navbar is the root element — page_region trees don't use section wrappers.
+  // Canvas page_region validates that root items cannot have null parent_uuid/slot.
   const navbar = createItem(
     "mercury:navbar",
-    section.uuid,
-    "main_slot",
-    { menu_align: "center" },
+    null,
+    null,
+    { menu_align: "right" },
     "Navbar"
   );
 
-  const items: ComponentTreeItem[] = [section, navbar];
+  const items: ComponentTreeItem[] = [navbar];
 
   // Logo slot — use card-logo without any background color
   if (logo?.url) {
@@ -552,13 +535,13 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
   }
 
   // ── Utility links (footer_utility_first) — Drupal menu blocks ──
-  items.push(createBlockItem(
-    "block.system_menu_block.main",
-    footer.uuid,
-    "footer_utility_first",
-    { label: "Main navigation", label_display: "0", level: 1, depth: null, expand_all_items: false },
-    "Main Navigation"
-  ));
+  // items.push(createBlockItem(
+  //   "block.system_menu_block.main",
+  //   footer.uuid,
+  //   "footer_utility_first",
+  //   { label: "Main navigation", label_display: "0", level: 1, depth: null, expand_all_items: false },
+  //   "Main Navigation"
+  // ));
   items.push(createBlockItem(
     "block.system_menu_block.footer",
     footer.uuid,

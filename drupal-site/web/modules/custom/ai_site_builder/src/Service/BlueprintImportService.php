@@ -532,14 +532,21 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
       // Strip NULL and empty-object inputs so Canvas uses component defaults.
       $inputs = $this->stripNullInputs($inputs, $item['component_id']);
 
-      $prepared[] = [
+      $entry = [
         'uuid' => $item['uuid'],
         'component_id' => $item['component_id'],
         'component_version' => $item['component_version'] ?? '',
-        'parent_uuid' => $item['parent_uuid'] ?? NULL,
-        'slot' => $item['slot'] ?? NULL,
         'inputs' => $inputs,
       ];
+      // Only include parent_uuid and slot when present — Canvas page_region
+      // validation rejects NULL values for root-level items.
+      if (!empty($item['parent_uuid'])) {
+        $entry['parent_uuid'] = $item['parent_uuid'];
+      }
+      if (!empty($item['slot'])) {
+        $entry['slot'] = $item['slot'];
+      }
+      $prepared[] = $entry;
     }
 
     return $prepared;
