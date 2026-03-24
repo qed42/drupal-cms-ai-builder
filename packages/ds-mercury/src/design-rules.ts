@@ -13,7 +13,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
     titlePatterns: ["home", "welcome", "homepage"],
     description:
       "Primary landing page — maximum visual impact, clear value proposition, social proof, strong CTA",
-    sectionCountRange: [7, 9],
+    sectionCountRange: [9, 11],
     sections: [
       {
         type: "hero",
@@ -43,20 +43,20 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         wordCountRange: [150, 250],
       },
       {
+        type: "highlights",
+        required: false,
+        position: "middle",
+        visualWeight: "medium",
+        preferredPatterns: ["features-grid-4col", "card-grid-3col"],
+        wordCountRange: [60, 120],
+      },
+      {
         type: "testimonials",
         required: true,
         position: "middle",
         visualWeight: "medium",
         preferredPatterns: ["testimonials-grid-3col"],
         wordCountRange: [80, 150],
-      },
-      {
-        type: "logos",
-        required: false,
-        position: "middle",
-        visualWeight: "light",
-        preferredPatterns: ["logo-showcase"],
-        wordCountRange: [10, 30],
       },
       {
         type: "cta",
@@ -87,7 +87,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
       "Every content section should include a heading in the section header_slot before content in main_slot.",
       "TESTIMONIALS: Use a section with 33-33-33 columns containing card-testimonial components in main_slot.",
       "FEATURES: Use a section with 33-33-33 or 25-25-25-25 columns containing card-icon components in main_slot.",
-      "LOGOS: Use a section with 25-25-25-25 columns containing card-logo components.",
+      "HIGHLIGHTS: Use a section with 25-25-25-25 or 33-33-33 columns containing card-icon components to showcase key stats or differentiators.",
     ].join("\n"),
   },
 
