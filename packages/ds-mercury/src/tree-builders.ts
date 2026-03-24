@@ -414,7 +414,7 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
     "mercury:navbar",
     null,
     null,
-    { menu_align: "right" },
+    { menu_align: "center" },
     "Navbar"
   );
 
@@ -457,7 +457,7 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
         "mercury:button",
         navbar.uuid,
         "links",
-        { label: ctaText, href: ctaUrl, variant: "primary", size: "small" },
+        { label: ctaText, href: ctaUrl, variant: "primary", size: "small", icon: "arrow-right" },
         "Header CTA"
       )
     );
@@ -535,13 +535,6 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
   }
 
   // ── Utility links (footer_utility_first) — Drupal menu blocks ──
-  // items.push(createBlockItem(
-  //   "block.system_menu_block.main",
-  //   footer.uuid,
-  //   "footer_utility_first",
-  //   { label: "Main navigation", label_display: "0", level: 1, depth: null, expand_all_items: false },
-  //   "Main Navigation"
-  // ));
   items.push(createBlockItem(
     "block.system_menu_block.footer",
     footer.uuid,
@@ -570,7 +563,7 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
           "mercury:button",
           ctaGroup.uuid,
           "group_slot",
-          { label: primaryCta.label, href: primaryCta.url, variant: "primary", size: "medium" },
+          { label: primaryCta.label, href: primaryCta.url, variant: "primary", size: "medium", icon: "arrow-right" },
           "Footer Primary CTA"
         )
       );
@@ -879,8 +872,8 @@ export function buildHeroSection(
         "hero_slot",
         {
           heading_text: heroInputs.heading_text || "Welcome",
-          level: tagLevel,
-          text_size: "heading-responsive-5xl",
+          level: 1,
+          text_size: "heading-responsive-8xl",
           text_color: "inverted",
           align: "left",
         },
@@ -898,7 +891,7 @@ export function buildHeroSection(
       if (child.componentId === "mercury:heading" && !childProps.level) {
         childProps.level = tagLevel;
         if (!childProps.text_size) {
-          childProps.text_size = "heading-responsive-5xl";
+          childProps.text_size = "heading-responsive-8xl";
         }
         if (!childProps.text_color) {
           childProps.text_color = "inverted";
