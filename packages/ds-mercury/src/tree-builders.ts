@@ -463,7 +463,7 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
     "block.system_menu_block.main",
     navbar.uuid,
     "navigation",
-    { label: "Main Navigation", label_display: "0", level: 1, depth: 0, expand_all_items: false },
+    { label: "Main navigation", label_display: "0", level: 1, depth: null, expand_all_items: false },
     "Main Navigation"
   ));
 
@@ -531,7 +531,7 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
       "mercury:group",
       footer.uuid,
       "footer_first",
-      { flex_direction: "column", flex_gap: "sm", flex_align: "start", items_align: "start", background: "none" },
+      { flex_direction: "column", flex_gap: "sm", flex_align: "start", items_align: "start" },
       "Brand Group"
     );
     items.push(brandGroup);
@@ -556,14 +556,14 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
     "block.system_menu_block.main",
     footer.uuid,
     "footer_utility_first",
-    { label: "Main Navigation", label_display: "0", level: 1, depth: 0, expand_all_items: false },
+    { label: "Main navigation", label_display: "0", level: 1, depth: null, expand_all_items: false },
     "Main Navigation"
   ));
   items.push(createBlockItem(
     "block.system_menu_block.footer",
     footer.uuid,
     "footer_utility_first",
-    { label: "Footer", label_display: "0", level: 1, depth: 0, expand_all_items: false },
+    { label: "Footer", label_display: "0", level: 1, depth: null, expand_all_items: false },
     "Footer Menu"
   ));
 
