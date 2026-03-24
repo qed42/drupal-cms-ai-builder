@@ -446,7 +446,7 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
     "block.system_menu_block.main",
     navbar.uuid,
     "navigation",
-    { label: "Main navigation", label_display: "0", level: 1, depth: null, expand_all_items: false },
+    { label: "Main navigation", label_display: "0", level: 1, depth: 1, expand_all_items: false },
     "Main Navigation"
   ));
 
@@ -546,7 +546,7 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
     "block.system_menu_block.footer",
     footer.uuid,
     "footer_utility_first",
-    { label: "Footer", label_display: "0", level: 1, depth: null, expand_all_items: false },
+    { label: "Footer", label_display: "0", level: 1, depth: 1, expand_all_items: false },
     "Footer Menu"
   ));
 
