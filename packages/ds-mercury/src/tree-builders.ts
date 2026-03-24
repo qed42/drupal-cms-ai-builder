@@ -419,18 +419,8 @@ export function buildHeaderTree(data: HeaderData): ComponentTreeItem[] {
     );
   }
 
-  // Navigation slot — one button per page
-  for (const page of pages) {
-    items.push(
-      createItem(
-        "mercury:button",
-        navbar.uuid,
-        "navigation",
-        { label: page.title, href: `/${page.slug}`, variant: "secondary-inverted", size: "small" },
-        `Nav: ${page.title}`
-      )
-    );
-  }
+  // Navigation slot — left empty for Drupal's Main Navigation menu system
+  // Canvas renders the main menu block into this slot at runtime.
 
   // CTA button in links slot
   if (ctaText && ctaUrl) {
@@ -516,45 +506,12 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
     );
   }
 
-  // ── Navigation + social links (footer_utility_first, horizontal) ──
-  if (navLinks.length > 0 || socialLinks.length > 0) {
-    const linksGroup = createItem(
-      "mercury:group",
-      footer.uuid,
-      "footer_utility_first",
-      { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center", background: "none" },
-      "Footer Links"
-    );
-    items.push(linksGroup);
-
-    for (const link of navLinks) {
-      items.push(
-        createItem(
-          "mercury:button",
-          linksGroup.uuid,
-          "group_slot",
-          { label: link.title, href: link.url, variant: "secondary-inverted", size: "small" },
-          `Footer Nav: ${link.title}`
-        )
-      );
-    }
-
-    for (const social of socialLinks) {
-      items.push(
-        createItem(
-          "mercury:button",
-          linksGroup.uuid,
-          "group_slot",
-          { label: social.platform, href: social.url, variant: "secondary-inverted", size: "small" },
-          `Social: ${social.platform}`
-        )
-      );
-    }
-  }
+  // ── Utility links (footer_utility_first) — empty, Drupal's Main Navigation
+  // and Footer menus are rendered into this slot at runtime by Canvas.
 
   // ── CTAs (footer_last, horizontal) — 1 primary + 1 secondary ──
-  const primaryCta = ctaPrimary ?? (navLinks.length > 0 ? { label: "Contact Us", url: "/contact" } : undefined);
-  const secondaryCta = ctaSecondary ?? (navLinks.length > 0 ? { label: "About Us", url: "/about" } : undefined);
+  const primaryCta = ctaPrimary ?? { label: "Contact Us", url: "/contact" };
+  const secondaryCta = ctaSecondary ?? { label: "About Us", url: "/about" };
 
   if (primaryCta || secondaryCta) {
     const ctaGroup = createItem(
@@ -591,33 +548,12 @@ export function buildFooterTree(data: FooterData): ComponentTreeItem[] {
     }
   }
 
-  // ── Legal links + copyright (footer_utility_last, horizontal) ──
-  const legalGroup = createItem(
-    "mercury:group",
-    footer.uuid,
-    "footer_utility_last",
-    { flex_direction: "row", flex_gap: "md", flex_align: "center", items_align: "center", background: "none" },
-    "Legal & Copyright"
-  );
-  items.push(legalGroup);
-
-  for (const link of legalLinks) {
-    items.push(
-      createItem(
-        "mercury:button",
-        legalGroup.uuid,
-        "group_slot",
-        { label: link.title, href: link.url, variant: "secondary-inverted", size: "small" },
-        `Legal: ${link.title}`
-      )
-    );
-  }
-
+  // ── Copyright text (footer_utility_last) — Text component only ──
   items.push(
     createItem(
       "mercury:text",
-      legalGroup.uuid,
-      "group_slot",
+      footer.uuid,
+      "footer_utility_last",
       {
         text: `<p>\u00A9 ${currentYear} ${siteName}. All rights reserved.</p>`,
         text_size: "text-sm",
