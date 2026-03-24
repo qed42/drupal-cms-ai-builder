@@ -631,10 +631,14 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
 
       $mediaId = $this->createMediaEntityFromImage($imageData['src'], $imageData['alt'] ?? '');
       if ($mediaId === NULL) {
-        $this->logger->warning('Could not create media entity for image "@src" in prop "@prop".', [
+        $this->logger->warning('Could not create media entity for image "@src" in prop "@prop". Removing prop to prevent Canvas assertion error.', [
           '@src' => $imageData['src'],
           '@prop' => $propName,
         ]);
+        // Remove the raw image data — leaving it causes Canvas to fail
+        // in ReferenceFieldTypePropExpression::calculateDependencies()
+        // because it expects a valid entity reference, not a raw array.
+        unset($inputs[$propName]);
         continue;
       }
 
