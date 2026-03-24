@@ -51,6 +51,14 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
         wordCountRange: [60, 120],
       },
       {
+        type: "logos",
+        required: false,
+        position: "middle",
+        visualWeight: "light",
+        preferredPatterns: ["logo-showcase"],
+        wordCountRange: [10, 30],
+      },
+      {
         type: "testimonials",
         required: true,
         position: "middle",
@@ -88,6 +96,7 @@ export const PAGE_DESIGN_RULES: PageDesignRule[] = [
       "TESTIMONIALS: Use a section with 33-33-33 columns containing card-testimonial components in main_slot.",
       "FEATURES: Use a section with 33-33-33 or 25-25-25-25 columns containing card-icon components in main_slot.",
       "HIGHLIGHTS: Use a section with 25-25-25-25 or 33-33-33 columns containing card-icon components to showcase key stats or differentiators.",
+      "LOGOS: Use a section with columns set to 25-25-25-25. Place a heading component in header_slot with text like 'Trusted By' or 'Our Clients'. Place at least 12 card-logo components in main_slot — each with a unique company/brand name as alt text and a placeholder image. The 4-column grid wraps into 3 rows of 4 logos.",
     ].join("\n"),
   },
 
