@@ -46,6 +46,12 @@ When fixing bugs reported by QA:
 4. Verify the fix against the original acceptance criteria
 5. Commit with a message referencing both the bug and original task
 
+**CRITICAL: Never apply defensive fixes.** Do not add optional chaining (`?.`), nullish coalescing (`??`), or fallback defaults to silence a crash without first tracing the data flow to identify *why* the value is unexpected. Defensive guards mask the real bug and push failures downstream. Instead:
+- Trace the data from its origin (API response, DB read, cache load, AI output) to the crash site
+- Identify the exact boundary where validation is missing or data is cast unsafely
+- Fix the root cause (add validation at the source, fix the producer, correct the schema)
+- Only add defensive checks at true system boundaries (external API responses, user input) where the caller genuinely cannot guarantee the shape
+
 ## Handoff
 
 After completing sprint tasks, inform the user to invoke `/qa sprint-{NN}` to run QA validation. For individual task completion, update the task status in the sprint file.

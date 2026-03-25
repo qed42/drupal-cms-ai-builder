@@ -7,6 +7,7 @@ import { setActiveAdapter } from "@/lib/design-systems/setup";
 import { computeInputHash } from "@/lib/transparency/input-hash";
 import { buildImpactBullets } from "@/lib/transparency/summary-templates";
 import type { OnboardingData, BlueprintBundle } from "@/lib/blueprint/types";
+import { ResearchBriefSchema } from "./schemas";
 import type { ResearchBrief, ContentPlan } from "./schemas";
 import type { ResearchPhaseResult } from "./phases/research";
 
@@ -69,7 +70,9 @@ async function resolveResearchPhase(
     onboarding?.researchPreview
   ) {
     const startTime = Date.now();
-    const brief = onboarding.researchPreview as unknown as ResearchBrief;
+    // Validate cached preview against schema — it may have been stored
+    // by an older version or a preview endpoint that skipped validation.
+    const brief = ResearchBriefSchema.parse(onboarding.researchPreview);
 
     // Determine next version number
     const lastBrief = await prisma.researchBrief.findFirst({
