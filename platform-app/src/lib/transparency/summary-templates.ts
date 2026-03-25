@@ -35,24 +35,27 @@ interface OnboardingDataSubset {
  * Research phase summary — references industry, audience, pain points, compliance.
  */
 export function buildResearchSummary(brief: ResearchBriefContent): string {
+  if (!brief || typeof brief !== "object") return "Research brief generated.";
+
   const parts: string[] = [];
 
   const industry = brief.industry || "your industry";
   const audience = brief.targetAudience?.primary || "your target audience";
   parts.push(`Identified your business as ${industry} targeting ${audience}`);
 
-  const painPointCount = brief.targetAudience?.painPoints?.length ?? 0;
-  if (painPointCount > 0) {
-    parts.push(`Found ${painPointCount} key customer need${painPointCount === 1 ? "" : "s"}`);
+  const painPoints = Array.isArray(brief.targetAudience?.painPoints) ? brief.targetAudience.painPoints : [];
+  if (painPoints.length > 0) {
+    parts.push(`Found ${painPoints.length} key customer need${painPoints.length === 1 ? "" : "s"}`);
   }
 
-  const keywordCount = brief.seoKeywords?.length ?? 0;
-  if (keywordCount > 0) {
-    parts.push(`Selected ${keywordCount} SEO keywords`);
+  const keywords = Array.isArray(brief.seoKeywords) ? brief.seoKeywords : [];
+  if (keywords.length > 0) {
+    parts.push(`Selected ${keywords.length} SEO keywords`);
   }
 
-  if (brief.complianceNotes && brief.complianceNotes.length > 0) {
-    const flags = brief.complianceNotes.join(", ");
+  const compliance = Array.isArray(brief.complianceNotes) ? brief.complianceNotes : [];
+  if (compliance.length > 0) {
+    const flags = compliance.join(", ");
     parts.push(`Noted ${flags} compliance considerations`);
   }
 
@@ -66,7 +69,9 @@ export function buildPlanSummary(
   plan: ContentPlanContent,
   onboardingPages?: string[]
 ): string {
-  const pages = plan.pages || [];
+  if (!plan || typeof plan !== "object") return "Content plan generated.";
+
+  const pages = Array.isArray(plan.pages) ? plan.pages : [];
   const pageCount = pages.length;
   const sectionCount = pages.reduce(
     (sum, p) => sum + (p.sections?.length ?? 0),
@@ -161,24 +166,26 @@ export function buildImpactBullets(
   }
 
   // SEO keywords
-  const keywordCount = brief.seoKeywords?.length ?? 0;
-  if (keywordCount > 0) {
+  const seoKeywords = Array.isArray(brief.seoKeywords) ? brief.seoKeywords : [];
+  if (seoKeywords.length > 0) {
     bullets.push(
-      `Optimized for ${keywordCount} SEO keyword${keywordCount === 1 ? "" : "s"} targeting your audience`
+      `Optimized for ${seoKeywords.length} SEO keyword${seoKeywords.length === 1 ? "" : "s"} targeting your audience`
     );
   }
 
   // Compliance
-  if (brief.complianceNotes && brief.complianceNotes.length > 0) {
+  const complianceNotes = Array.isArray(brief.complianceNotes) ? brief.complianceNotes : [];
+  if (complianceNotes.length > 0) {
     bullets.push(
-      `${brief.complianceNotes.join(", ")} compliance guidelines applied`
+      `${complianceNotes.join(", ")} compliance guidelines applied`
     );
   }
 
   // Proactive pages
-  if (data.pages && plan.pages) {
+  const planPages = Array.isArray(plan.pages) ? plan.pages : [];
+  if (data.pages && planPages.length > 0) {
     const onboardingSlugs = new Set(data.pages.map((p) => p.slug));
-    const proactive = plan.pages.filter((p) => !onboardingSlugs.has(p.slug));
+    const proactive = planPages.filter((p) => !onboardingSlugs.has(p.slug));
     if (proactive.length > 0) {
       const names = proactive.map((p) => p.title).join(", ");
       bullets.push(`Proactively added ${names} for better engagement`);
@@ -186,7 +193,7 @@ export function buildImpactBullets(
   }
 
   // Page count
-  const pageCount = plan.pages?.length ?? 0;
+  const pageCount = planPages.length;
   if (pageCount > 0) {
     bullets.push(
       `${pageCount} fully structured page${pageCount === 1 ? "" : "s"} ready for review`

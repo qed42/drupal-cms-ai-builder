@@ -1,6 +1,12 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  buildResearchSummary,
+  buildPlanSummary,
+  buildGenerateProgressSummary,
+  buildCompletionSummary,
+} from "@/lib/transparency/summary-templates";
 
 // Blueprint generation steps (0-85%).
 const GENERATION_STEP_PROGRESS: Record<string, number> = {
@@ -110,8 +116,22 @@ export async function GET(req: NextRequest) {
     progress = GENERATION_STEP_PROGRESS[generationStep] ?? 0;
   }
 
+  // Fetch onboarding session for context-aware summaries
+  const onboardingSession = await prisma.onboardingSession.findFirst({
+    where: { userId: session.user.id },
+    orderBy: { updatedAt: "desc" },
+  });
+  const onboardingPages: string[] = (() => {
+    try {
+      const data = onboardingSession?.data as { pages?: Array<{ slug: string }> } | null;
+      return data?.pages?.map((p) => p.slug) || [];
+    } catch {
+      return [];
+    }
+  })();
+
   // Build pipeline status object
-  const pipeline = await buildPipelineStatus(site.id, pipelinePhase, site.pipelineError);
+  const pipeline = await buildPipelineStatus(site.id, pipelinePhase, site.pipelineError, onboardingPages);
 
   return NextResponse.json({
     siteId: site.id,
@@ -133,7 +153,8 @@ export async function GET(req: NextRequest) {
 async function buildPipelineStatus(
   siteId: string,
   currentPhase: string | null,
-  pipelineError: string | null
+  pipelineError: string | null,
+  onboardingPages: string[]
 ): Promise<Record<string, PipelinePhaseStatus>> {
   // Fetch latest research brief and content plan for this site
   const [researchBrief, contentPlan] = await Promise.all([
@@ -147,37 +168,48 @@ async function buildPipelineStatus(
     }),
   ]);
 
-  // Determine research phase status
+  // Determine research phase status — use rich template summaries (TASK-407)
+  let researchSummary: string | undefined;
+  try {
+    researchSummary = researchBrief
+      ? buildResearchSummary(researchBrief.content as Parameters<typeof buildResearchSummary>[0])
+      : undefined;
+  } catch {
+    researchSummary = "Research brief generated";
+  }
   const research: PipelinePhaseStatus = buildPhaseStatus(
     "research",
     currentPhase,
     pipelineError,
     researchBrief
-      ? {
-          durationMs: researchBrief.durationMs ?? undefined,
-          summary: summarizeResearchBrief(researchBrief.content),
-        }
+      ? { durationMs: researchBrief.durationMs ?? undefined, summary: researchSummary }
       : undefined
   );
 
-  // Determine plan phase status
+  // Determine plan phase status — use rich template summaries (TASK-407)
+  let planSummary: string | undefined;
+  try {
+    planSummary = contentPlan
+      ? buildPlanSummary(contentPlan.content as Parameters<typeof buildPlanSummary>[0], onboardingPages)
+      : undefined;
+  } catch {
+    planSummary = "Content plan generated";
+  }
   const plan: PipelinePhaseStatus = buildPhaseStatus(
     "plan",
     currentPhase,
     pipelineError,
     contentPlan
-      ? {
-          durationMs: contentPlan.durationMs ?? undefined,
-          summary: summarizeContentPlan(contentPlan.content),
-        }
+      ? { durationMs: contentPlan.durationMs ?? undefined, summary: planSummary }
       : undefined
   );
 
-  // Generate phase status — check blueprint for completion or parse per-page progress
+  // Generate phase status — check blueprint for completion or parse per-page progress (TASK-407)
   const generate: PipelinePhaseStatus = buildGeneratePhaseStatus(
     currentPhase,
     pipelineError,
-    researchBrief !== null && contentPlan !== null
+    researchBrief !== null && contentPlan !== null,
+    contentPlan?.content as { pages?: Array<{ title: string; targetKeywords?: string[] }> } | null
   );
 
   // Enhance phase status (stock images)
@@ -214,31 +246,19 @@ function buildPhaseStatus(
   return { status: "pending" };
 }
 
-function summarizeResearchBrief(content: unknown): string {
-  try {
-    const brief = content as {
-      seoKeywords?: string[];
-      complianceNotes?: string[];
-      keyMessages?: string[];
-      targetAudience?: { painPoints?: string[] };
-    };
-    const keywords = brief.seoKeywords?.length ?? 0;
-    const compliance = brief.complianceNotes?.length ?? 0;
-    const messages = brief.keyMessages?.length ?? 0;
-    const painPoints = brief.targetAudience?.painPoints?.length ?? 0;
-    return `${keywords} SEO keywords, ${messages} key messages, ${painPoints} pain points, ${compliance} compliance notes`;
-  } catch {
-    return "Research brief generated";
-  }
-}
 
 function buildGeneratePhaseStatus(
   currentPhase: string | null,
   pipelineError: string | null,
-  prerequisitesComplete: boolean
+  prerequisitesComplete: boolean,
+  planContent?: { pages?: Array<{ title: string; targetKeywords?: string[] }> } | null
 ): PipelinePhaseStatus {
   if (currentPhase === "generate_complete") {
-    return { status: "complete", summary: "All pages generated" };
+    const pageCount = planContent?.pages?.length ?? 0;
+    const summary = pageCount > 0
+      ? `Generated ${pageCount} page${pageCount === 1 ? "" : "s"} with full content`
+      : "All pages generated";
+    return { status: "complete", summary };
   }
 
   if (currentPhase === "generate_failed") {
@@ -248,13 +268,20 @@ function buildGeneratePhaseStatus(
     };
   }
 
-  // Per-page progress: "generate:2/6:Services"
+  // Per-page progress: "generate:2/6:Services" — use rich template (TASK-407)
   if (currentPhase?.startsWith("generate:")) {
     const match = currentPhase.match(/^generate:(\d+)\/(\d+):(.+)$/);
     if (match) {
+      const pageIndex = parseInt(match[1], 10);
+      const totalPages = parseInt(match[2], 10);
+      const pageName = match[3];
+      // Look up target keywords for current page from content plan
+      const keywords = planContent?.pages?.find(
+        (p) => p.title === pageName
+      )?.targetKeywords;
       return {
         status: "in_progress",
-        summary: `Generating ${match[3]} (${match[1]}/${match[2]})`,
+        summary: buildGenerateProgressSummary(pageName, pageIndex, totalPages, keywords),
       };
     }
     return { status: "in_progress" };
@@ -297,20 +324,3 @@ function buildEnhancePhaseStatus(
   return { status: "pending" };
 }
 
-function summarizeContentPlan(content: unknown): string {
-  try {
-    const plan = content as {
-      pages?: { title: string; sections?: unknown[] }[];
-      globalContent?: { services?: unknown[] };
-    };
-    const pageCount = plan.pages?.length ?? 0;
-    const totalSections = (plan.pages ?? []).reduce(
-      (sum, p) => sum + (p.sections?.length ?? 0),
-      0
-    );
-    const services = plan.globalContent?.services?.length ?? 0;
-    return `${pageCount} pages, ${totalSections} sections, ${services} services planned`;
-  } catch {
-    return "Content plan generated";
-  }
-}

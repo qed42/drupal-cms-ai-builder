@@ -279,6 +279,21 @@ export async function runGeneratePhase(
     // Use the best attempt
     const finalPage = reviewResult?.passed ? bestAttempt.page : bestAttempt.page;
 
+    // Attach content briefs and target keywords to section _meta (TASK-412)
+    const planSections = planPage.sections || [];
+    const targetKeywords = planPage.targetKeywords || [];
+    for (let secIdx = 0; secIdx < finalPage.sections.length; secIdx++) {
+      const section = finalPage.sections[secIdx];
+      if (!section._meta) section._meta = {};
+      // Map plan sections to generated sections by index (1:1 correspondence)
+      if (secIdx < planSections.length && planSections[secIdx].contentBrief) {
+        section._meta.contentBrief = planSections[secIdx].contentBrief;
+      }
+      if (targetKeywords.length > 0) {
+        section._meta.targetKeywords = targetKeywords;
+      }
+    }
+
     // Resolve stock images before building component tree
     const imageResult = await resolveImagesForSections(
       siteId,

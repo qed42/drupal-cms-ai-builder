@@ -30,10 +30,11 @@ export async function resolveImagesForSections(
   pageTitle: string,
   industry: string,
   audience: string
-): Promise<{ imagesAdded: number; imagesFailed: number }> {
+): Promise<{ imagesAdded: number; imagesFailed: number; queriesBySection: Map<number, string> }> {
   const adapter = getDefaultAdapter();
   let imagesAdded = 0;
   let imagesFailed = 0;
+  const queriesBySection = new Map<number, string>();
 
   // Build a minimal PageLayout for buildSearchQuery context
   const pageContext: PageLayout = {
@@ -43,16 +44,18 @@ export async function resolveImagesForSections(
     sections,
   };
 
-  for (const section of sections) {
+  for (let secIdx = 0; secIdx < sections.length; secIdx++) {
+    const section = sections[secIdx];
     // Top-level section image props
     const mapping = adapter.getImageMapping(section.component_id);
     if (mapping) {
       for (const propName of mapping.props) {
         if (isImagePopulated(section.props[propName])) continue;
 
+        const query = buildSearchQuery(section, pageContext, industry, audience);
         const result = await fetchAndDownload(
           siteId,
-          buildSearchQuery(section, pageContext, industry, audience),
+          query,
           mapping.orientation,
           mapping.dimensions.width,
           mapping.dimensions.height
@@ -60,6 +63,10 @@ export async function resolveImagesForSections(
 
         if (result) {
           section.props[propName] = result;
+          // Store the image query in section _meta (TASK-411)
+          if (!section._meta) section._meta = {};
+          section._meta.imageQuery = query;
+          queriesBySection.set(secIdx, query);
           imagesAdded++;
         } else {
           imagesFailed++;
@@ -76,9 +83,10 @@ export async function resolveImagesForSections(
         for (const propName of childMapping.props) {
           if (isImagePopulated(child.props[propName])) continue;
 
+          const query = buildSearchQuery(section, pageContext, industry, audience);
           const result = await fetchAndDownload(
             siteId,
-            buildSearchQuery(section, pageContext, industry, audience),
+            query,
             childMapping.orientation,
             childMapping.dimensions.width,
             childMapping.dimensions.height
@@ -86,6 +94,10 @@ export async function resolveImagesForSections(
 
           if (result) {
             child.props[propName] = result;
+            // Store query on parent section _meta for composed sections (TASK-411)
+            if (!section._meta) section._meta = {};
+            section._meta.imageQuery = query;
+            queriesBySection.set(secIdx, query);
             imagesAdded++;
           } else {
             imagesFailed++;
@@ -95,7 +107,7 @@ export async function resolveImagesForSections(
     }
   }
 
-  return { imagesAdded, imagesFailed };
+  return { imagesAdded, imagesFailed, queriesBySection };
 }
 
 /**

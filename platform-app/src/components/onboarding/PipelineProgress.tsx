@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 
 interface PhaseStatus {
   status: "pending" | "in_progress" | "complete" | "failed";
@@ -64,9 +64,20 @@ function StatusIcon({ status }: { status: PhaseStatus["status"] }) {
   }
 }
 
-function PhaseCard({ phase, status }: { phase: typeof PHASES[number]; status: PhaseStatus }) {
+/**
+ * PhaseCard with React.memo to avoid re-renders when only durationMs ticks during polling.
+ * Compares status, summary, and error — skips re-render for durationMs-only changes.
+ */
+const PhaseCard = memo(function PhaseCard({ phase, status }: { phase: typeof PHASES[number]; status: PhaseStatus }) {
   const [expanded, setExpanded] = useState(false);
   const hasSummary = status.summary || status.error;
+
+  // For completed phases with summaries, show the summary as the description line
+  const descriptionText = (() => {
+    if (status.status === "in_progress" && status.summary) return status.summary;
+    if (status.status === "complete" && status.summary) return status.summary;
+    return phase.description;
+  })();
 
   return (
     <div
@@ -89,13 +100,11 @@ function PhaseCard({ phase, status }: { phase: typeof PHASES[number]; status: Ph
               <span className="text-xs text-white/30">{formatDuration(status.durationMs)}</span>
             )}
           </div>
-          <p className="text-xs text-white/40 truncate">
-            {status.status === "in_progress" && status.summary
-              ? status.summary
-              : phase.description}
+          <p className="text-xs text-white/40">
+            {descriptionText}
           </p>
         </div>
-        {hasSummary && status.status !== "in_progress" && (
+        {status.status === "failed" && status.error && (
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
@@ -107,19 +116,21 @@ function PhaseCard({ phase, status }: { phase: typeof PHASES[number]; status: Ph
         )}
       </div>
 
-      {expanded && hasSummary && (
+      {expanded && status.error && (
         <div className="mt-3 pt-3 border-t border-white/5">
-          {status.error && (
-            <p className="text-xs text-red-400">{status.error}</p>
-          )}
-          {status.summary && !status.error && (
-            <p className="text-xs text-white/50">{status.summary}</p>
-          )}
+          <p className="text-xs text-red-400">{status.error}</p>
         </div>
       )}
     </div>
   );
-}
+}, (prev, next) => {
+  // Custom comparator: skip re-render when only durationMs changes
+  return (
+    prev.status.status === next.status.status &&
+    prev.status.summary === next.status.summary &&
+    prev.status.error === next.status.error
+  );
+});
 
 export default function PipelineProgress({ pipeline, progress, error }: PipelineProgressProps) {
   const allComplete = pipeline.research.status === "complete" &&

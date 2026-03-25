@@ -82,6 +82,12 @@ export interface PageSection {
   };
   container_background?: string;       // Container background color
   children?: PageSectionChild[];       // Child components for slots
+  // Transparency metadata (TASK-411, TASK-412)
+  _meta?: {
+    imageQuery?: string;               // Pexels search query used for this section
+    contentBrief?: string;             // Content brief from ContentPlan
+    targetKeywords?: string[];         // Target keywords from ContentPlan page
+  };
 }
 
 export interface ContentItems {
