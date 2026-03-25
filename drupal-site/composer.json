@@ -10,6 +10,14 @@
         "chat": "https://drupal.org/node/314178"
     },
     "repositories": {
+        "local-recipes": {
+            "type": "path",
+            "url": "recipes/*",
+            "canonical": false,
+            "options": {
+                "symlink": true
+            }
+        },
         "drupal": {
             "type": "composer",
             "url": "https://packages.drupal.org/8"
@@ -28,7 +36,7 @@
         "drupal/automatic_updates": "^4.1",
         "drupal/autosave_form": "^1.10",
         "drupal/bpmn_io": "^3",
-        "drupal/byte": "*",
+        "drupal/byte": "@dev",
         "drupal/byte_theme": "^1",
         "drupal/canvas": "^1.2",
         "drupal/captcha": "^2.0.7",
@@ -42,32 +50,32 @@
         "drupal/core-vendor-hardening": "^11.3",
         "drupal/cva": "^1",
         "drupal/dashboard": "^2.2",
-        "drupal/drupal_cms_accessibility_tools": "*",
-        "drupal/drupal_cms_admin_ui": "*",
-        "drupal/drupal_cms_ai": "*",
-        "drupal/drupal_cms_anti_spam": "*",
-        "drupal/drupal_cms_authentication": "*",
-        "drupal/drupal_cms_content_type_base": "*",
-        "drupal/drupal_cms_forms": "*",
-        "drupal/drupal_cms_google_analytics": "*",
+        "drupal/drupal_cms_accessibility_tools": "@dev",
+        "drupal/drupal_cms_admin_ui": "@dev",
+        "drupal/drupal_cms_ai": "@dev",
+        "drupal/drupal_cms_anti_spam": "@dev",
+        "drupal/drupal_cms_authentication": "@dev",
+        "drupal/drupal_cms_content_type_base": "@dev",
+        "drupal/drupal_cms_forms": "@dev",
+        "drupal/drupal_cms_google_analytics": "@dev",
         "drupal/drupal_cms_helper": "^2",
         "drupal/drupal_cms_installer": "*",
-        "drupal/drupal_cms_media": "*",
-        "drupal/drupal_cms_privacy_basic": "*",
-        "drupal/drupal_cms_search": "*",
-        "drupal/drupal_cms_seo_basic": "*",
-        "drupal/drupal_cms_seo_tools": "*",
-        "drupal/drupal_cms_site_template_base": "*",
-        "drupal/drupal_cms_starter": "*",
+        "drupal/drupal_cms_media": "@dev",
+        "drupal/drupal_cms_privacy_basic": "@dev",
+        "drupal/drupal_cms_search": "@dev",
+        "drupal/drupal_cms_seo_basic": "@dev",
+        "drupal/drupal_cms_seo_tools": "@dev",
+        "drupal/drupal_cms_site_template_base": "@dev",
+        "drupal/drupal_cms_starter": "@dev",
         "drupal/drupical": "^1",
         "drupal/easy_breadcrumb": "^2.0.9",
         "drupal/easy_email": "^3.0.2",
-        "drupal/easy_email_express": "*",
-        "drupal/easy_email_standard": "*",
-        "drupal/easy_email_text_format": "*",
+        "drupal/easy_email_express": "@dev",
+        "drupal/easy_email_standard": "@dev",
+        "drupal/easy_email_text_format": "@dev",
         "drupal/easy_email_theme": "^1",
-        "drupal/easy_email_types_core": "*",
-        "drupal/easy_email_types_default": "*",
+        "drupal/easy_email_types_core": "@dev",
+        "drupal/easy_email_types_default": "@dev",
         "drupal/eca": "^3.0.8",
         "drupal/editoria11y": "^2.2",
         "drupal/field_group": "^3.6 || ^4",
@@ -151,22 +159,45 @@
             ]
         },
         "installer-paths": {
-            "web/core": ["type:drupal-core"],
-            "web/libraries/{$name}": ["type:drupal-library"],
-            "web/modules/contrib/{$name}": ["type:drupal-module"],
-            "web/profiles/contrib/{$name}": ["type:drupal-profile"],
-            "web/themes/contrib/{$name}": ["type:drupal-theme"],
-            "./drush/Commands/contrib/{$name}": ["type:drupal-drush"],
-            "web/modules/custom/{$name}": ["type:drupal-custom-module"],
-            "web/profiles/custom/{$name}": ["type:drupal-custom-profile"],
-            "./recipes/{$name}": ["type:drupal-recipe"],
-            "web/themes/custom/{$name}": ["type:drupal-custom-theme"]
+            "web/core": [
+                "type:drupal-core"
+            ],
+            "web/libraries/{$name}": [
+                "type:drupal-library"
+            ],
+            "web/modules/contrib/{$name}": [
+                "type:drupal-module"
+            ],
+            "web/profiles/contrib/{$name}": [
+                "type:drupal-profile"
+            ],
+            "web/themes/contrib/{$name}": [
+                "type:drupal-theme"
+            ],
+            "./drush/Commands/contrib/{$name}": [
+                "type:drupal-drush"
+            ],
+            "web/modules/custom/{$name}": [
+                "type:drupal-custom-module"
+            ],
+            "web/profiles/custom/{$name}": [
+                "type:drupal-custom-profile"
+            ],
+            "./recipes/{$name}": [
+                "type:drupal-recipe"
+            ],
+            "web/themes/custom/{$name}": [
+                "type:drupal-custom-theme"
+            ]
         },
         "drupal-core-project-message": {
-            "include-keys": ["homepage", "support"],
+            "include-keys": [
+                "homepage",
+                "support"
+            ],
             "post-create-project-cmd-message": [
                 "<bg=blue;fg=white>                                                   </>",
-                "<bg=blue;fg=white>  Congratulations, you’ve installed Drupal CMS!    </>",
+                "<bg=blue;fg=white>  Congratulations, you\u2019ve installed Drupal CMS!    </>",
                 "<bg=blue;fg=white>                                                   </>",
                 "",
                 "<bg=yellow;fg=black>Next steps</>:",
