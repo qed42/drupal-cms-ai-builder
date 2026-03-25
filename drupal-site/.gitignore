@@ -16,3 +16,6 @@ Desktop.ini
 $RECYCLE.BIN/
 /.editorconfig
 /.gitattributes
+
+# Local site-specific config
+web/sites/sites.php
