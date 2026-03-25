@@ -21,6 +21,7 @@ interface DashboardSiteListProps {
   sites: {
     site: SiteData;
     subscription: SubscriptionData | null;
+    impactBullets?: string[];
   }[];
 }
 
@@ -40,11 +41,12 @@ export default function DashboardSiteList({ sites }: DashboardSiteListProps) {
             : "space-y-4"
         }
       >
-        {sites.map(({ site, subscription }) => (
+        {sites.map(({ site, subscription, impactBullets }) => (
           <SiteCard
             key={site.id}
             site={site}
             subscription={subscription}
+            impactBullets={impactBullets}
           />
         ))}
       </div>

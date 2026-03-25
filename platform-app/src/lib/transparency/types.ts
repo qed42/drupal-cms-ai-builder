@@ -43,3 +43,33 @@ export interface ResearchPreviewError {
   success: false;
   error: string;
 }
+
+/**
+ * Shape returned by /api/blueprint/[siteId]/insights for transparency tooltips.
+ */
+export interface BlueprintInsights {
+  research: {
+    industry?: string;
+    audience?: string;
+    painPoints: string[];
+    tone?: string;
+    toneAvoid: string[];
+    seoKeywords: string[];
+    complianceNotes: string[];
+  } | null;
+  contentPlan: {
+    pages: Record<
+      string,
+      {
+        title: string;
+        targetKeywords: string[];
+        sections: Array<{
+          heading: string;
+          type: string;
+          contentBrief: string;
+        }>;
+      }
+    >;
+  } | null;
+  reviewScores: Record<string, { score: number; passed: boolean }> | null;
+}

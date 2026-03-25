@@ -5,6 +5,7 @@ import { runGeneratePhase } from "./phases/generate";
 import { runEnhancePhase } from "./phases/enhance";
 import { setActiveAdapter } from "@/lib/design-systems/setup";
 import { computeInputHash } from "@/lib/transparency/input-hash";
+import { buildImpactBullets } from "@/lib/transparency/summary-templates";
 import type { OnboardingData, BlueprintBundle } from "@/lib/blueprint/types";
 import type { ResearchBrief, ContentPlan } from "./schemas";
 import type { ResearchPhaseResult } from "./phases/research";
@@ -199,6 +200,39 @@ export async function runPipeline(
   }
 
   await updatePipelinePhase(siteId, "enhance_complete");
+
+  // Generate impact summary bullets and store in blueprint payload (TASK-420)
+  try {
+    const briefContent = researchResult.brief as ResearchBrief;
+    const planContent = planResult.plan as ContentPlan;
+    const bullets = buildImpactBullets(
+      briefContent,
+      planContent,
+      {
+        industry: data.industry,
+        audience: data.audience,
+        tone: data.tone,
+        pages: data.pages,
+      }
+    );
+    if (bullets.length > 0) {
+      const currentBlueprint = await prisma.blueprint.findUnique({
+        where: { siteId },
+        select: { payload: true },
+      });
+      if (currentBlueprint?.payload) {
+        const payload = JSON.parse(JSON.stringify(currentBlueprint.payload));
+        payload._impact = bullets;
+        await prisma.blueprint.update({
+          where: { siteId },
+          data: { payload },
+        });
+      }
+    }
+  } catch (err) {
+    // Impact bullets are non-critical — don't fail the pipeline
+    console.warn("[pipeline] Failed to generate impact bullets:", err);
+  }
 
   // Transition site to "review" status
   await prisma.site.update({

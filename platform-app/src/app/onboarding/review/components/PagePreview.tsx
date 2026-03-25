@@ -2,8 +2,11 @@
 
 import { useState, useCallback } from "react";
 import type { PageLayout, PageSection } from "@/lib/blueprint/types";
+import type { BlueprintInsights } from "@/lib/transparency/types";
 import { getComponentLabel } from "@/lib/blueprint/markdown-renderer";
 import { getDefaultAdapter } from "@/lib/design-systems/setup";
+import SectionInsight from "./SectionInsight";
+import PageInsightsPanel from "./PageInsightsPanel";
 
 interface PagePreviewProps {
   siteId: string;
@@ -14,6 +17,14 @@ interface PagePreviewProps {
   onSectionChange: (sectionIndex: number, field: string, value: string) => void;
   onSectionRegenerated: (sectionIndex: number, newSection: PageSection) => void;
   onPageRegenerated?: (newPage: PageLayout) => void;
+  // Insights props (TASK-413, TASK-414, TASK-418)
+  insightsData?: BlueprintInsights | null;
+  insightsOpen?: number | null;
+  onInsightClick?: (sectionIndex: number) => void;
+  pageInsightsOpen?: boolean;
+  onPageInsightsClick?: () => void;
+  onPageInsightsClose?: () => void;
+  allPageSlugs?: string[];
 }
 
 /** Format a prop key into a human-readable label. */
@@ -418,6 +429,9 @@ function SectionView({
   onEdit,
   onDone,
   onChange,
+  insightProps,
+  insightOpen,
+  onInsightToggle,
 }: {
   section: PageLayout["sections"][number];
   sectionIndex: number;
@@ -425,6 +439,15 @@ function SectionView({
   onEdit: () => void;
   onDone: () => void;
   onChange: (field: string, value: string) => void;
+  insightProps?: {
+    contentBrief?: string;
+    targetKeywords?: string[];
+    imageQuery?: string;
+    toneGuidance?: string;
+    audiencePainPoints?: string[];
+  };
+  insightOpen?: boolean;
+  onInsightToggle?: () => void;
 }) {
   const label = getComponentLabel(section.component_id);
   const hasChildren = section.children && section.children.length > 0;
@@ -442,6 +465,18 @@ function SectionView({
           )}
         </div>
         <div className="flex items-center gap-2">
+          {onInsightToggle && (
+            <SectionInsight
+              contentBrief={insightProps?.contentBrief}
+              targetKeywords={insightProps?.targetKeywords}
+              imageQuery={insightProps?.imageQuery || section._meta?.imageQuery}
+              toneGuidance={insightProps?.toneGuidance}
+              audiencePainPoints={insightProps?.audiencePainPoints}
+              isEdited={isEditing}
+              isOpen={!!insightOpen}
+              onClose={onInsightToggle}
+            />
+          )}
           <button
             type="button"
             onClick={isEditing ? onDone : onEdit}
@@ -477,6 +512,13 @@ export default function PagePreview({
   onSectionChange,
   onSectionRegenerated,
   onPageRegenerated,
+  insightsData,
+  insightsOpen,
+  onInsightClick,
+  pageInsightsOpen,
+  onPageInsightsClick,
+  onPageInsightsClose,
+  allPageSlugs,
 }: PagePreviewProps) {
   const [regeneratingPage, setRegeneratingPage] = useState(false);
   const [regenPageError, setRegenPageError] = useState<string | null>(null);
@@ -513,14 +555,25 @@ export default function PagePreview({
               <h1 className="text-2xl font-bold text-white">{page.title}</h1>
               <p className="text-sm text-white/40 mt-1">/{page.slug}</p>
             </div>
-            <button
-              type="button"
-              onClick={handleRegeneratePage}
-              disabled={regeneratingPage}
-              className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white/50 hover:text-white/80 hover:bg-white/10 transition-colors disabled:opacity-50"
-            >
-              {regeneratingPage ? "Regenerating..." : "↻ Regenerate Page"}
-            </button>
+            <div className="flex items-center gap-2">
+              {onPageInsightsClick && (
+                <button
+                  type="button"
+                  onClick={onPageInsightsClick}
+                  className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white/50 hover:text-white/80 hover:bg-white/10 transition-colors"
+                >
+                  Page Insights
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleRegeneratePage}
+                disabled={regeneratingPage}
+                className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white/50 hover:text-white/80 hover:bg-white/10 transition-colors disabled:opacity-50"
+              >
+                {regeneratingPage ? "Regenerating..." : "↻ Regenerate Page"}
+              </button>
+            </div>
           </div>
           {regenPageError && (
             <p className="text-xs text-red-400 mt-2">{regenPageError}</p>
@@ -537,18 +590,49 @@ export default function PagePreview({
 
         {/* Sections */}
         <div className="space-y-4">
-          {page.sections.map((section, sectionIndex) => (
-            <SectionView
-              key={`${pageIndex}-${sectionIndex}`}
-              section={section}
-              sectionIndex={sectionIndex}
-              isEditing={editingSection === sectionIndex}
-              onEdit={() => onEditSection(sectionIndex)}
-              onDone={() => onEditSection(null)}
-              onChange={(field, value) => onSectionChange(sectionIndex, field, value)}
-            />
-          ))}
+          {page.sections.map((section, sectionIndex) => {
+            // Map insights data to section props (TASK-413)
+            const planPage = insightsData?.contentPlan?.pages?.[page.slug];
+            const planSection = planPage?.sections?.[sectionIndex];
+            const sectionInsightProps = insightsData
+              ? {
+                  contentBrief: section._meta?.contentBrief || planSection?.contentBrief,
+                  targetKeywords: section._meta?.targetKeywords || planPage?.targetKeywords,
+                  imageQuery: section._meta?.imageQuery,
+                  toneGuidance: insightsData.research?.tone,
+                  audiencePainPoints: insightsData.research?.painPoints,
+                }
+              : undefined;
+
+            return (
+              <SectionView
+                key={`${pageIndex}-${sectionIndex}`}
+                section={section}
+                sectionIndex={sectionIndex}
+                isEditing={editingSection === sectionIndex}
+                onEdit={() => onEditSection(sectionIndex)}
+                onDone={() => onEditSection(null)}
+                onChange={(field, value) => onSectionChange(sectionIndex, field, value)}
+                insightProps={sectionInsightProps}
+                insightOpen={insightsOpen === sectionIndex}
+                onInsightToggle={onInsightClick ? () => onInsightClick(sectionIndex) : undefined}
+              />
+            );
+          })}
         </div>
+
+        {/* Page Insights Panel (TASK-418) */}
+        {onPageInsightsClose && (
+          <PageInsightsPanel
+            page={page}
+            pageSlug={page.slug}
+            contentPlan={insightsData?.contentPlan?.pages?.[page.slug]}
+            reviewScore={insightsData?.reviewScores?.[page.slug] ?? undefined}
+            allPageSlugs={allPageSlugs || []}
+            isOpen={!!pageInsightsOpen}
+            onClose={onPageInsightsClose}
+          />
+        )}
       </div>
     </div>
   );

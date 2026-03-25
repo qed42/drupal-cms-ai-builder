@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { downloadBlueprint } from "@/lib/download";
+import ImpactSummary from "./ImpactSummary";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   onboarding: { label: "Setting Up", color: "text-amber-400", bg: "bg-amber-400/10" },
@@ -33,9 +34,10 @@ interface SiteCardProps {
     plan: string;
     status: string;
   } | null;
+  impactBullets?: string[];
 }
 
-export default function SiteCard({ site, subscription }: SiteCardProps) {
+export default function SiteCard({ site, subscription, impactBullets }: SiteCardProps) {
   const router = useRouter();
   const [editLoading, setEditLoading] = useState(false);
   const [retryLoading, setRetryLoading] = useState(false);
@@ -294,6 +296,10 @@ export default function SiteCard({ site, subscription }: SiteCardProps) {
             )}
           </div>
         </div>
+
+        {impactBullets && impactBullets.length > 0 && (
+          <ImpactSummary bullets={impactBullets} />
+        )}
 
         <div className="pt-2">
           {getActionButton()}

@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageSidebar from "./components/PageSidebar";
 import PagePreview from "./components/PagePreview";
 import ApproveButton from "./components/ApproveButton";
 import { useAutoSave } from "./hooks/useAutoSave";
 import type { PageLayout, PageSection } from "@/lib/blueprint/types";
+import type { BlueprintInsights } from "@/lib/transparency/types";
 
 interface BlueprintData {
   id: string;
@@ -27,6 +28,39 @@ export default function ReviewPage() {
   const [viewedPages, setViewedPages] = useState<Set<number>>(new Set([0]));
   const [editingSection, setEditingSection] = useState<number | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  // Insights lazy-fetch state (TASK-414)
+  const [insightsData, setInsightsData] = useState<BlueprintInsights | null>(null);
+  const [insightsOpen, setInsightsOpen] = useState<number | null>(null);
+  const [pageInsightsOpen, setPageInsightsOpen] = useState(false);
+  const insightsFetched = useRef(false);
+
+  const fetchInsights = useCallback(async () => {
+    if (insightsFetched.current || !siteId) return;
+    insightsFetched.current = true;
+    try {
+      const res = await fetch(`/api/blueprint/${siteId}/insights`);
+      if (res.ok) {
+        const data = await res.json();
+        setInsightsData(data);
+      }
+    } catch {
+      // Non-critical — tooltips just won't show data
+    }
+  }, [siteId]);
+
+  const handleInsightClick = useCallback(
+    (sectionIndex: number) => {
+      fetchInsights();
+      setInsightsOpen((prev) => (prev === sectionIndex ? null : sectionIndex));
+    },
+    [fetchInsights]
+  );
+
+  const handlePageInsightsClick = useCallback(() => {
+    fetchInsights();
+    setPageInsightsOpen((prev) => !prev);
+  }, [fetchInsights]);
 
   const { save } = useAutoSave({
     siteId: siteId ?? "",
@@ -279,6 +313,13 @@ export default function ReviewPage() {
             onSectionChange={handleSectionChange}
             onSectionRegenerated={handleSectionRegenerated}
             onPageRegenerated={handlePageRegenerated}
+            insightsData={insightsData}
+            insightsOpen={insightsOpen}
+            onInsightClick={handleInsightClick}
+            pageInsightsOpen={pageInsightsOpen}
+            onPageInsightsClick={handlePageInsightsClick}
+            onPageInsightsClose={() => setPageInsightsOpen(false)}
+            allPageSlugs={blueprint.pages.map((p) => p.slug)}
           />
         )}
       </div>

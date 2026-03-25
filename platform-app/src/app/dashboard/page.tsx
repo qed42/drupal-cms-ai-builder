@@ -14,7 +14,10 @@ export default async function DashboardPage() {
   const sites = await prisma.site.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
-    include: { subscription: true },
+    include: {
+      subscription: true,
+      blueprint: { select: { payload: true } },
+    },
   });
 
   // If no sites at all (shouldn't happen post-registration), redirect to onboarding
@@ -22,21 +25,28 @@ export default async function DashboardPage() {
     redirect("/onboarding/start");
   }
 
-  const sitesData = sites.map((site) => ({
-    site: {
-      id: site.id,
-      name: site.name,
-      status: site.status,
-      subdomain: site.subdomain,
-      drupalUrl: site.drupalUrl,
-    },
-    subscription: site.subscription
-      ? {
-          plan: site.subscription.plan,
-          status: site.subscription.status,
-        }
-      : null,
-  }));
+  const sitesData = sites.map((site) => {
+    // Extract impact bullets from blueprint payload (TASK-421)
+    const payload = site.blueprint?.payload as Record<string, unknown> | null;
+    const impactBullets = Array.isArray(payload?._impact) ? (payload._impact as string[]) : [];
+
+    return {
+      site: {
+        id: site.id,
+        name: site.name,
+        status: site.status,
+        subdomain: site.subdomain,
+        drupalUrl: site.drupalUrl,
+      },
+      subscription: site.subscription
+        ? {
+            plan: site.subscription.plan,
+            status: site.subscription.status,
+          }
+        : null,
+      impactBullets,
+    };
+  });
 
   return (
     <div className="space-y-8">

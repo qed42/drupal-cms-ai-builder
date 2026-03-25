@@ -12,11 +12,11 @@ Complete the transparency loop: show AI reasoning for every content decision in 
 
 | ID | Task | Story | Effort | Depends On | Status |
 |----|------|-------|--------|------------|--------|
-| TASK-414 | Build insights API endpoint (`/api/blueprint/[siteId]/insights`) + lazy-fetch hook in review page | US-068, US-069 | L | Sprint 36 complete | TODO |
-| TASK-413 | Build SectionInsight tooltip component (native `<dialog>`, info icon on sections, image query display, "customized" note) | US-068 | M | TASK-414 | TODO |
-| TASK-418 | Build PageInsightsPanel slide-out (quality score, keyword coverage, word count, link count, input-to-content mapping) | US-069 | M | TASK-414 | TODO |
-| TASK-420 | Generate impact summary bullets at pipeline completion, store in `blueprint.payload._impact` | US-071 | S | TASK-405 (templates) | TODO |
-| TASK-421 | Display ImpactSummary on dashboard SiteCard (server-rendered, pure presentation) | US-071 | S | TASK-420 | TODO |
+| TASK-414 | Build insights API endpoint (`/api/blueprint/[siteId]/insights`) + lazy-fetch hook in review page | US-068, US-069 | L | Sprint 36 complete | DONE |
+| TASK-413 | Build SectionInsight tooltip component (native `<dialog>`, info icon on sections, image query display, "customized" note) | US-068 | M | TASK-414 | DONE |
+| TASK-418 | Build PageInsightsPanel slide-out (quality score, keyword coverage, word count, link count, input-to-content mapping) | US-069 | M | TASK-414 | DONE |
+| TASK-420 | Generate impact summary bullets at pipeline completion, store in `blueprint.payload._impact` | US-071 | S | TASK-405 (templates) | DONE |
+| TASK-421 | Display ImpactSummary on dashboard SiteCard (server-rendered, pure presentation) | US-071 | S | TASK-420 | DONE |
 
 **Note:** Original TASK-415 (info icon), TASK-416 (customized note), TASK-417 (image query in tooltip) were consolidated into TASK-413 per frontend architect's design — one component handles all tooltip variants. Original TASK-419 (input mapping display) was consolidated into TASK-418 — PageInsightsPanel includes the mapping section.
 
