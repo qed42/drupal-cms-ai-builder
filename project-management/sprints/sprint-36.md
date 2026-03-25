@@ -12,7 +12,7 @@ Replace generic progress text with real-time AI narration during generation, and
 
 | ID | Task | Story | Effort | Depends On | Status |
 |----|------|-------|--------|------------|--------|
-| TASK-405 | Create summary template functions (`buildResearchSummary`, `buildPlanSummary`, `buildGenerateProgressSummary`, `buildCompletionSummary`, `buildImpactBullets`) | US-067 | M | — | TODO |
+| TASK-405 | Create summary template functions (`buildResearchSummary`, `buildPlanSummary`, `buildGenerateProgressSummary`, `buildCompletionSummary`, `buildImpactBullets`) | US-067 | M | — | DONE |
 | TASK-407 | Enrich `/api/provision/status` to build rich summaries from ResearchBrief/ContentPlan DB records | US-067 | M | TASK-405 | TODO |
 | TASK-408 | Update PipelineProgress.tsx to render enriched summaries + per-page generate progress | US-067 | M | TASK-407 | TODO |
 | TASK-411 | Store image search queries in section `_meta.imageQuery` during image resolution | US-070 | S | — | TODO |
