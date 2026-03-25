@@ -25,12 +25,13 @@ const THEMES: ThemeOption[] = [
     description: "Clean, minimal theme built for Drupal Canvas with Tailwind CSS and design tokens.",
     features: ["22 components", "Tailwind v4 + CVA", "Dark mode support"],
   },
-  {
-    id: "civictheme",
-    name: "CivicTheme",
-    description: "Enterprise-grade design system with pre-composed organisms and accessibility focus.",
-    features: ["60+ components", "Light/dark themes", "Atomic design"],
-  },
+  // CivicTheme adapter exists but is not yet supported in the pipeline
+  // {
+  //   id: "civictheme",
+  //   name: "CivicTheme",
+  //   description: "Enterprise-grade design system with pre-composed organisms and accessibility focus.",
+  //   features: ["60+ components", "Light/dark themes", "Atomic design"],
+  // },
 ];
 
 export default function ThemeSelectionPage() {
