@@ -9,6 +9,7 @@ interface AnalyzeResult {
   keywords: string[];
   compliance_flags: string[];
   tone: string;
+  detectedServices: string[];
 }
 
 const VALID_INDUSTRIES: readonly string[] = INDUSTRY_OPTIONS;
@@ -68,6 +69,7 @@ function getFallbackResult(idea: string): AnalyzeResult {
     keywords: idea.split(/\s+/).filter((w) => w.length > 3).slice(0, 7),
     compliance_flags,
     tone: "professional_warm",
+    detectedServices: [],
   };
 }
 
@@ -94,7 +96,13 @@ export async function POST(req: NextRequest) {
       temperature: 0.3,
     });
 
-    result = JSON.parse(content) as AnalyzeResult;
+    const parsed = JSON.parse(content);
+    result = {
+      ...parsed,
+      detectedServices: Array.isArray(parsed.detectedServices)
+        ? parsed.detectedServices.slice(0, 5)
+        : [],
+    } as AnalyzeResult;
 
     // Migrate legacy industry keys
     if (INDUSTRY_MIGRATION[result.industry]) {

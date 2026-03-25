@@ -45,6 +45,7 @@ Return a JSON object with exactly these fields:
 - "keywords": array of 5-10 relevant keywords
 - "compliance_flags": array of applicable flags from ["hipaa", "ada", "fair_housing", "attorney_advertising", "gdpr", "ferpa", "pci_dss"]
 - "tone": one of "professional_warm", "corporate", "casual", "friendly"
+- "detectedServices": array of 2-5 specific services or offerings mentioned or implied in the description
 
 Be specific with industry classification. For example:
 - A bakery, cafe, restaurant, or food truck → "food_and_beverage"

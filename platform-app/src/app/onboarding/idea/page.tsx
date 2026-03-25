@@ -1,9 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import InferenceCard from "@/components/onboarding/InferenceCard";
+import type { InferenceCardItem } from "@/components/onboarding/InferenceCard";
+import { INDUSTRY_LABELS } from "@/lib/ai/prompts";
 import { useOnboarding } from "@/hooks/useOnboarding";
+
+interface AnalyzeData {
+  industry: string;
+  detectedServices: string[];
+  compliance_flags: string[];
+}
 
 export default function IdeaPage() {
   const router = useRouter();
@@ -14,6 +23,12 @@ export default function IdeaPage() {
   const [quality, setQuality] = useState<"good" | "vague" | "nonsense" | null>(null);
   const [suggestion, setSuggestion] = useState<string | null>(null);
   const lastValidated = useRef("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Inference card state
+  const [showInference, setShowInference] = useState(false);
+  const [analyzeLoading, setAnalyzeLoading] = useState(false);
+  const [analyzeData, setAnalyzeData] = useState<AnalyzeData | null>(null);
 
   useEffect(() => {
     resume()
@@ -23,6 +38,27 @@ export default function IdeaPage() {
       })
       .catch(() => setLoaded(true));
   }, [resume]);
+
+  const fetchAnalysis = useCallback(async (text: string) => {
+    setAnalyzeLoading(true);
+    setShowInference(true);
+    try {
+      const res = await fetch("/api/ai/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idea: text }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAnalyzeData(data);
+      }
+    } catch {
+      // Non-fatal — card will just not show
+      setShowInference(false);
+    } finally {
+      setAnalyzeLoading(false);
+    }
+  }, []);
 
   async function validateIdea(text: string) {
     if (text.trim().length < 20 || text === lastValidated.current) return;
@@ -38,9 +74,13 @@ export default function IdeaPage() {
         const data = await res.json();
         setQuality(data.quality);
         setSuggestion(data.suggestion);
+
+        // Trigger analyze for inference card when quality is good
+        if (data.quality === "good") {
+          fetchAnalysis(text);
+        }
       }
     } catch {
-      // On failure, don't block
       setQuality("good");
     } finally {
       setValidating(false);
@@ -54,11 +94,9 @@ export default function IdeaPage() {
   }
 
   async function handleSubmit() {
-    // Validate before proceeding if not yet validated
     if (!quality && idea.trim().length >= 20) {
       await validateIdea(idea);
     }
-    // Block submission if quality is nonsense
     if (quality === "nonsense") return false;
 
     const res = await save("idea", { idea });
@@ -74,6 +112,44 @@ export default function IdeaPage() {
   const isBlocked = quality === "nonsense";
   const showWarning = quality === "vague" && suggestion;
 
+  // Build inference card items from analyze data
+  const inferenceItems: InferenceCardItem[] = [];
+  if (analyzeData) {
+    inferenceItems.push({
+      label: "Industry",
+      value: INDUSTRY_LABELS[analyzeData.industry] || analyzeData.industry,
+      type: "text",
+    });
+    if (analyzeData.detectedServices?.length > 0) {
+      inferenceItems.push({
+        label: "Key services detected",
+        value: analyzeData.detectedServices,
+        type: "list",
+      });
+    }
+    if (analyzeData.compliance_flags?.length > 0) {
+      inferenceItems.push({
+        label: "Compliance",
+        value: analyzeData.compliance_flags.join(", ").toUpperCase(),
+        type: "text",
+      });
+    }
+  }
+
+  const inferenceSlot = showInference ? (
+    <InferenceCard
+      items={inferenceItems}
+      explanation="This shapes your page suggestions, content tone, and SEO keywords."
+      isLoading={analyzeLoading}
+      onConfirm={() => setShowInference(false)}
+      onEdit={() => {
+        setShowInference(false);
+        textareaRef.current?.focus();
+        textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }}
+    />
+  ) : null;
+
   return (
     <StepLayout
       step="idea"
@@ -82,16 +158,19 @@ export default function IdeaPage() {
       buttonLabel="Your Audience"
       onSubmit={handleSubmit}
       disabled={idea.trim().length < 20 || isBlocked}
+      insightSlot={inferenceSlot}
     >
       <div className="w-full">
         <textarea
+          ref={textareaRef}
           value={idea}
           onChange={(e) => {
             setIdea(e.target.value);
-            // Reset validation when user changes text
             if (quality) {
               setQuality(null);
               setSuggestion(null);
+              setShowInference(false);
+              setAnalyzeData(null);
             }
           }}
           onBlur={handleBlur}

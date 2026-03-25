@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import InferenceCard from "@/components/onboarding/InferenceCard";
+import type { InferenceCardItem } from "@/components/onboarding/InferenceCard";
 import { useOnboarding } from "@/hooks/useOnboarding";
 
 export default function AudiencePage() {
@@ -11,7 +13,10 @@ export default function AudiencePage() {
   const [audience, setAudience] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [painPoints, setPainPoints] = useState<string[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [showInference, setShowInference] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     resume()
@@ -32,6 +37,10 @@ export default function AudiencePage() {
               if (data.suggestions?.length > 0) {
                 setSuggestions(data.suggestions);
               }
+              if (data.painPoints?.length > 0) {
+                setPainPoints(data.painPoints);
+                setShowInference(true);
+              }
             })
             .catch(() => {})
             .finally(() => setLoadingSuggestions(false));
@@ -51,6 +60,39 @@ export default function AudiencePage() {
 
   if (!loaded) return null;
 
+  // Build inference card items
+  const inferenceItems: InferenceCardItem[] = [];
+  if (suggestions.length > 0) {
+    inferenceItems.push({
+      label: "Primary audience",
+      value: suggestions[0],
+      type: "text",
+    });
+  }
+  if (painPoints.length > 0) {
+    inferenceItems.push({
+      label: "Pain points identified",
+      value: painPoints,
+      type: "list",
+    });
+  }
+
+  const inferenceSlot =
+    showInference && inferenceItems.length > 0 ? (
+      <InferenceCard
+        items={inferenceItems}
+        explanation="These pain points will drive your homepage messaging and CTA language."
+        isLoading={loadingSuggestions}
+        onConfirm={() => setShowInference(false)}
+        onEdit={() => {
+          setShowInference(false);
+          inputRef.current?.focus();
+          inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
+        editLabel="Edit my audience"
+      />
+    ) : null;
+
   return (
     <StepLayout
       step="audience"
@@ -59,9 +101,11 @@ export default function AudiencePage() {
       buttonLabel="Plan the Structure"
       onSubmit={handleSubmit}
       disabled={audience.trim().length < 10}
+      insightSlot={inferenceSlot}
     >
       <div className="w-full space-y-4">
         <input
+          ref={inputRef}
           type="text"
           value={audience}
           onChange={(e) => setAudience(e.target.value)}

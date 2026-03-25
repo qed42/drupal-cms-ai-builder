@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import InferenceCard from "@/components/onboarding/InferenceCard";
+import type { InferenceCardItem } from "@/components/onboarding/InferenceCard";
 import { TONE_SAMPLES } from "@/lib/onboarding/tone-samples";
 import { getDifferentiatorPlaceholder } from "@/lib/onboarding/tone-samples";
 import { useOnboarding } from "@/hooks/useOnboarding";
@@ -17,6 +19,7 @@ export default function TonePage() {
   const [existingCopy, setExistingCopy] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [industry, setIndustry] = useState("_default");
+  const [showInference, setShowInference] = useState(false);
 
   useEffect(() => {
     resume()
@@ -67,6 +70,38 @@ export default function TonePage() {
     return true;
   }
 
+  // Build inference card items from selected tone
+  const selectedToneData = useMemo(
+    () => TONE_SAMPLES.find((t) => t.id === selectedTone),
+    [selectedTone]
+  );
+
+  const inferenceItems: InferenceCardItem[] = selectedToneData
+    ? [
+        { label: "Tone", value: selectedToneData.name, type: "text" as const },
+        { label: "Characteristics", value: selectedToneData.description, type: "text" as const },
+        {
+          label: "Example",
+          value: [selectedToneData.sample],
+          type: "list" as const,
+        },
+      ]
+    : [];
+
+  const inferenceSlot =
+    showInference && selectedToneData ? (
+      <InferenceCard
+        items={inferenceItems}
+        explanation="This tone will be used across all your website content."
+        onConfirm={() => setShowInference(false)}
+        onEdit={() => {
+          setShowInference(false);
+          setSelectedTone("");
+        }}
+        editLabel="Change tone"
+      />
+    ) : null;
+
   if (!loaded) return null;
 
   return (
@@ -77,6 +112,7 @@ export default function TonePage() {
       buttonLabel="Review & Generate"
       onSubmit={handleSubmit}
       disabled={!selectedTone}
+      insightSlot={inferenceSlot}
     >
       <div className="space-y-8 text-left">
         {/* Tone Selection Cards */}
@@ -89,7 +125,10 @@ export default function TonePage() {
               <button
                 key={tone.id}
                 type="button"
-                onClick={() => setSelectedTone(tone.id)}
+                onClick={() => {
+                  setSelectedTone(tone.id);
+                  setShowInference(true);
+                }}
                 className={`rounded-xl p-4 text-left transition-all border ${
                   selectedTone === tone.id
                     ? "bg-brand-500/20 border-brand-500 ring-1 ring-brand-500/50"

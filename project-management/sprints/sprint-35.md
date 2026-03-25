@@ -13,12 +13,12 @@ Show users what the AI inferred from their input immediately after they provide 
 
 | ID | Task | Story | Effort | Depends On | Status |
 |----|------|-------|--------|------------|--------|
-| TASK-398 | Build reusable `InferenceCard` component (inline card, CSS animation, auto-dismiss) | US-072 | M | — | TODO |
-| TASK-399 | Enrich `/api/ai/analyze` response with `detectedServices` field | US-073 | M | — | TODO |
-| TASK-400 | Enrich `/api/ai/suggest-audiences` response with `painPoints` field | US-073 | M | — | TODO |
-| TASK-401 | Integrate InferenceCard on Idea step (industry, services, compliance from analyze response) | US-064 | M | TASK-398, TASK-399 | TODO |
-| TASK-402 | Integrate InferenceCard on Audience step (audience label, pain points from suggest-audiences) | US-064 | S | TASK-398, TASK-400 | TODO |
-| TASK-403 | Integrate InferenceCard on Tone step (tone characteristics + examples from local tone-samples.ts) | US-064 | S | TASK-398 | TODO |
+| TASK-398 | Build reusable `InferenceCard` component (inline card, CSS animation, auto-dismiss) | US-072 | M | — | DONE |
+| TASK-399 | Enrich `/api/ai/analyze` response with `detectedServices` field | US-073 | M | — | DONE |
+| TASK-400 | Enrich `/api/ai/suggest-audiences` response with `painPoints` field | US-073 | M | — | DONE |
+| TASK-401 | Integrate InferenceCard on Idea step (industry, services, compliance from analyze response) | US-064 | M | TASK-398, TASK-399 | DONE |
+| TASK-402 | Integrate InferenceCard on Audience step (audience label, pain points from suggest-audiences) | US-064 | S | TASK-398, TASK-400 | DONE |
+| TASK-403 | Integrate InferenceCard on Tone step (tone characteristics + examples from local tone-samples.ts) | US-064 | S | TASK-398 | DONE |
 
 **Note:** Original TASK-404 ("Looks right" / "Edit" interaction) was folded into TASK-401/402/403 — each step integration includes the confirm/edit callbacks with scroll-to-field behavior.
 
