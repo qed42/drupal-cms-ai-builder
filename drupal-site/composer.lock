@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "26e3d218a6262264edd5cce9e534f768",
+    "content-hash": "0356b24cd649e0ab8ccddb8f99d7bebe",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -15058,27 +15058,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "drupal/byte": 20,
-        "drupal/drupal_cms_accessibility_tools": 20,
-        "drupal/drupal_cms_admin_ui": 20,
-        "drupal/drupal_cms_ai": 20,
-        "drupal/drupal_cms_anti_spam": 20,
-        "drupal/drupal_cms_authentication": 20,
-        "drupal/drupal_cms_content_type_base": 20,
-        "drupal/drupal_cms_forms": 20,
-        "drupal/drupal_cms_google_analytics": 20,
-        "drupal/drupal_cms_media": 20,
-        "drupal/drupal_cms_privacy_basic": 20,
-        "drupal/drupal_cms_search": 20,
-        "drupal/drupal_cms_seo_basic": 20,
-        "drupal/drupal_cms_seo_tools": 20,
         "drupal/drupal_cms_site_template_base": 20,
-        "drupal/drupal_cms_starter": 20,
-        "drupal/easy_email_express": 20,
-        "drupal/easy_email_standard": 20,
-        "drupal/easy_email_text_format": 20,
-        "drupal/easy_email_types_core": 20,
-        "drupal/easy_email_types_default": 20,
         "drupal/project_browser": 10,
         "drupal/space_ds": 20,
         "drupal/webform": 10
