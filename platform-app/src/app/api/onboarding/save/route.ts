@@ -1,5 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { previewRelevantFieldsChanged } from "@/lib/transparency/input-hash";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -41,12 +43,22 @@ export async function POST(req: NextRequest) {
   const existingData = (onboarding.data as Record<string, unknown>) || {};
   const mergedData = { ...existingData, ...data };
 
+  // Invalidate research preview cache if preview-relevant fields changed
+  const shouldInvalidatePreview = previewRelevantFieldsChanged(
+    existingData,
+    data
+  );
+
   await prisma.onboardingSession.update({
     where: { id: onboarding.id },
     data: {
       step,
       data: mergedData,
       completed: false, // Re-open session if user is saving new data
+      ...(shouldInvalidatePreview && {
+        researchPreview: Prisma.JsonNull,
+        previewInputHash: null,
+      }),
     },
   });
 
