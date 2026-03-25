@@ -43,24 +43,36 @@ export async function POST(req: NextRequest) {
   const existingData = (onboarding.data as Record<string, unknown>) || {};
   const mergedData = { ...existingData, ...data };
 
-  // Invalidate research preview cache if preview-relevant fields changed
-  const shouldInvalidatePreview = previewRelevantFieldsChanged(
-    existingData,
-    data
-  );
-
+  // Save core onboarding data first — this must never fail
   await prisma.onboardingSession.update({
     where: { id: onboarding.id },
     data: {
       step,
       data: mergedData,
       completed: false, // Re-open session if user is saving new data
-      ...(shouldInvalidatePreview && {
-        researchPreview: Prisma.JsonNull,
-        previewInputHash: null,
-      }),
     },
   });
+
+  // Invalidate research preview cache if preview-relevant fields changed.
+  // Separate query so cache invalidation failures never block onboarding.
+  const shouldInvalidatePreview = previewRelevantFieldsChanged(
+    existingData,
+    data
+  );
+  if (shouldInvalidatePreview) {
+    try {
+      await prisma.onboardingSession.update({
+        where: { id: onboarding.id },
+        data: {
+          researchPreview: Prisma.DbNull,
+          previewInputHash: null,
+        },
+      });
+    } catch (err) {
+      // Non-fatal: cache invalidation failure doesn't block onboarding
+      console.warn("[save] Preview cache invalidation failed:", err);
+    }
+  }
 
   // Persist the project name to the Site record so the dashboard shows it
   if (step === "name" && data?.name && onboarding.siteId) {
