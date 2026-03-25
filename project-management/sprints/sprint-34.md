@@ -20,7 +20,7 @@ The review-settings page is the last touchpoint before irreversible generation. 
 | TASK-392 | Create input hash utility for cache invalidation (`lib/transparency/input-hash.ts`) | US-066 | S | — | DONE |
 | TASK-390 | Create `/api/ai/research-preview` endpoint with cache-through pattern | US-066 | M | TASK-391, TASK-392 | DONE |
 | TASK-393 | Pipeline orchestrator checks cached Research preview before running Research phase | US-066, US-070 | S | TASK-391, TASK-392 | DONE |
-| TASK-394 | Build StrategyPreview panel + skeleton + `useResearchPreview` hook; integrate on review-settings page | US-065 | L | TASK-390 | TODO |
+| TASK-394 | Build StrategyPreview panel + skeleton + `useResearchPreview` hook; integrate on review-settings page | US-065 | L | TASK-390 | DONE |
 
 **Note:** Original TASK-395/396/397 (wire preview, responsive, error handling) were consolidated into TASK-394 per frontend architect's design — the component handles fetch, responsive behavior (`<details>` native collapse), and graceful degradation internally.
 

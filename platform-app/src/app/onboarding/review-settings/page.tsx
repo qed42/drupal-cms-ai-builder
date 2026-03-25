@@ -6,6 +6,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import StepIcon from "@/components/onboarding/StepIcon";
 import ProgressStepper from "@/components/onboarding/ProgressStepper";
 import { INDUSTRY_LABELS } from "@/lib/ai/prompts";
+import StrategyPreview from "@/components/onboarding/StrategyPreview";
 
 interface SessionData {
   name?: string;
@@ -140,6 +141,9 @@ export default function ReviewSettingsPage() {
           {toneLabel}
         </SummarySection>
       </div>
+
+      {/* AI Strategy Preview */}
+      {siteId && <StrategyPreview siteId={siteId} />}
 
       {/* How your inputs are used */}
       <div className="w-full rounded-lg border border-white/5 bg-white/[0.02] p-4 mb-6">
