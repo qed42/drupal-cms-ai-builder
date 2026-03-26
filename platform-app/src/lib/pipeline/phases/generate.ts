@@ -8,8 +8,6 @@ import { getDefaultAdapter } from "@/lib/design-systems/setup";
 import { validateAndRewriteUrls } from "@/lib/blueprint/url-validator";
 import { validateSections, formatValidationFeedback } from "@/lib/blueprint/component-validator";
 import { safeParsePropsJson } from "@/lib/ai/safe-parse-props";
-import { resolveImagesForSections } from "@/lib/images/image-resolver";
-import { clearImageCache } from "@/lib/images/stock-image-service";
 import { reviewPage, formatReviewLog } from "./review";
 import type { ReviewResult } from "./review";
 import type { OnboardingData, BlueprintBundle, PageLayout, PageSection, FormField, HeaderConfig, FooterConfig } from "@/lib/blueprint/types";
@@ -87,9 +85,9 @@ export async function runGeneratePhase(
   onProgress?: GenerateProgressCallback
 ): Promise<GeneratePhaseResult> {
   const startTime = Date.now();
-  clearImageCache();
   const provider = await getAIProvider("generate");
   const pages: PageLayout[] = [];
+
   const pageReviewScores: Array<{ page: string; review: unknown }> = [];
 
   // DEV: limit to first page only for faster testing
@@ -332,18 +330,6 @@ export async function runGeneratePhase(
       }
     }
 
-    // Resolve stock images before building component tree
-    const imageResult = await resolveImagesForSections(
-      siteId,
-      finalPage.sections,
-      finalPage.title,
-      research.industry,
-      research.targetAudience.primary
-    );
-    console.log(
-      `[generate] Images for "${finalPage.title}": ${imageResult.imagesAdded} added, ${imageResult.imagesFailed} failed`
-    );
-
     const componentTree = buildComponentTree(finalPage.sections);
 
     // Post-generation URL validation (TASK-337)
@@ -508,3 +494,4 @@ export async function runGeneratePhase(
 
   return { blueprint, durationMs, pagesGenerated: pages.length };
 }
+

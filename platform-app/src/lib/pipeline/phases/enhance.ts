@@ -1,15 +1,17 @@
 /**
- * Enhance phase: inject stock images into the generated blueprint.
+ * Enhance phase: inject images into the generated blueprint.
+ * Prioritizes user-uploaded images over Pexels stock photos.
  * Runs after Generate, before blueprint is saved.
  * TASK-280d: Enhance Phase
+ * TASK-441: User image priority
  */
 
 import { prisma } from "@/lib/prisma";
-import { extractImageIntents } from "@/lib/images/image-intent";
-import { searchStockImage, clearImageCache } from "@/lib/images/stock-image-service";
-import { downloadStockImage } from "@/lib/images/image-downloader";
+import { resolveImagesForSections } from "@/lib/images/image-resolver";
+import { clearImageCache } from "@/lib/images/stock-image-service";
 import { buildComponentTree } from "@/lib/blueprint/component-tree-builder";
-import type { BlueprintBundle, PageLayout } from "@/lib/blueprint/types";
+import type { BlueprintBundle, UserImageManifestEntry } from "@/lib/blueprint/types";
+import type { UserImage } from "@/lib/images/image-matcher";
 
 export interface EnhancePhaseResult {
   imagesAdded: number;
@@ -18,19 +20,10 @@ export interface EnhancePhaseResult {
 }
 
 /**
- * Canvas image object shape matching json-schema-definitions://canvas.module/image.
- */
-interface CanvasImageObject {
-  src: string;
-  alt: string;
-  width: number;
-  height: number;
-}
-
-/**
  * Run the enhance phase on a generated blueprint.
- * Fetches stock images for all image-capable components and injects them.
- * Failures are graceful — sections without images still render.
+ * Loads user-uploaded images from the onboarding session and passes them
+ * to the image resolver for priority matching. Falls back to Pexels stock
+ * when no user image matches or when user opted for stock-only.
  */
 export async function runEnhancePhase(
   siteId: string,
@@ -42,81 +35,36 @@ export async function runEnhancePhase(
   const industry = blueprint.site.industry || "business";
   const audience = blueprint.site.audience || "";
 
-  // Extract all image slots from the blueprint
-  const intents = extractImageIntents(blueprint.pages, industry, audience);
-
-  if (intents.length === 0) {
-    return { imagesAdded: 0, imagesFailed: 0, durationMs: Date.now() - startTime };
+  // Load user images from onboarding session (TASK-441)
+  const userImages = await loadUserImages(siteId);
+  if (userImages) {
+    console.log(`[enhance] Found ${userImages.length} user-uploaded images`);
   }
 
-  console.log(`[enhance] Found ${intents.length} image slots across ${blueprint.pages.length} pages`);
+  let totalImagesAdded = 0;
+  let totalImagesFailed = 0;
 
-  let imagesAdded = 0;
-  let imagesFailed = 0;
+  // Process each page through the image resolver
+  for (const page of blueprint.pages) {
+    if (!page.sections || page.sections.length === 0) continue;
 
-  // Per-page photo ID tracking for deduplication
-  const usedPhotoIdsByPage = new Map<number, Set<string>>();
+    const { imagesAdded, imagesFailed } = await resolveImagesForSections(
+      siteId,
+      page.sections,
+      page.title,
+      industry,
+      audience,
+      userImages
+    );
 
-  // Process intents sequentially to respect API rate limits
-  for (const intent of intents) {
-    try {
-      // Get or create the used-IDs set for this page
-      if (!usedPhotoIdsByPage.has(intent.pageIndex)) {
-        usedPhotoIdsByPage.set(intent.pageIndex, new Set<string>());
-      }
-      const pageUsedIds = usedPhotoIdsByPage.get(intent.pageIndex)!;
-
-      // Search for a stock image, excluding already-used photos on this page
-      const searchResult = await searchStockImage(intent.query, {
-        orientation: intent.orientation,
-        excludeIds: Array.from(pageUsedIds),
-      });
-
-      if (!searchResult) {
-        imagesFailed++;
-        continue;
-      }
-
-      // Download the image locally
-      const downloaded = await downloadStockImage(
-        searchResult.url,
-        siteId,
-        searchResult.alt,
-        intent.targetWidth,
-        intent.targetHeight
-      );
-
-      if (!downloaded) {
-        imagesFailed++;
-        continue;
-      }
-
-      // Track the photo ID for this page
-      pageUsedIds.add(searchResult.photoId);
-
-      // Build Canvas-compatible image object
-      const imageObj: CanvasImageObject = {
-        src: downloaded.localPath,
-        alt: downloaded.alt,
-        width: intent.targetWidth,
-        height: intent.targetHeight,
-      };
-
-      // Inject into the section's props (or child props for composed sections)
-      const page = blueprint.pages[intent.pageIndex];
-      const section = page.sections[intent.sectionIndex];
-      if (intent.childIndex !== undefined && section.children?.[intent.childIndex]) {
-        section.children[intent.childIndex].props[intent.propName] = imageObj;
-      } else {
-        section.props[intent.propName] = imageObj;
-      }
-
-      imagesAdded++;
-    } catch (err) {
-      console.warn(`[enhance] Failed to process image for page ${intent.pageIndex}, section ${intent.sectionIndex}:`, err);
-      imagesFailed++;
-    }
+    totalImagesAdded += imagesAdded;
+    totalImagesFailed += imagesFailed;
   }
+
+  // Write user_images manifest to blueprint (TASK-442)
+  // Includes ALL uploads — both placed and unplaced — so provisioning
+  // can create Drupal Media entities for every uploaded image.
+  blueprint.user_images = buildUserImagesManifest(siteId, userImages);
 
   // Rebuild component trees for all pages (images are now in props)
   for (const page of blueprint.pages) {
@@ -133,7 +81,59 @@ export async function runEnhancePhase(
   });
 
   const durationMs = Date.now() - startTime;
-  console.log(`[enhance] Complete: ${imagesAdded} images added, ${imagesFailed} failed in ${durationMs}ms`);
+  console.log(`[enhance] Complete: ${totalImagesAdded} images added, ${totalImagesFailed} failed in ${durationMs}ms`);
 
-  return { imagesAdded, imagesFailed, durationMs };
+  return { imagesAdded: totalImagesAdded, imagesFailed: totalImagesFailed, durationMs };
+}
+
+/**
+ * Build the user_images manifest for the blueprint payload (TASK-442).
+ * Includes ALL uploaded images regardless of whether they were matched.
+ */
+function buildUserImagesManifest(
+  siteId: string,
+  userImages: (UserImage & { url?: string; file_url?: string })[] | undefined
+): UserImageManifestEntry[] {
+  if (!userImages || userImages.length === 0) return [];
+
+  return userImages.map((img) => ({
+    id: img.id,
+    file_url: img.url || img.file_url || `/uploads/${siteId}/images/${img.id}`,
+    description: img.description,
+    tags: img.tags,
+    filename: img.id, // UUID-based filename from upload
+  }));
+}
+
+/**
+ * Load user-uploaded images from the onboarding session.
+ * Returns undefined if user opted for stock-only or has no images.
+ */
+async function loadUserImages(siteId: string): Promise<UserImage[] | undefined> {
+  const session = await prisma.onboardingSession.findFirst({
+    where: { siteId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!session) return undefined;
+
+  const data = session.data as Record<string, unknown>;
+  if (data.use_stock_only === true) return undefined;
+
+  const rawImages = data.user_images as Array<Record<string, unknown>> | undefined;
+  if (!rawImages || rawImages.length === 0) return undefined;
+
+  // Map session data to UserImage interface expected by the matcher
+  return rawImages
+    .filter((img) => img.status === "ready")
+    .map((img) => ({
+      id: img.id as string,
+      description: img.description as string,
+      tags: (img.tags as string[]) || [],
+      subject: (img.subject as UserImage["subject"]) || "abstract",
+      orientation: (img.orientation as UserImage["orientation"]) || "landscape",
+      // Carry through URL for image-resolver to inject into props
+      url: img.url as string,
+      file_url: img.file_url as string | undefined,
+    }));
 }
