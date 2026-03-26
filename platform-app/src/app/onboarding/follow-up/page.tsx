@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import InferenceCard from "@/components/onboarding/InferenceCard";
+import type { InferenceCardItem } from "@/components/onboarding/InferenceCard";
 import {
   getQuestionsForIndustry,
   type IndustryQuestion,
@@ -18,6 +20,7 @@ export default function FollowUpPage() {
   const [multiSelections, setMultiSelections] = useState<
     Record<string, string[]>
   >({});
+  const [inferenceConfirmed, setInferenceConfirmed] = useState(false);
 
   useEffect(() => {
     resume()
@@ -70,15 +73,62 @@ export default function FollowUpPage() {
     return false;
   }
 
+  // Build inference items from answered questions
+  const answeredCount = Object.values(answers).filter((v) => v.trim().length > 0).length;
+
+  const inferenceItems: InferenceCardItem[] = useMemo(() => {
+    const items: InferenceCardItem[] = [];
+    const answeredQuestions = questions.filter(
+      (q) => answers[q.id] && answers[q.id].trim().length > 0
+    );
+
+    if (answeredQuestions.length === 0) return items;
+
+    // Show answered topics as a summary
+    items.push({
+      label: "Details provided",
+      value: answeredQuestions.map((q) => q.text.replace(/\?$/, "")),
+      type: "list",
+    });
+
+    // Highlight the first substantive answer as business focus
+    const firstAnswer = answeredQuestions[0];
+    if (firstAnswer) {
+      items.push({
+        label: "Business focus",
+        value: answers[firstAnswer.id],
+        type: "text",
+      });
+    }
+
+    return items;
+  }, [questions, answers]);
+
+  const inferenceSlot =
+    answeredCount >= 2 ? (
+      <InferenceCard
+        title="Archie is learning"
+        items={inferenceItems}
+        explanation="These details shape your page copy, service descriptions, and calls to action."
+        variant={inferenceConfirmed ? "compact" : "full"}
+        onConfirm={() => setInferenceConfirmed(true)}
+        onEdit={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        editLabel="Edit answers above"
+      />
+    ) : null;
+
   if (!loaded) return null;
 
   return (
     <StepLayout
       step="follow-up"
+      layoutMode="split"
       title="Help Archie write better content"
       subtitle="These details go directly into your page copy — specific answers make specific content."
       buttonLabel="Continue"
       onSubmit={handleSubmit}
+      insightSlot={inferenceSlot}
+      emptyStateText="Answer a few questions and Archie will use the details to write your page content."
     >
       <div className="space-y-6 text-left">
         {questions.map((q) => (

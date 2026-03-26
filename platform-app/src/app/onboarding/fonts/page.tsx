@@ -23,6 +23,7 @@ export default function FontsPage() {
   const [colors, setColors] = useState(DEFAULT_COLORS[0]);
   const [customFontFile, setCustomFontFile] = useState<string | null>(null);
   const [customFontUrl, setCustomFontUrl] = useState<string | null>(null);
+  const [inferenceConfirmed, setInferenceConfirmed] = useState(false);
 
   useEffect(() => {
     resume()
@@ -60,7 +61,7 @@ export default function FontsPage() {
     });
     if (!res.ok) return false;
 
-    router.push(buildStepUrl("follow-up"));
+    router.push(buildStepUrl("images"));
     return true;
   }
 
@@ -82,7 +83,8 @@ export default function FontsPage() {
         { label: "Body text", value: bodyFont || "Not yet selected", type: "text" },
       ]}
       explanation="Your heading font appears in hero sections and page titles. Body font is used for paragraphs and descriptions."
-      onConfirm={() => {}}
+      variant={inferenceConfirmed ? "compact" : "full"}
+      onConfirm={() => setInferenceConfirmed(true)}
       onEdit={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       editLabel="Change selection"
     />
@@ -91,11 +93,13 @@ export default function FontsPage() {
   return (
     <StepLayout
       step="fonts"
+      layoutMode="split"
       title="Choose your typography"
       subtitle="Your font pairing sets the tone. Archie applies it to all headings and body text."
       buttonLabel="Continue"
       onSubmit={handleSubmit}
       insightSlot={inferenceSlot}
+      emptyStateText="Pick your fonts and Archie will show how they\u2019ll be used across your site."
     >
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link rel="stylesheet" href={fontsUrl} />

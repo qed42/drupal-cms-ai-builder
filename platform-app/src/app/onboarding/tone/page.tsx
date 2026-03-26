@@ -20,6 +20,7 @@ export default function TonePage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [industry, setIndustry] = useState("_default");
   const [showInference, setShowInference] = useState(false);
+  const [inferenceConfirmed, setInferenceConfirmed] = useState(false);
 
   useEffect(() => {
     resume()
@@ -93,9 +94,11 @@ export default function TonePage() {
       <InferenceCard
         items={inferenceItems}
         explanation="This tone will be used across all your website content."
-        onConfirm={() => setShowInference(false)}
+        variant={inferenceConfirmed ? "compact" : "full"}
+        onConfirm={() => setInferenceConfirmed(true)}
         onEdit={() => {
           setShowInference(false);
+          setInferenceConfirmed(false);
           setSelectedTone("");
         }}
         editLabel="Change tone"
@@ -107,12 +110,14 @@ export default function TonePage() {
   return (
     <StepLayout
       step="tone"
+      layoutMode="split"
       title="Set your brand voice"
       subtitle="Choose how your site talks to visitors. Archie uses this across every page."
       buttonLabel="Next: Review & Build"
       onSubmit={handleSubmit}
       disabled={!selectedTone}
       insightSlot={inferenceSlot}
+      emptyStateText="Select a writing tone and Archie will show how it shapes your content."
     >
       <div className="space-y-8 text-left">
         {/* Tone Selection Cards */}

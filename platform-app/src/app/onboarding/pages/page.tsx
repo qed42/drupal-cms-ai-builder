@@ -27,6 +27,7 @@ export default function PagesPage() {
   const [addingCustom, setAddingCustom] = useState(false);
   const [customTitle, setCustomTitle] = useState("");
   const [customDescription, setCustomDescription] = useState("");
+  const [inferenceConfirmed, setInferenceConfirmed] = useState(false);
 
   const customPageCount = pages.filter((p) => p.custom).length;
 
@@ -143,7 +144,8 @@ export default function PagesPage() {
           { label: "Structure", value: pages.map((p) => p.title), type: "list" },
         ]}
         explanation="This structure is based on your industry and what similar businesses need. You can add or remove pages above."
-        onConfirm={() => {}}
+        variant={inferenceConfirmed ? "compact" : "full"}
+        onConfirm={() => setInferenceConfirmed(true)}
         onEdit={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         editLabel="Edit pages above"
       />
@@ -152,12 +154,14 @@ export default function PagesPage() {
   return (
     <StepLayout
       step="pages"
+      layoutMode="split"
       title="Here's your site plan"
       subtitle="Archie mapped these pages based on your business. Add, remove, or rename as you like."
       buttonLabel="Continue"
       onSubmit={handleSubmit}
       disabled={analyzing || pages.length < MIN_PAGES}
       insightSlot={inferenceSlot}
+      emptyStateText="Archie is planning your site structure based on your business type."
     >
       {analyzing ? (
         <div className="flex flex-col items-center gap-4 py-8">

@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import ProgressStepper from "./ProgressStepper";
 import StepIcon from "./StepIcon";
+import ArchiePanel from "./ArchiePanel";
 import { getPrevStep } from "@/lib/onboarding-steps";
 
 interface StepLayoutProps {
@@ -16,6 +17,7 @@ interface StepLayoutProps {
   layoutMode?: "centered" | "split" | "summary";
   previewSlot?: React.ReactNode;
   insightSlot?: React.ReactNode;
+  emptyStateText?: string;
 }
 
 export default function StepLayout({
@@ -29,6 +31,7 @@ export default function StepLayout({
   layoutMode,
   previewSlot,
   insightSlot,
+  emptyStateText,
 }: StepLayoutProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -102,13 +105,19 @@ export default function StepLayout({
   }
 
   if (mode === "split") {
+    // Determine if right column shows a preview or an insight panel
+    const hasPreview = !!previewSlot;
+    const gridCols = hasPreview
+      ? "grid-cols-[45fr_55fr]"
+      : "grid-cols-2";
+
     return (
       <form
         onSubmit={handleSubmit}
         className="w-full min-h-[60vh] px-6 py-12"
       >
-        {/* Desktop: 45/55 split grid */}
-        <div className="hidden lg:grid grid-cols-[45fr_55fr] gap-8 max-w-6xl mx-auto">
+        {/* Desktop: split grid */}
+        <div className={`hidden lg:grid ${gridCols} gap-8 max-w-6xl mx-auto`}>
           {/* Left column: form */}
           <div className="flex flex-col">
             <div className="mb-6">
@@ -123,20 +132,26 @@ export default function StepLayout({
               </p>
             )}
             <div className="w-full mb-6">{children}</div>
-            {insightSlot && <div className="mb-6">{insightSlot}</div>}
+            {/* insightSlot in left column only when preview occupies right */}
+            {hasPreview && insightSlot && <div className="mb-6">{insightSlot}</div>}
             <div>{navigationButtons}</div>
-            <div className="mt-12">
-              <ProgressStepper currentStep={step} />
-            </div>
           </div>
 
-          {/* Right column: preview */}
-          <div className="flex items-start justify-center pt-8">
-            {previewSlot}
-          </div>
+          {/* Right column */}
+          {hasPreview ? (
+            <div className="flex items-start justify-center pt-8">
+              {previewSlot}
+            </div>
+          ) : (
+            <div className="pt-8">
+              <ArchiePanel isEmpty={!insightSlot} emptyStateText={emptyStateText}>
+                {insightSlot}
+              </ArchiePanel>
+            </div>
+          )}
         </div>
 
-        {/* Mobile: single column, preview hidden */}
+        {/* Mobile: single column */}
         <div className="flex lg:hidden flex-col items-center justify-center w-full max-w-xl mx-auto text-center">
           <div className="mb-6">
             <StepIcon step={step} />
@@ -150,9 +165,11 @@ export default function StepLayout({
           <div className="w-full mb-8">{children}</div>
           {insightSlot && <div className="mb-6">{insightSlot}</div>}
           <div>{navigationButtons}</div>
-          <div className="mt-12">
-            <ProgressStepper currentStep={step} />
-          </div>
+        </div>
+
+        {/* Stepper: consistent position outside grid for all viewports */}
+        <div className="mt-12 flex justify-center">
+          <ProgressStepper currentStep={step} />
         </div>
       </form>
     );

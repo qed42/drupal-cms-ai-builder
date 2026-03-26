@@ -16,6 +16,7 @@ export default function AudiencePage() {
   const [painPoints, setPainPoints] = useState<string[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [showInference, setShowInference] = useState(false);
+  const [inferenceConfirmed, setInferenceConfirmed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -39,6 +40,8 @@ export default function AudiencePage() {
               }
               if (data.painPoints?.length > 0) {
                 setPainPoints(data.painPoints);
+              }
+              if (data.suggestions?.length > 0 || data.painPoints?.length > 0) {
                 setShowInference(true);
               }
             })
@@ -83,9 +86,11 @@ export default function AudiencePage() {
         items={inferenceItems}
         explanation="These pain points will drive your homepage messaging and CTA language."
         isLoading={loadingSuggestions}
-        onConfirm={() => setShowInference(false)}
+        variant={inferenceConfirmed ? "compact" : "full"}
+        onConfirm={() => setInferenceConfirmed(true)}
         onEdit={() => {
           setShowInference(false);
+          setInferenceConfirmed(false);
           inputRef.current?.focus();
           inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
         }}
@@ -96,12 +101,14 @@ export default function AudiencePage() {
   return (
     <StepLayout
       step="audience"
+      layoutMode="split"
       title="Who are your customers?"
       subtitle="Help Archie understand who'll visit your site — their needs drive your messaging."
       buttonLabel="Next: Site Structure"
       onSubmit={handleSubmit}
       disabled={audience.trim().length < 10}
       insightSlot={inferenceSlot}
+      emptyStateText="Archie is analyzing your audience to identify pain points and messaging angles."
     >
       <div className="w-full space-y-4">
         <input
@@ -110,7 +117,7 @@ export default function AudiencePage() {
           value={audience}
           onChange={(e) => setAudience(e.target.value)}
           placeholder="Describe your ideal audience..."
-          className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 text-center"
+          className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           autoFocus
         />
         <div className="flex items-center justify-between px-1">

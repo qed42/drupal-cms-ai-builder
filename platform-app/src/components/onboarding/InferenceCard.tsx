@@ -17,6 +17,7 @@ interface InferenceCardProps {
   editLabel?: string;
   isLoading?: boolean;
   autoDismissMs?: number;
+  variant?: "full" | "compact";
 }
 
 function LoadingSkeleton() {
@@ -33,6 +34,22 @@ function LoadingSkeleton() {
   );
 }
 
+function CompactSummary({ items }: { items: InferenceCardItem[] }) {
+  const parts = items.map((item) => {
+    const val = Array.isArray(item.value)
+      ? `${item.value.length} items`
+      : item.value;
+    return `${item.label}: ${val}`;
+  });
+
+  return (
+    <p className="text-xs text-white/60 truncate">
+      <span className="text-emerald-400 mr-1.5">&#10003;</span>
+      {parts.join(" \u00B7 ")}
+    </p>
+  );
+}
+
 export default function InferenceCard({
   title = "Archie understood",
   items,
@@ -42,12 +59,13 @@ export default function InferenceCard({
   editLabel = "Edit my description",
   isLoading = false,
   autoDismissMs = 30000,
+  variant = "full",
 }: InferenceCardProps) {
   const [dismissed, setDismissed] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (isLoading || autoDismissMs <= 0) return;
+    if (isLoading || autoDismissMs <= 0 || variant === "compact") return;
 
     timerRef.current = setTimeout(() => {
       setDismissed(true);
@@ -57,9 +75,21 @@ export default function InferenceCard({
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [isLoading, autoDismissMs, onConfirm]);
+  }, [isLoading, autoDismissMs, onConfirm, variant]);
 
-  if (dismissed) return null;
+  if (dismissed && variant !== "compact") return null;
+
+  if (variant === "compact") {
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        className="rounded-xl border border-brand-500/20 bg-white/5 px-4 py-2.5 text-left"
+      >
+        <CompactSummary items={items} />
+      </div>
+    );
+  }
 
   return (
     <div

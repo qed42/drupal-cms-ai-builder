@@ -27,6 +27,7 @@ export default function IdeaPage() {
 
   // Inference card state
   const [showInference, setShowInference] = useState(false);
+  const [inferenceConfirmed, setInferenceConfirmed] = useState(false);
   const [analyzeLoading, setAnalyzeLoading] = useState(false);
   const [analyzeData, setAnalyzeData] = useState<AnalyzeData | null>(null);
 
@@ -141,9 +142,11 @@ export default function IdeaPage() {
       items={inferenceItems}
       explanation="This shapes your page suggestions, content tone, and SEO keywords."
       isLoading={analyzeLoading}
-      onConfirm={() => setShowInference(false)}
+      variant={inferenceConfirmed ? "compact" : "full"}
+      onConfirm={() => setInferenceConfirmed(true)}
       onEdit={() => {
         setShowInference(false);
+        setInferenceConfirmed(false);
         textareaRef.current?.focus();
         textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       }}
@@ -153,12 +156,14 @@ export default function IdeaPage() {
   return (
     <StepLayout
       step="idea"
+      layoutMode="split"
       title="Tell us about your business"
       subtitle="Describe what you do, who you serve, and what makes you different. The more detail, the better Archie can tailor your content."
       buttonLabel="Next: Your Audience"
       onSubmit={handleSubmit}
       disabled={idea.trim().length < 20 || isBlocked}
       insightSlot={inferenceSlot}
+      emptyStateText="Describe your business and Archie will identify your industry, services, and compliance needs."
     >
       <div className="w-full">
         <textarea
@@ -170,13 +175,14 @@ export default function IdeaPage() {
               setQuality(null);
               setSuggestion(null);
               setShowInference(false);
+              setInferenceConfirmed(false);
               setAnalyzeData(null);
             }
           }}
           onBlur={handleBlur}
           placeholder="Describe your project or business..."
           rows={4}
-          className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none text-center"
+          className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
           autoFocus
         />
         <div className="flex items-center justify-between mt-2 px-1">

@@ -23,6 +23,7 @@ export default function BrandPage() {
   const [paletteUrl, setPaletteUrl] = useState<string | null>(null);
   const [colors, setColors] = useState<ColorEntry[]>([]);
   const [extracting, setExtracting] = useState(false);
+  const [inferenceConfirmed, setInferenceConfirmed] = useState(false);
 
   useEffect(() => {
     resume()
@@ -110,7 +111,8 @@ export default function BrandPage() {
           { label: "Palette", value: `${colors.length} colors extracted`, type: "text" },
         ]}
         explanation="These colors will be applied to buttons, headings, and backgrounds across your site."
-        onConfirm={() => {}}
+        variant={inferenceConfirmed ? "compact" : "full"}
+        onConfirm={() => setInferenceConfirmed(true)}
         onEdit={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         editLabel="Adjust colors above"
       />
@@ -119,11 +121,13 @@ export default function BrandPage() {
   return (
     <StepLayout
       step="brand"
+      layoutMode="split"
       title="Show us your brand"
       subtitle="Drop your logo or brand kit — Archie will extract your colors automatically."
       buttonLabel="Next: Brand & Style"
       onSubmit={handleSubmit}
       insightSlot={inferenceSlot}
+      emptyStateText="Upload a logo or brand kit and Archie will extract your color palette."
     >
       <div className="space-y-6">
         {/* Upload zones */}
