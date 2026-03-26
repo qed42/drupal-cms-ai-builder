@@ -75,8 +75,8 @@ export default function FollowUpPage() {
   return (
     <StepLayout
       step="follow-up"
-      title="Tell us more about your business"
-      subtitle="These details help us generate content that's specific to what you do."
+      title="Help Archie write better content"
+      subtitle="These details go directly into your page copy — specific answers make specific content."
       buttonLabel="Continue"
       onSubmit={handleSubmit}
     >
@@ -88,13 +88,30 @@ export default function FollowUpPage() {
             </label>
 
             {q.inputType === "text" && (
-              <input
-                type="text"
-                value={answers[q.id] || ""}
-                onChange={(e) => updateAnswer(q.id, e.target.value)}
-                placeholder={q.placeholder}
-                className="w-full rounded-xl bg-white/10 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none"
-              />
+              <>
+                <input
+                  type="text"
+                  value={answers[q.id] || ""}
+                  onChange={(e) => updateAnswer(q.id, e.target.value)}
+                  placeholder={q.placeholder}
+                  className="w-full rounded-xl bg-white/10 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none"
+                />
+                {!answers[q.id] && (
+                  <p className="text-xs text-white/30 mt-1">
+                    Archie needs this to write your content
+                  </p>
+                )}
+                {answers[q.id] && (answers[q.id] || "").length < 20 && (
+                  <p className="text-xs text-amber-400/60 mt-1">
+                    A bit more detail helps Archie write specific content
+                  </p>
+                )}
+                {(answers[q.id] || "").length >= 50 && (
+                  <p className="text-xs text-emerald-400/80 mt-1">
+                    Great &mdash; Archie has plenty to work with
+                  </p>
+                )}
+              </>
             )}
 
             {q.inputType === "select" && q.options && (

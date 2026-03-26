@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import InferenceCard from "@/components/onboarding/InferenceCard";
 import FileUploadZone from "@/components/onboarding/FileUploadZone";
 import ColorSwatch from "@/components/onboarding/ColorSwatch";
 import { useOnboarding } from "@/hooks/useOnboarding";
@@ -100,13 +101,29 @@ export default function BrandPage() {
 
   if (!loaded) return null;
 
+  const inferenceSlot =
+    !extracting && colors.length > 0 ? (
+      <InferenceCard
+        title="Archie extracted your brand"
+        items={[
+          { label: "Primary color", value: colors[0]?.hex || "", type: "text" },
+          { label: "Palette", value: `${colors.length} colors extracted`, type: "text" },
+        ]}
+        explanation="These colors will be applied to buttons, headings, and backgrounds across your site."
+        onConfirm={() => {}}
+        onEdit={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        editLabel="Adjust colors above"
+      />
+    ) : null;
+
   return (
     <StepLayout
       step="brand"
-      title="Give it a face."
-      subtitle="Drop your logo, brand kit, or inspiration. We'll extract the colors and typography to shape your preview."
-      buttonLabel="Pick Your Fonts"
+      title="Show us your brand"
+      subtitle="Drop your logo or brand kit — Archie will extract your colors automatically."
+      buttonLabel="Next: Brand & Style"
       onSubmit={handleSubmit}
+      insightSlot={inferenceSlot}
     >
       <div className="space-y-6">
         {/* Upload zones */}

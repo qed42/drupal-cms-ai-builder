@@ -36,8 +36,8 @@ export default function DesignPage() {
     <StepLayout
       step="design"
       title="How should it feel?"
-      subtitle="We can follow your exact design, or craft a look that fits your vision."
-      buttonLabel="Shape the Experience"
+      subtitle="Upload a design reference or let Archie style it based on your brand."
+      buttonLabel="Continue"
       onSubmit={handleSubmit}
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

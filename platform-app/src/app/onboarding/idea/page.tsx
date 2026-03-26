@@ -153,9 +153,9 @@ export default function IdeaPage() {
   return (
     <StepLayout
       step="idea"
-      title="What's the big idea?"
-      subtitle="In a few lines, tell us what this is all about."
-      buttonLabel="Your Audience"
+      title="Tell us about your business"
+      subtitle="Describe what you do, who you serve, and what makes you different. The more detail, the better Archie can tailor your content."
+      buttonLabel="Next: Your Audience"
       onSubmit={handleSubmit}
       disabled={idea.trim().length < 20 || isBlocked}
       insightSlot={inferenceSlot}
@@ -186,7 +186,7 @@ export default function IdeaPage() {
             )}
             {!validating && idea.trim().length > 0 && idea.trim().length < 20 && (
               <p className="text-xs text-amber-400/80">
-                Add a bit more detail for better results
+                Give Archie more detail for a better site
               </p>
             )}
             {!validating && showWarning && (
@@ -201,7 +201,7 @@ export default function IdeaPage() {
             )}
             {!validating && quality === "good" && (
               <p className="text-xs text-emerald-400/80">
-                Looks great!
+                Archie has plenty to work with
               </p>
             )}
           </div>

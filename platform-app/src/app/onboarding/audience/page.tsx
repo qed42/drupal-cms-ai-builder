@@ -96,9 +96,9 @@ export default function AudiencePage() {
   return (
     <StepLayout
       step="audience"
-      title="Who is this for?"
-      subtitle="Describe your ideal audience — who will visit your site?"
-      buttonLabel="Plan the Structure"
+      title="Who are your customers?"
+      subtitle="Help Archie understand who'll visit your site — their needs drive your messaging."
+      buttonLabel="Next: Site Structure"
       onSubmit={handleSubmit}
       disabled={audience.trim().length < 10}
       insightSlot={inferenceSlot}
@@ -114,13 +114,23 @@ export default function AudiencePage() {
           autoFocus
         />
         <div className="flex items-center justify-between px-1">
-          {audience.trim().length > 0 && audience.trim().length < 10 ? (
-            <p className="text-xs text-amber-400/80">
-              A bit more detail helps us tailor your site
-            </p>
-          ) : (
-            <span />
-          )}
+          <div className="flex-1">
+            {audience.trim().length > 0 && audience.trim().length < 30 && (
+              <p className="text-xs text-amber-400/80">
+                Give Archie more detail &mdash; who exactly are your customers?
+              </p>
+            )}
+            {audience.trim().length >= 30 && audience.trim().length <= 80 && (
+              <p className="text-xs text-amber-400/60">
+                Good start. Adding age range, location, or pain points helps.
+              </p>
+            )}
+            {audience.trim().length > 80 && (
+              <p className="text-xs text-emerald-400/80">
+                Excellent. Archie can really target your messaging now.
+              </p>
+            )}
+          </div>
           <p className="text-xs text-white/30">
             {audience.length} characters
           </p>

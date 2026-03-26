@@ -80,10 +80,10 @@ export default function ReviewSettingsPage() {
       </div>
 
       <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-        Ready to generate?
+        Review and launch
       </h1>
       <p className="text-white/50 text-lg mb-8 max-w-md">
-        Review your selections below. AI will generate your complete website based on these inputs.
+        Here&apos;s everything Archie will use to build your site. Make any final changes.
       </p>
 
       {/* Settings summary */}
@@ -148,7 +148,7 @@ export default function ReviewSettingsPage() {
       {/* How your inputs are used */}
       <div className="w-full rounded-lg border border-white/5 bg-white/[0.02] p-4 mb-6">
         <p className="text-xs text-white/30 leading-relaxed">
-          <span className="text-white/50 font-medium">How your inputs shape your site:</span>{" "}
+          <span className="text-white/50 font-medium">How Archie builds your site:</span>{" "}
           Your business idea and audience drive page content and tone. Brand colors and fonts are applied to your chosen theme.
           Pages are structured with SEO-optimized layouts tailored to your industry. Generation takes approximately 2-3 minutes.
         </p>

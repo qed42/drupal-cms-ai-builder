@@ -23,14 +23,13 @@ export default function StartPage() {
       </div>
 
       <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-        Your website, designed <br className="hidden md:block" />
-        <span className="text-brand-400">and built by AI.</span>
+        Let&apos;s build your website{" "}
+        <span className="text-brand-400">together.</span>
       </h1>
 
       <p className="text-white/50 text-lg mb-4 max-w-lg">
-        Answer a few questions about your business.
-        We&apos;ll generate a complete, professional Drupal website
-        with real content, brand colors, and stock images.
+        Tell Archie about your business &mdash; the more detail you share,
+        the better your site.
       </p>
 
       <p className="text-white/30 text-sm mb-10">
@@ -41,7 +40,7 @@ export default function StartPage() {
         onClick={() => router.push(buildStepUrl("theme"))}
         className="rounded-full bg-brand-500 px-10 py-4 text-lg font-medium text-white transition-all hover:bg-brand-400 flex items-center gap-2 shadow-lg shadow-brand-500/25"
       >
-        Start Building
+        Let&apos;s Go
         <span className="text-xl">&rarr;</span>
       </button>
 

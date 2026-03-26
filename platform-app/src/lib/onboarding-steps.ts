@@ -1,25 +1,25 @@
 export const ONBOARDING_STEPS = [
-  { slug: "start", label: "Welcome" },
+  { slug: "start", label: "Get Started" },
   { slug: "theme", label: "Theme" },
-  { slug: "name", label: "Project Name" },
-  { slug: "idea", label: "Big Idea" },
+  { slug: "name", label: "Your Name" },
+  { slug: "idea", label: "Your Idea" },
   { slug: "audience", label: "Audience" },
-  { slug: "pages", label: "Page Map" },
-  { slug: "design", label: "Design Source" },
+  { slug: "pages", label: "Pages" },
+  { slug: "design", label: "Design" },
   { slug: "brand", label: "Brand" },
   { slug: "fonts", label: "Fonts" },
   { slug: "follow-up", label: "Details" },
-  { slug: "tone", label: "Tone & Voice" },
-  { slug: "review-settings", label: "Review & Generate" },
+  { slug: "tone", label: "Voice" },
+  { slug: "review-settings", label: "Review" },
 ] as const;
 
 export type StepSlug = (typeof ONBOARDING_STEPS)[number]["slug"];
 
 export const STEP_SECTIONS = [
-  { name: "Vision", steps: ["start", "theme", "name", "idea", "audience"] },
-  { name: "Design", steps: ["pages", "design", "brand", "fonts"] },
-  { name: "Content", steps: ["follow-up", "tone"] },
-  { name: "Launch", steps: ["review-settings"] },
+  { name: "Your Business", steps: ["start", "theme", "name", "idea", "audience"] },
+  { name: "Site Structure", steps: ["pages", "design", "brand", "fonts"] },
+  { name: "Brand & Style", steps: ["follow-up", "tone"] },
+  { name: "Review & Build", steps: ["review-settings"] },
 ] as const;
 
 export function getSectionForStep(slug: string) {

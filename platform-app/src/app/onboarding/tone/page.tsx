@@ -108,8 +108,8 @@ export default function TonePage() {
     <StepLayout
       step="tone"
       title="Set your brand voice"
-      subtitle="Choose a writing tone and tell us what sets you apart."
-      buttonLabel="Review & Generate"
+      subtitle="Choose how your site talks to visitors. Archie uses this across every page."
+      buttonLabel="Next: Review & Build"
       onSubmit={handleSubmit}
       disabled={!selectedTone}
       insightSlot={inferenceSlot}

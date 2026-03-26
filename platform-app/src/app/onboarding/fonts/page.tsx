@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import InferenceCard from "@/components/onboarding/InferenceCard";
 import FontPreviewTile from "@/components/onboarding/FontPreviewTile";
 import FontSelector from "@/components/onboarding/FontSelector";
 import FileUploadZone from "@/components/onboarding/FileUploadZone";
@@ -73,13 +74,28 @@ export default function FontsPage() {
     { bg: colors.light, text: colors.primary, font: bodyFont },
   ];
 
+  const inferenceSlot = (
+    <InferenceCard
+      title="How Archie uses your fonts"
+      items={[
+        { label: "Headings", value: headingFont || "Not yet selected", type: "text" },
+        { label: "Body text", value: bodyFont || "Not yet selected", type: "text" },
+      ]}
+      explanation="Your heading font appears in hero sections and page titles. Body font is used for paragraphs and descriptions."
+      onConfirm={() => {}}
+      onEdit={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      editLabel="Change selection"
+    />
+  );
+
   return (
     <StepLayout
       step="fonts"
-      title="Select a font"
-      subtitle="Select a primary and a secondary font"
+      title="Choose your typography"
+      subtitle="Your font pairing sets the tone. Archie applies it to all headings and body text."
       buttonLabel="Continue"
       onSubmit={handleSubmit}
+      insightSlot={inferenceSlot}
     >
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link rel="stylesheet" href={fontsUrl} />

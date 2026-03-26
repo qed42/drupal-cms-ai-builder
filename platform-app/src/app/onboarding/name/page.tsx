@@ -34,8 +34,8 @@ export default function NamePage() {
   return (
     <StepLayout
       step="name"
-      title="What are we calling this?"
-      subtitle="Give your project a name — you can always change it later."
+      title="What's your business called?"
+      subtitle="This becomes your site title and appears in search results."
       buttonLabel="Continue"
       onSubmit={handleSubmit}
       disabled={name.trim().length < 2}

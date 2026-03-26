@@ -34,7 +34,7 @@ function LoadingSkeleton() {
 }
 
 export default function InferenceCard({
-  title = "AI understood",
+  title = "Archie understood",
   items,
   explanation,
   onConfirm,

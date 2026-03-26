@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import InferenceCard from "@/components/onboarding/InferenceCard";
 import { useOnboarding } from "@/hooks/useOnboarding";
 
 interface Page {
@@ -133,14 +134,30 @@ export default function PagesPage() {
 
   if (!loaded) return null;
 
+  const inferenceSlot =
+    !analyzing && pages.length > 0 ? (
+      <InferenceCard
+        title="Archie planned your site"
+        items={[
+          { label: "Pages", value: `${pages.length} pages`, type: "text" },
+          { label: "Structure", value: pages.map((p) => p.title), type: "list" },
+        ]}
+        explanation="This structure is based on your industry and what similar businesses need. You can add or remove pages above."
+        onConfirm={() => {}}
+        onEdit={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        editLabel="Edit pages above"
+      />
+    ) : null;
+
   return (
     <StepLayout
       step="pages"
-      title="Let's map your site."
-      subtitle="Based on what you've shared, here are the suggested pages. Keep it, tweak it, or make it your own."
-      buttonLabel="Shape the Experience"
+      title="Here's your site plan"
+      subtitle="Archie mapped these pages based on your business. Add, remove, or rename as you like."
+      buttonLabel="Continue"
       onSubmit={handleSubmit}
       disabled={analyzing || pages.length < MIN_PAGES}
+      insightSlot={inferenceSlot}
     >
       {analyzing ? (
         <div className="flex flex-col items-center gap-4 py-8">

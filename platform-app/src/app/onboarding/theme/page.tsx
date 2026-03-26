@@ -47,11 +47,10 @@ export default function ThemeSelectionPage() {
   return (
     <div className="flex flex-col items-center w-full max-w-3xl mx-auto px-6">
       <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 text-center">
-        Choose Your Theme
+        Pick a design foundation
       </h1>
       <p className="text-white/50 text-lg mb-10 text-center max-w-lg">
-        Select the design system that will power your website. Each theme has its
-        own visual style and component library.
+        Each theme has a distinct visual style. Archie will customize it with your brand.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-10">
