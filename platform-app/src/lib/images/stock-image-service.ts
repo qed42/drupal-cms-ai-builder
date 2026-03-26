@@ -9,19 +9,23 @@ export interface StockImageResult {
   width: number;
   height: number;
   photographerUrl: string;
+  photoId: string;    // Pexels photo ID (for deduplication)
 }
 
 export interface StockImageSearchOptions {
   orientation?: "landscape" | "portrait" | "square";
   size?: "large" | "medium" | "small";
   perPage?: number;
+  excludeIds?: string[];
 }
 
-const cache = new Map<string, StockImageResult | null>();
+// Cache stores ALL results for a query (up to perPage) for deduplication filtering
+const cache = new Map<string, StockImageResult[]>();
 
 /**
  * Search for a stock image using the Pexels API.
- * Returns the top result or null if no match / API error.
+ * Returns the top result (excluding any IDs in excludeIds) or null if no match / API error.
+ * Internally caches an array of results per query for per-page deduplication.
  */
 export async function searchStockImage(
   query: string,
@@ -33,12 +37,16 @@ export async function searchStockImage(
     return null;
   }
 
-  const { orientation = "landscape", perPage = 1 } = options;
+  const { orientation = "landscape", perPage = 5, excludeIds = [] } = options;
+  const excludeSet = new Set(excludeIds);
 
   // Check cache
   const cacheKey = `${query}|${orientation}`;
   if (cache.has(cacheKey)) {
-    return cache.get(cacheKey) ?? null;
+    const cached = cache.get(cacheKey)!;
+    if (cached.length === 0) return null;
+    const match = cached.find((r) => !excludeSet.has(r.photoId));
+    return match ?? null;
   }
 
   const params = new URLSearchParams({
@@ -58,13 +66,13 @@ export async function searchStockImage(
 
     if (response.status === 429) {
       console.warn("[stock-image] Pexels rate limit hit, backing off");
-      cache.set(cacheKey, null);
+      cache.set(cacheKey, []);
       return null;
     }
 
     if (!response.ok) {
       console.warn(`[stock-image] Pexels API error: ${response.status}`);
-      cache.set(cacheKey, null);
+      cache.set(cacheKey, []);
       return null;
     }
 
@@ -72,24 +80,28 @@ export async function searchStockImage(
     const photos = data.photos;
 
     if (!photos || photos.length === 0) {
-      cache.set(cacheKey, null);
+      cache.set(cacheKey, []);
       return null;
     }
 
-    const photo = photos[0];
-    const result: StockImageResult = {
-      url: photo.src.large2x || photo.src.large || photo.src.medium,
-      alt: photo.alt || query,
-      width: photo.width,
-      height: photo.height,
-      photographerUrl: photo.photographer_url || "",
-    };
+    // Parse ALL photos into results array for deduplication
+    const results: StockImageResult[] = photos.map((photo: Record<string, unknown>) => ({
+      url: (photo.src as Record<string, string>).large2x || (photo.src as Record<string, string>).large || (photo.src as Record<string, string>).medium,
+      alt: (photo.alt as string) || query,
+      width: photo.width as number,
+      height: photo.height as number,
+      photographerUrl: (photo.photographer_url as string) || "",
+      photoId: String(photo.id),
+    }));
 
-    cache.set(cacheKey, result);
-    return result;
+    cache.set(cacheKey, results);
+
+    // Filter by excludeIds and return first match
+    const match = results.find((r) => !excludeSet.has(r.photoId));
+    return match ?? null;
   } catch (err) {
     console.warn(`[stock-image] Pexels search failed for "${query}":`, err);
-    cache.set(cacheKey, null);
+    cache.set(cacheKey, []);
     return null;
   }
 }

@@ -55,7 +55,7 @@ export interface ReviewInput {
 
 export interface ReviewCheck {
   name: string;
-  dimension: "depth" | "seo" | "geo";
+  dimension: "depth" | "seo" | "geo" | "design";
   passed: boolean;
   severity: "error" | "warning";
   message: string;
@@ -415,15 +415,35 @@ function checkMetaDescKeyword(input: ReviewInput): ReviewCheck {
   };
 }
 
+/**
+ * Extract the hero heading text from a hero section, checking all design-system
+ * prop variants (title, heading, heading_text) on both the section and its children.
+ */
+function extractHeroHeadingText(hero: ReviewPageSection): string {
+  // Check section-level props
+  for (const propName of ["title", "heading", "heading_text"]) {
+    const val = hero.props[propName];
+    if (typeof val === "string" && val.trim().length > 0) return val.trim();
+  }
+
+  // Check children (e.g., Mercury's heading child in hero_slot)
+  for (const child of hero.children ?? []) {
+    for (const propName of ["heading_text", "title", "heading"]) {
+      const val = child.props[propName];
+      if (typeof val === "string" && val.trim().length > 0) return val.trim();
+    }
+  }
+
+  return "";
+}
+
 function checkHeroHeading(input: ReviewInput): ReviewCheck {
   // First section is typically the hero — check both organism and composed
   const hero = input.page.sections.find((s) =>
     s.component_id.toLowerCase().includes("hero")
   ) ?? input.page.sections[0];
-  const title = hero?.props?.title
-    ?? (hero?.children?.[0]?.props?.title)
-    ?? (hero?.props?.heading);
-  const hasHeading = typeof title === "string" && title.trim().length > 0;
+  const headingText = hero ? extractHeroHeadingText(hero) : "";
+  const hasHeading = headingText.length > 0;
 
   return {
     name: "hero-heading",
@@ -432,9 +452,58 @@ function checkHeroHeading(input: ReviewInput): ReviewCheck {
     severity: "error",
     message: hasHeading
       ? "Hero section has a clear heading"
-      : "Hero section missing heading (title prop empty or missing)",
+      : "Hero section missing heading (title/heading/heading_text prop empty or missing)",
     fix: !hasHeading
-      ? "Add a clear, descriptive title to the hero banner component."
+      ? "Add a clear, descriptive heading to the hero banner component using heading_text, title, or heading prop."
+      : undefined,
+  };
+}
+
+/** Forbidden hero heading patterns — generic/boilerplate text that should never be an h1. */
+const GENERIC_HERO_PATTERNS = [
+  /^welcome$/i,
+  /^welcome to\b/i,
+  /^home$/i,
+  /^home ?page$/i,
+  /^about us$/i,
+  /^about our\b/i,
+  /^our services$/i,
+  /^our company$/i,
+  /^contact us$/i,
+  /^contact$/i,
+  /^discover our\b/i,
+  /^get in touch$/i,
+];
+
+function checkHeroHeadingQuality(input: ReviewInput): ReviewCheck {
+  const hero = input.page.sections.find((s) =>
+    s.component_id.toLowerCase().includes("hero")
+  ) ?? input.page.sections[0];
+  const headingText = hero ? extractHeroHeadingText(hero) : "";
+
+  // If no heading at all, checkHeroHeading already catches that — pass here to avoid double-flagging
+  if (!headingText) {
+    return {
+      name: "hero-heading-quality",
+      dimension: "seo",
+      passed: true,
+      severity: "error",
+      message: "Hero heading quality check skipped (no heading text found — flagged by hero-heading check)",
+    };
+  }
+
+  const isGeneric = GENERIC_HERO_PATTERNS.some((p) => p.test(headingText));
+
+  return {
+    name: "hero-heading-quality",
+    dimension: "seo",
+    passed: !isGeneric,
+    severity: "error",
+    message: isGeneric
+      ? `Hero heading "${headingText}" is generic/boilerplate — must be a marketing-grade headline`
+      : "Hero heading is a specific, marketing-grade headline",
+    fix: isGeneric
+      ? `Replace the hero heading "${headingText}" with a compelling, benefit-driven headline that communicates the core value proposition. Use target keywords: ${input.planPage.targetKeywords.join(", ")}. Example: "Expert [Industry] Services — [Benefit Statement]".`
       : undefined,
   };
 }
@@ -725,6 +794,105 @@ function checkSelfLinks(input: ReviewInput): ReviewCheck {
 }
 
 // ---------------------------------------------------------------------------
+// Design Checks (TASK-425)
+// ---------------------------------------------------------------------------
+
+function checkConsecutiveBackgrounds(input: ReviewInput): ReviewCheck {
+  const sections = input.page.sections;
+  const duplicates: string[] = [];
+
+  for (let i = 1; i < sections.length; i++) {
+    const currBg = (sections[i].props.container_background ?? sections[i].props.background_color ?? "") as string;
+    const prevBg = (sections[i - 1].props.container_background ?? sections[i - 1].props.background_color ?? "") as string;
+    if (currBg && prevBg && currBg === prevBg) {
+      duplicates.push(`sections ${i} and ${i + 1} both use "${currBg}"`);
+    }
+  }
+
+  return {
+    name: "consecutive-backgrounds",
+    dimension: "design",
+    passed: duplicates.length === 0,
+    severity: "warning",
+    message: duplicates.length === 0
+      ? "Good background alternation across sections"
+      : `Consecutive identical backgrounds: ${duplicates.join("; ")}`,
+    fix: duplicates.length > 0
+      ? "Alternate background colors between consecutive sections for visual rhythm."
+      : undefined,
+  };
+}
+
+/** Text-image patterns grouped by image position (left vs right). */
+const IMAGE_RIGHT_PATTERNS = new Set(["text-image-split-50-50", "text-image-split-66-33"]);
+const IMAGE_LEFT_PATTERNS = new Set(["image-text-split-33-66", "image-text-split-50-50"]);
+
+function checkImageAlternation(input: ReviewInput): ReviewCheck {
+  const textImageSections: Array<{ index: number; side: "left" | "right" }> = [];
+
+  for (let i = 0; i < input.page.sections.length; i++) {
+    const pattern = input.page.sections[i].pattern;
+    if (!pattern) continue;
+    if (IMAGE_RIGHT_PATTERNS.has(pattern)) {
+      textImageSections.push({ index: i, side: "right" });
+    } else if (IMAGE_LEFT_PATTERNS.has(pattern)) {
+      textImageSections.push({ index: i, side: "left" });
+    }
+  }
+
+  const violations: string[] = [];
+  for (let i = 1; i < textImageSections.length; i++) {
+    const curr = textImageSections[i];
+    const prev = textImageSections[i - 1];
+    // Flag if two text-image sections within 2 positions of each other have the same image side
+    if (curr.index - prev.index <= 2 && curr.side === prev.side) {
+      violations.push(
+        `sections ${prev.index + 1} and ${curr.index + 1} both place image on ${curr.side}`
+      );
+    }
+  }
+
+  return {
+    name: "image-alternation",
+    dimension: "design",
+    passed: violations.length === 0,
+    severity: "warning",
+    message: violations.length === 0
+      ? "Text-image sections alternate image position correctly"
+      : `Non-alternating image positions: ${violations.join("; ")}`,
+    fix: violations.length > 0
+      ? "Alternate text-image layouts: use text-image-split (image right) followed by image-text-split (image left) for visual variety."
+      : undefined,
+  };
+}
+
+function checkPatternVariety(input: ReviewInput): ReviewCheck {
+  const sections = input.page.sections;
+  const duplicates: string[] = [];
+
+  for (let i = 1; i < sections.length; i++) {
+    const currPattern = sections[i].pattern;
+    const prevPattern = sections[i - 1].pattern;
+    if (currPattern && prevPattern && currPattern === prevPattern) {
+      duplicates.push(`sections ${i} and ${i + 1} both use "${currPattern}"`);
+    }
+  }
+
+  return {
+    name: "pattern-variety",
+    dimension: "design",
+    passed: duplicates.length === 0,
+    severity: "warning",
+    message: duplicates.length === 0
+      ? "Good pattern variety across sections"
+      : `Consecutive identical patterns: ${duplicates.join("; ")}`,
+    fix: duplicates.length > 0
+      ? "Use different composition patterns for consecutive sections to create visual interest."
+      : undefined,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Main Review Function
 // ---------------------------------------------------------------------------
 
@@ -754,6 +922,12 @@ export function reviewPage(input: ReviewInput): ReviewResult {
     checkInterlinkDensity(input),
     checkGenericCtaText(input),
     checkSelfLinks(input),
+    // Design checks (TASK-425)
+    checkConsecutiveBackgrounds(input),
+    checkImageAlternation(input),
+    checkPatternVariety(input),
+    // Hero heading quality (TASK-423) — error severity, triggers retry
+    checkHeroHeadingQuality(input),
   ];
 
   // Score weights: errors count fully, warnings count at 0.3 weight.
@@ -793,8 +967,9 @@ export function formatReviewLog(pageName: string, result: ReviewResult): string 
   const depthScore = dimensionScore(result.checks, "depth");
   const seoScore = dimensionScore(result.checks, "seo");
   const geoScore = dimensionScore(result.checks, "geo");
+  const designScore = dimensionScore(result.checks, "design");
   const status = result.passed ? "PASS" : "FAIL";
-  return `[review] Page "${pageName}" — ${status} (depth=${depthScore}, seo=${seoScore}, geo=${geoScore}, overall=${result.score.toFixed(2)})`;
+  return `[review] Page "${pageName}" — ${status} (depth=${depthScore}, seo=${seoScore}, geo=${geoScore}, design=${designScore}, overall=${result.score.toFixed(2)})`;
 }
 
 function dimensionScore(checks: ReviewCheck[], dimension: string): string {

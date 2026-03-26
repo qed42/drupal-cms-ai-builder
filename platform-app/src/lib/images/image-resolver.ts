@@ -5,7 +5,7 @@
  * TASK-388: Image Resolver Service
  */
 
-import type { PageSection, PageLayout } from "@/lib/blueprint/types";
+import type { PageSection, PageSectionChild, PageLayout } from "@/lib/blueprint/types";
 import { getDefaultAdapter } from "@/lib/design-systems/setup";
 import { buildSearchQuery } from "@/lib/images/image-intent";
 import { searchStockImage } from "@/lib/images/stock-image-service";
@@ -16,6 +16,11 @@ interface CanvasImageObject {
   alt: string;
   width: number;
   height: number;
+}
+
+interface FetchResult {
+  image: CanvasImageObject;
+  photoId: string;
 }
 
 /**
@@ -35,6 +40,7 @@ export async function resolveImagesForSections(
   let imagesAdded = 0;
   let imagesFailed = 0;
   const queriesBySection = new Map<number, string>();
+  const usedPhotoIds = new Set<string>();
 
   // Build a minimal PageLayout for buildSearchQuery context
   const pageContext: PageLayout = {
@@ -58,11 +64,13 @@ export async function resolveImagesForSections(
           query,
           mapping.orientation,
           mapping.dimensions.width,
-          mapping.dimensions.height
+          mapping.dimensions.height,
+          Array.from(usedPhotoIds)
         );
 
         if (result) {
-          section.props[propName] = result;
+          section.props[propName] = result.image;
+          usedPhotoIds.add(result.photoId);
           // Store the image query in section _meta (TASK-411)
           if (!section._meta) section._meta = {};
           section._meta.imageQuery = query;
@@ -83,17 +91,19 @@ export async function resolveImagesForSections(
         for (const propName of childMapping.props) {
           if (isImagePopulated(child.props[propName])) continue;
 
-          const query = buildSearchQuery(section, pageContext, industry, audience);
+          const query = buildSearchQuery(section, pageContext, industry, audience, child);
           const result = await fetchAndDownload(
             siteId,
             query,
             childMapping.orientation,
             childMapping.dimensions.width,
-            childMapping.dimensions.height
+            childMapping.dimensions.height,
+            Array.from(usedPhotoIds)
           );
 
           if (result) {
-            child.props[propName] = result;
+            child.props[propName] = result.image;
+            usedPhotoIds.add(result.photoId);
             // Store query on parent section _meta for composed sections (TASK-411)
             if (!section._meta) section._meta = {};
             section._meta.imageQuery = query;
@@ -121,17 +131,18 @@ function isImagePopulated(val: unknown): boolean {
 
 /**
  * Search Pexels and download the image locally.
- * Returns a Canvas-compatible image object or null on failure.
+ * Returns a Canvas-compatible image object with photoId, or null on failure.
  */
 async function fetchAndDownload(
   siteId: string,
   query: string,
   orientation: "landscape" | "portrait" | "square",
   width: number,
-  height: number
-): Promise<CanvasImageObject | null> {
+  height: number,
+  excludeIds: string[] = []
+): Promise<FetchResult | null> {
   try {
-    const searchResult = await searchStockImage(query, { orientation });
+    const searchResult = await searchStockImage(query, { orientation, excludeIds });
     if (!searchResult) return null;
 
     const downloaded = await downloadStockImage(
@@ -144,10 +155,13 @@ async function fetchAndDownload(
     if (!downloaded) return null;
 
     return {
-      src: downloaded.localPath,
-      alt: downloaded.alt,
-      width,
-      height,
+      image: {
+        src: downloaded.localPath,
+        alt: downloaded.alt,
+        width,
+        height,
+      },
+      photoId: searchResult.photoId,
     };
   } catch (err) {
     console.warn(`[image-resolver] Failed for query "${query}":`, err);

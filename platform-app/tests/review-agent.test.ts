@@ -6,11 +6,15 @@ import type { ReviewInput, ReviewPageSection } from "../src/lib/pipeline/phases/
 // Helpers — build test fixtures
 // ---------------------------------------------------------------------------
 
-function makeSection(componentId: string, props: Record<string, unknown> = {}) {
-  return { component_id: componentId, props };
+function makeSection(
+  componentId: string,
+  props: Record<string, unknown> = {},
+  extra?: { children?: Array<{ component_id: string; slot: string; props: Record<string, unknown> }>; pattern?: string }
+): ReviewPageSection {
+  return { component_id: componentId, props, ...extra };
 }
 
-function makeHomePage(sections: ReturnType<typeof makeSection>[], seo?: { meta_title: string; meta_description: string }) {
+function makeHomePage(sections: ReviewPageSection[], seo?: { meta_title: string; meta_description: string }) {
   return {
     slug: "home",
     title: "Home",
@@ -23,7 +27,7 @@ function makeInput(overrides: Partial<ReviewInput> = {}): ReviewInput {
   const servicesText = "We provide exceptional dental care with over 15 years of experience serving the Portland community. Our team of certified dentists offers comprehensive services including regular cleanings, dental implants, cosmetic dentistry, teeth whitening, and orthodontics for families and individuals. We use the latest dental technology and techniques to ensure comfortable, effective treatments. Every patient receives a personalized treatment plan designed to address their unique dental needs and goals. From preventive care to complex restorative procedures, our Portland dental clinic is equipped to handle all aspects of your oral health. We also offer emergency dental services for unexpected situations that require immediate attention. Our friendly and compassionate team makes every visit as comfortable as possible, using gentle techniques and modern anesthesia options to minimize discomfort during procedures.";
   const aboutText = "We have served 500+ clients with a commitment to gentle, professional dental care. Our modern Portland clinic features the latest dental technology including digital X-rays and laser dentistry. Our dentists are board-certified with specialized training in cosmetic and restorative procedures. We believe everyone deserves a healthy, beautiful smile and we work to make dental care accessible and affordable for our entire community. SmileBright Dental has been a trusted name in Portland since 2010, consistently earning five-star reviews from satisfied patients. We participate in community outreach programs and provide discounted dental services to underserved populations. Our state-of-the-art facility includes private treatment rooms, a comfortable waiting area, and the most advanced diagnostic and treatment equipment available in modern dentistry.";
   const sections = [
-    makeSection("space_ds:space-hero-banner-style-01", { title: "Welcome to SmileBright Dental — Portland's Premier Dental Care Provider", sub_headline: "Your trusted dental care provider in Portland Oregon offering comprehensive dental services including cleanings, implants, cosmetic dentistry, and emergency care for the whole family" }),
+    makeSection("space_ds:space-hero-banner-style-01", { title: "Expert Dental Care in Portland — Smiles That Last a Lifetime", sub_headline: "Your trusted dental care provider in Portland Oregon offering comprehensive dental services including cleanings, implants, cosmetic dentistry, and emergency care for the whole family" }),
     makeSection("space_ds:space-text-media-with-checklist", { title: "Our Dental Care Services", description: servicesText }),
     makeSection("space_ds:space-text-media-default", { title: "Why Choose SmileBright Dental", description: aboutText }),
     makeSection("space_ds:space-stats-kpi", { title: "SmileBright Dental By The Numbers", stats: [{ value: "15+", label: "Years of dental care experience in Portland" }, { value: "500+", label: "Happy patients and families served" }, { value: "4.9", label: "Average star rating from patient reviews" }] }),
@@ -338,6 +342,162 @@ describe("GEO Checks", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Hero Heading Quality (TASK-423)
+// ---------------------------------------------------------------------------
+
+describe("Hero Heading Quality", () => {
+  it("hero-heading-quality: PASS for marketing-grade headline", () => {
+    const result = reviewPage(makeInput());
+    const check = result.checks.find((c) => c.name === "hero-heading-quality");
+    expect(check?.passed).toBe(true);
+  });
+
+  it("hero-heading-quality: FAIL for 'Welcome to [Name]'", () => {
+    const input = makeInput({
+      page: makeHomePage([
+        makeSection("space_ds:space-hero-banner-style-01", { title: "Welcome to SmileBright Dental" }),
+        makeSection("space_ds:space-text-media-with-checklist", { title: "Services", description: "We provide dental care with 15 years experience for 500+ clients in our modern Portland clinic." }),
+        makeSection("space_ds:space-text-media-default", { title: "About", description: "We have served the Portland community with our professional dental team." }),
+        makeSection("space_ds:space-testimony-card", { title: "Reviews" }),
+        makeSection("space_ds:space-cta-banner-type-1", { title: "Book Now at /contact" }),
+      ]),
+    });
+    const result = reviewPage(input);
+    const check = result.checks.find((c) => c.name === "hero-heading-quality");
+    expect(check?.passed).toBe(false);
+    expect(check?.severity).toBe("error");
+    expect(check?.fix).toContain("Replace the hero heading");
+  });
+
+  it("hero-heading-quality: FAIL for bare 'Welcome'", () => {
+    const input = makeInput({
+      page: makeHomePage([
+        makeSection("space_ds:space-hero-banner-style-01", { title: "Welcome" }),
+        makeSection("space_ds:space-text-media-with-checklist", { title: "Services", description: "We provide dental care with 15 years experience for 500+ clients in our modern Portland clinic." }),
+        makeSection("space_ds:space-text-media-default", { title: "About", description: "We have served the Portland community with our professional dental team." }),
+        makeSection("space_ds:space-testimony-card", { title: "Reviews" }),
+        makeSection("space_ds:space-cta-banner-type-1", { title: "Book Now at /contact" }),
+      ]),
+    });
+    const result = reviewPage(input);
+    const check = result.checks.find((c) => c.name === "hero-heading-quality");
+    expect(check?.passed).toBe(false);
+  });
+
+  it("hero-heading: PASS with Mercury heading_text prop", () => {
+    const input = makeInput({
+      page: makeHomePage([
+        makeSection("mercury:hero-billboard", { heading_text: "Portland's Trusted Dental Care Experts" }),
+        makeSection("space_ds:space-text-media-with-checklist", { title: "Services", description: "We provide dental care with 15 years experience for 500+ clients in our modern Portland clinic." }),
+        makeSection("space_ds:space-text-media-default", { title: "About", description: "We have served the Portland community with our professional dental team." }),
+        makeSection("space_ds:space-testimony-card", { title: "Reviews" }),
+        makeSection("space_ds:space-cta-banner-type-1", { title: "Book at /contact" }),
+      ]),
+    });
+    const result = reviewPage(input);
+    const check = result.checks.find((c) => c.name === "hero-heading");
+    expect(check?.passed).toBe(true);
+  });
+
+  it("hero-heading: PASS with Mercury child heading_text in hero_slot", () => {
+    const input = makeInput({
+      page: makeHomePage([
+        {
+          component_id: "mercury:hero-billboard",
+          props: { overlay_opacity: "40%" },
+          children: [
+            { component_id: "mercury:heading", slot: "hero_slot", props: { heading_text: "Portland's Trusted Dental Care Experts" } },
+          ],
+        },
+        makeSection("space_ds:space-text-media-with-checklist", { title: "Services", description: "We provide dental care with 15 years experience for 500+ clients in our modern Portland clinic." }),
+        makeSection("space_ds:space-text-media-default", { title: "About", description: "We have served the Portland community with our professional dental team." }),
+        makeSection("space_ds:space-testimony-card", { title: "Reviews" }),
+        makeSection("space_ds:space-cta-banner-type-1", { title: "Book at /contact" }),
+      ]),
+    });
+    const result = reviewPage(input);
+    const check = result.checks.find((c) => c.name === "hero-heading");
+    expect(check?.passed).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Design Checks (TASK-425)
+// ---------------------------------------------------------------------------
+
+describe("Design Checks", () => {
+  it("consecutive-backgrounds: PASS when no consecutive same background", () => {
+    const result = reviewPage(makeInput());
+    const check = result.checks.find((c) => c.name === "consecutive-backgrounds");
+    expect(check?.passed).toBe(true);
+    expect(check?.dimension).toBe("design");
+  });
+
+  it("consecutive-backgrounds: WARN when two sections share background", () => {
+    const input = makeInput({
+      page: makeHomePage([
+        makeSection("space_ds:space-hero-banner-style-01", { title: "Expert Dental Care", container_background: "primary" }),
+        makeSection("space_ds:space-text-media-default", { title: "About", container_background: "primary", description: "We provide dental care with 15 years experience for 500+ clients in our modern Portland clinic." }),
+        makeSection("space_ds:space-text-media-with-checklist", { title: "Services", description: "We offer comprehensive dental services." }),
+        makeSection("space_ds:space-testimony-card", { title: "Reviews" }),
+        makeSection("space_ds:space-cta-banner-type-1", { title: "Book at /contact" }),
+      ]),
+    });
+    const result = reviewPage(input);
+    const check = result.checks.find((c) => c.name === "consecutive-backgrounds");
+    expect(check?.passed).toBe(false);
+    expect(check?.severity).toBe("warning");
+  });
+
+  it("pattern-variety: WARN for consecutive identical patterns", () => {
+    const input = makeInput({
+      page: makeHomePage([
+        makeSection("space_ds:space-hero-banner-style-01", { title: "Expert Dental Care" }),
+        { component_id: "", props: {}, pattern: "text-image-split-50-50" },
+        { component_id: "", props: {}, pattern: "text-image-split-50-50" },
+        makeSection("space_ds:space-testimony-card", { title: "Reviews" }),
+        makeSection("space_ds:space-cta-banner-type-1", { title: "Book at /contact" }),
+      ]),
+    });
+    const result = reviewPage(input);
+    const check = result.checks.find((c) => c.name === "pattern-variety");
+    expect(check?.passed).toBe(false);
+    expect(check?.severity).toBe("warning");
+  });
+
+  it("image-alternation: PASS when text-image patterns alternate", () => {
+    const input = makeInput({
+      page: makeHomePage([
+        makeSection("space_ds:space-hero-banner-style-01", { title: "Expert Dental Care" }),
+        { component_id: "", props: {}, pattern: "text-image-split-50-50" },
+        { component_id: "", props: {}, pattern: "image-text-split-33-66" },
+        makeSection("space_ds:space-testimony-card", { title: "Reviews" }),
+        makeSection("space_ds:space-cta-banner-type-1", { title: "Book at /contact" }),
+      ]),
+    });
+    const result = reviewPage(input);
+    const check = result.checks.find((c) => c.name === "image-alternation");
+    expect(check?.passed).toBe(true);
+  });
+
+  it("image-alternation: WARN when consecutive text-image sections have same side", () => {
+    const input = makeInput({
+      page: makeHomePage([
+        makeSection("space_ds:space-hero-banner-style-01", { title: "Expert Dental Care" }),
+        { component_id: "", props: {}, pattern: "text-image-split-50-50" },
+        { component_id: "", props: {}, pattern: "text-image-split-66-33" },
+        makeSection("space_ds:space-testimony-card", { title: "Reviews" }),
+        makeSection("space_ds:space-cta-banner-type-1", { title: "Book at /contact" }),
+      ]),
+    });
+    const result = reviewPage(input);
+    const check = result.checks.find((c) => c.name === "image-alternation");
+    expect(check?.passed).toBe(false);
+    expect(check?.severity).toBe("warning");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Integration Tests
 // ---------------------------------------------------------------------------
 
@@ -378,7 +538,7 @@ describe("reviewPage integration", () => {
     const result = reviewPage(makeInput());
     expect(result.score).toBeGreaterThanOrEqual(0);
     expect(result.score).toBeLessThanOrEqual(1);
-    expect(result.checks.length).toBe(17);
+    expect(result.checks.length).toBe(21);
   });
 });
 
@@ -395,6 +555,7 @@ describe("formatReviewLog", () => {
     expect(log).toContain("depth=");
     expect(log).toContain("seo=");
     expect(log).toContain("geo=");
+    expect(log).toContain("design=");
   });
 
   it("formats FAIL result", () => {

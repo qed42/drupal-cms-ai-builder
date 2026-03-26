@@ -143,7 +143,7 @@ export function buildPromptDesignGuidance(): string {
     "- **Mercury Image**: `media` (not `image`), `size` for aspect ratio, `radius` for corners",
     "- **Mercury Badge**: `label` (not `text`), `style` (primary|secondary)",
     "- **Mercury Icon**: `icon` (not `name`), `icon_size` (not `size`)",
-    "- **Mercury Hero Billboard**: `media` (not `background_image`), `height`, `flex_position`, `overlay_opacity` (string: \"0%\"|\"20%\"|\"40%\"|\"60%\"|\"75%\"). MUST have hero_slot filled with a heading (level 1, text_color inverted, text_size heading-responsive-8xl). Set overlay_opacity to at least \"40%\" for text readability.",
+    "- **Mercury Hero Billboard**: `media` (not `background_image`), `height`, `flex_position`, `overlay_opacity` (string: \"0%\"|\"20%\"|\"40%\"|\"60%\"|\"75%\"). MUST have hero_slot filled with a heading (level 1, text_color inverted, text_size heading-responsive-8xl). Set overlay_opacity to at least \"40%\" for text readability. CRITICAL: The heading_text in hero_slot MUST be a marketing-grade headline — NEVER \"Welcome\", \"Welcome to [Name]\", or any generic greeting. Use the business's value proposition, key messages, and SEO keywords.",
     "- **Mercury Hero Side by Side**: `media` (not `image`), `image_position`, `image_size`, `image_radius`",
     "- **Mercury Hero Blog**: `heading_text` (not `heading`), `media` (not `image`), `level` (integer), `date` (unix timestamp integer)",
     "- **Mercury CTA**: `heading_text` (not `heading`), `text`, `text_align`, `level` (number), `background_color`, `media`",

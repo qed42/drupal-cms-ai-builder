@@ -4,7 +4,7 @@
  * TASK-280c: Image Intent Extraction
  */
 
-import type { PageSection, PageLayout } from "@/lib/blueprint/types";
+import type { PageSection, PageSectionChild, PageLayout } from "@/lib/blueprint/types";
 import { getDefaultAdapter } from "@/lib/design-systems/setup";
 
 export interface ImageIntent {
@@ -74,7 +74,7 @@ export function extractImageIntents(
           for (const propName of childMapping.props) {
             if (child.props[propName]) continue;
 
-            const query = buildSearchQuery(section, page, industry, audience);
+            const query = buildSearchQuery(section, page, industry, audience, child);
             intents.push({
               pageIndex: pageIdx,
               sectionIndex: secIdx,
@@ -96,27 +96,39 @@ export function extractImageIntents(
 
 /**
  * Build a search query from section content, page context, and business info.
+ * When a child component is provided, its props are used for text extraction
+ * (falling back to the parent section's props), producing more distinct queries
+ * for siblings within composed sections like card grids.
  */
 export function buildSearchQuery(
   section: PageSection,
   page: PageLayout,
   industry: string,
-  audience: string
+  audience: string,
+  child?: PageSectionChild
 ): string {
-  const props = section.props;
-  const componentId = section.component_id;
+  // Prefer child props when available, fall back to parent section props
+  const props = child ? child.props : section.props;
+  const fallbackProps = child ? section.props : undefined;
+  const componentId = child ? child.component_id : section.component_id;
 
   // Extract text content from props for contextual search
   const textParts: string[] = [];
 
-  if (typeof props.title === "string" && props.title) {
-    textParts.push(props.title);
+  const textKeys = ["title", "heading", "heading_text", "sub_headline", "text", "description"];
+  for (const key of textKeys) {
+    if (typeof props[key] === "string" && props[key]) {
+      textParts.push(props[key] as string);
+    }
   }
-  if (typeof props.sub_headline === "string" && props.sub_headline) {
-    textParts.push(props.sub_headline);
-  }
-  if (typeof props.heading === "string" && props.heading) {
-    textParts.push(props.heading);
+
+  // Fall back to parent section props if child had no useful text
+  if (textParts.length === 0 && fallbackProps) {
+    for (const key of textKeys) {
+      if (typeof fallbackProps[key] === "string" && fallbackProps[key]) {
+        textParts.push(fallbackProps[key] as string);
+      }
+    }
   }
 
   // Page-level context

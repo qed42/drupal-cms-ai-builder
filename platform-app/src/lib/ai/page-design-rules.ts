@@ -240,6 +240,8 @@ export function formatRulesForGeneration(
     `## Hero Style Selection`,
     `Recommended for ${pageType} pages: ${rule.heroRule.preferredStyles.map((s) => `"${s}"`).join(", ")}`,
     rule.heroRule.selectionGuidance,
+    ``,
+    `**Hero Heading Content Rule**: The hero heading MUST be a marketing-quality headline derived from the business's value proposition — NEVER "Welcome", "Welcome to [Name]", or any generic greeting. This is the h1 and primary SEO anchor for the page.`,
     ``
   );
 

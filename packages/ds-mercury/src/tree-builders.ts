@@ -865,13 +865,28 @@ export function buildHeroSection(
   );
 
   if (componentId === "mercury:hero-billboard" && !hasHeadingChild) {
+    // Extract heading text from multiple prop names the AI might use.
+    // The AI is instructed to put heading_text, but may also use title or heading.
+    const headingText =
+      (heroInputs.heading_text as string) ||
+      (heroInputs.title as string) ||
+      (heroInputs.heading as string) ||
+      "";
+
+    if (!headingText) {
+      console.warn(
+        "[tree-builder] Hero billboard has no heading child and no heading_text/title/heading prop. " +
+          "A blank h1 will be created — the review agent should flag this."
+      );
+    }
+
     items.push(
       createItem(
         "mercury:heading",
         hero.uuid,
         "hero_slot",
         {
-          heading_text: heroInputs.heading_text || "Welcome",
+          heading_text: headingText,
           level: 1,
           text_size: "heading-responsive-8xl",
           text_color: "inverted",

@@ -54,12 +54,22 @@ export async function runEnhancePhase(
   let imagesAdded = 0;
   let imagesFailed = 0;
 
+  // Per-page photo ID tracking for deduplication
+  const usedPhotoIdsByPage = new Map<number, Set<string>>();
+
   // Process intents sequentially to respect API rate limits
   for (const intent of intents) {
     try {
-      // Search for a stock image
+      // Get or create the used-IDs set for this page
+      if (!usedPhotoIdsByPage.has(intent.pageIndex)) {
+        usedPhotoIdsByPage.set(intent.pageIndex, new Set<string>());
+      }
+      const pageUsedIds = usedPhotoIdsByPage.get(intent.pageIndex)!;
+
+      // Search for a stock image, excluding already-used photos on this page
       const searchResult = await searchStockImage(intent.query, {
         orientation: intent.orientation,
+        excludeIds: Array.from(pageUsedIds),
       });
 
       if (!searchResult) {
@@ -80,6 +90,9 @@ export async function runEnhancePhase(
         imagesFailed++;
         continue;
       }
+
+      // Track the photo ID for this page
+      pageUsedIds.add(searchResult.photoId);
 
       // Build Canvas-compatible image object
       const imageObj: CanvasImageObject = {
