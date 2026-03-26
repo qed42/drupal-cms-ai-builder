@@ -275,9 +275,49 @@ export function validateSections(sections: PageSection[]): ValidationResult {
       }
     }
 
+    // Validate children props (hero_slot headings, card children, etc.)
+    const cleanChildren = section.children?.map((child, childIdx) => {
+      const childComp = getManifestIndex().get(child.component_id);
+      if (!childComp) return child; // unknown child — pass through
+
+      const childPropIndex = new Map(childComp.props.map((p) => [p.name, p]));
+      const childCleanProps: Record<string, unknown> = {};
+
+      for (const [key, value] of Object.entries(child.props)) {
+        const propDef = childPropIndex.get(key);
+        if (!propDef) continue; // strip unknown props silently for children
+        if (value === null || value === undefined) continue;
+        childCleanProps[key] = value;
+      }
+
+      // Fill missing required props on children
+      for (const propDef of childComp.props) {
+        if (propDef.required && !(propDef.name in childCleanProps)) {
+          if (propDef.default !== undefined) {
+            childCleanProps[propDef.name] = propDef.default;
+          } else if (propDef.enum && propDef.enum.length > 0) {
+            childCleanProps[propDef.name] = propDef.enum[0];
+          } else {
+            issues.push({
+              type: "error",
+              sectionIndex: i,
+              componentId: child.component_id,
+              message: `Missing required prop "${propDef.name}" on child ${childComp.name} (child ${childIdx}) with no default available.`,
+            });
+          }
+        }
+      }
+
+      return { ...child, props: childCleanProps };
+    });
+
     sanitizedSections.push({
       component_id: section.component_id,
       props: cleanProps,
+      ...(cleanChildren ? { children: cleanChildren } : {}),
+      ...(section.pattern ? { pattern: section.pattern } : {}),
+      ...(section.section_heading ? { section_heading: section.section_heading } : {}),
+      ...(section.container_background ? { container_background: section.container_background } : {}),
     });
   }
 
