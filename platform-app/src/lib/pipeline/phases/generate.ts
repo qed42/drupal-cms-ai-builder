@@ -13,6 +13,41 @@ import { clearImageCache } from "@/lib/images/stock-image-service";
 import { reviewPage, formatReviewLog } from "./review";
 import type { ReviewResult } from "./review";
 import type { OnboardingData, BlueprintBundle, PageLayout, PageSection, FormField, HeaderConfig, FooterConfig } from "@/lib/blueprint/types";
+
+/**
+ * Normalize hero-billboard sections: ensure heading exists as a child component.
+ * The AI sometimes puts heading_text on the hero's own props instead of
+ * outputting a heading child — or omits both. This fixes at the source so the
+ * tree-builder always receives a well-formed hero.
+ */
+function normalizeHeroHeadings(sections: PageSection[]): void {
+  for (const section of sections) {
+    if (!section.component_id.includes("hero-billboard")) continue;
+    const hasHeadingChild = section.children?.some(
+      (c) => c.component_id.includes("heading")
+    );
+    if (hasHeadingChild) continue;
+
+    // Extract heading text from misplaced hero props
+    const headingText =
+      (section.props.heading_text as string) ||
+      (section.props.title as string) ||
+      (section.props.heading as string) ||
+      "";
+
+    if (headingText) {
+      if (!section.children) section.children = [];
+      section.children.unshift({
+        component_id: "mercury:heading",
+        slot: "hero_slot",
+        props: { heading_text: headingText, level: 1, text_size: "heading-responsive-8xl", text_color: "inverted", align: "left" },
+      });
+      delete section.props.heading_text;
+      delete section.props.title;
+      delete section.props.heading;
+    }
+  }
+}
 import type { ResearchBrief, ContentPlan } from "@/lib/pipeline/schemas";
 import type { z } from "zod";
 
@@ -150,6 +185,8 @@ export async function runGeneratePhase(
         return section;
       });
 
+      normalizeHeroHeadings(sections);
+
       // Validate component props against manifest
       const validation = validateSections(sections);
 
@@ -264,6 +301,7 @@ export async function runGeneratePhase(
           return section;
         });
 
+        normalizeHeroHeadings(newSections);
         const revalidation = validateSections(newSections);
         sections = revalidation.sanitizedSections;
         pageSlug = regenerated.slug;
