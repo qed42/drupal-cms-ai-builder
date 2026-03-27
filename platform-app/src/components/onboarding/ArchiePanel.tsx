@@ -8,7 +8,7 @@ interface ArchiePanelProps {
 
 export default function ArchiePanel({ children, isEmpty, emptyStateText }: ArchiePanelProps) {
   return (
-    <div className="rounded-2xl border border-white/[0.04] bg-white/[0.02] p-6 sticky top-12">
+    <div className="rounded-2xl border border-white/[0.04] bg-white/[0.02] p-5 sticky top-12">
       {isEmpty ? (
         <div className="flex flex-col items-center justify-center min-h-[200px] text-center">
           <div className="text-2xl mb-3" aria-hidden="true">
@@ -19,10 +19,11 @@ export default function ArchiePanel({ children, isEmpty, emptyStateText }: Archi
           </p>
         </div>
       ) : (
-        <div className="archie-content">
+        <div className="archie-content relative z-10">
           <style>{`
             .archie-content {
               animation: archie-fade 200ms ease;
+              opacity: 1;
             }
             @keyframes archie-fade {
               from { opacity: 0; }

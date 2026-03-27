@@ -161,7 +161,7 @@ export default function PagesPage() {
       onSubmit={handleSubmit}
       disabled={analyzing || pages.length < MIN_PAGES}
       insightSlot={inferenceSlot}
-      emptyStateText="Archie is planning your site structure based on your business type."
+      emptyStateText="I'm planning your site structure..."
     >
       {analyzing ? (
         <div className="flex flex-col items-center gap-4 py-8">

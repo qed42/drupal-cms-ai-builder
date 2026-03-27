@@ -197,7 +197,7 @@ export default function StepLayout({
 
       {navigationButtons}
 
-      <div className="mt-12">
+      <div className="mt-12 flex justify-center">
         <ProgressStepper currentStep={step} />
       </div>
     </form>

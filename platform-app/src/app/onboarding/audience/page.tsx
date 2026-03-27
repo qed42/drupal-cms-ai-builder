@@ -28,6 +28,7 @@ export default function AudiencePage() {
         // Fetch audience suggestions based on the idea from previous step
         if (d.data?.idea) {
           setLoadingSuggestions(true);
+          setShowInference(true);
           fetch("/api/ai/suggest-audiences", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -41,11 +42,14 @@ export default function AudiencePage() {
               if (data.painPoints?.length > 0) {
                 setPainPoints(data.painPoints);
               }
-              if (data.suggestions?.length > 0 || data.painPoints?.length > 0) {
+              // Show inference card whenever API responds with suggestions
+              if (data.suggestions?.length > 0) {
                 setShowInference(true);
               }
             })
-            .catch(() => {})
+            .catch(() => {
+              // Still show inference if we already have suggestions from resume
+            })
             .finally(() => setLoadingSuggestions(false));
         }
       })
@@ -81,7 +85,7 @@ export default function AudiencePage() {
   }
 
   const inferenceSlot =
-    showInference && inferenceItems.length > 0 ? (
+    showInference ? (
       <InferenceCard
         items={inferenceItems}
         explanation="These pain points will drive your homepage messaging and CTA language."
@@ -108,7 +112,7 @@ export default function AudiencePage() {
       onSubmit={handleSubmit}
       disabled={audience.trim().length < 10}
       insightSlot={inferenceSlot}
-      emptyStateText="Archie is analyzing your audience to identify pain points and messaging angles."
+      emptyStateText="I'm analyzing your audience suggestions..."
     >
       <div className="w-full space-y-4">
         <input

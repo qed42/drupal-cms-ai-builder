@@ -128,7 +128,7 @@ export default function FollowUpPage() {
       buttonLabel="Continue"
       onSubmit={handleSubmit}
       insightSlot={inferenceSlot}
-      emptyStateText="Answer a few questions and Archie will use the details to write your page content."
+      emptyStateText="Answer a couple of questions and I'll show what I've learned..."
     >
       <div className="space-y-6 text-left">
         {questions.map((q) => (

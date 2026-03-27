@@ -7,6 +7,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import StepIcon from "@/components/onboarding/StepIcon";
 import ProgressStepper from "@/components/onboarding/ProgressStepper";
 import { INDUSTRY_LABELS } from "@/lib/ai/prompts";
+import { TONE_SAMPLES } from "@/lib/onboarding/tone-samples";
 import StrategyPreview from "@/components/onboarding/StrategyPreview";
 
 interface ImageUploadSummary {
@@ -81,7 +82,7 @@ export default function ReviewSettingsPage() {
   if (!loaded) return null;
 
   const pageNames = data.pages?.map((p) => p.title) || [];
-  const toneLabel = data.tone?.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) || "Default";
+  const toneLabel = (data.tone && TONE_SAMPLES.find((t) => t.id === data.tone)?.name) || data.tone?.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) || "Default";
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-xl mx-auto px-6 text-center">

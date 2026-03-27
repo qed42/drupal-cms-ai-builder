@@ -127,7 +127,7 @@ export default function BrandPage() {
       buttonLabel="Next: Brand & Style"
       onSubmit={handleSubmit}
       insightSlot={inferenceSlot}
-      emptyStateText="Upload a logo or brand kit and Archie will extract your color palette."
+      emptyStateText="Upload your logo and I'll extract your colors..."
     >
       <div className="space-y-6">
         {/* Upload zones */}

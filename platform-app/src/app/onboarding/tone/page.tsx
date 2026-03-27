@@ -117,7 +117,7 @@ export default function TonePage() {
       onSubmit={handleSubmit}
       disabled={!selectedTone}
       insightSlot={inferenceSlot}
-      emptyStateText="Select a writing tone and Archie will show how it shapes your content."
+      emptyStateText="Pick a tone and I'll show you how it sounds..."
     >
       <div className="space-y-8 text-left">
         {/* Tone Selection Cards */}
