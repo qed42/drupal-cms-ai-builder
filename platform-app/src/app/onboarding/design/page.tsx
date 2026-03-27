@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
 import DesignOptionCard from "@/components/onboarding/DesignOptionCard";
+import { RadioGroup } from "@/components/ui/radio-group";
 import { useOnboarding } from "@/hooks/useOnboarding";
 
 export default function DesignPage() {
@@ -40,7 +41,11 @@ export default function DesignPage() {
       buttonLabel="Continue"
       onSubmit={handleSubmit}
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <RadioGroup
+        value={designSource}
+        onValueChange={(val: string) => setDesignSource(val as "ai" | "figma")}
+        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+      >
         <DesignOptionCard
           title="Provide Figma details"
           subtitle="Upload your design or paste a URL"
@@ -52,7 +57,7 @@ export default function DesignPage() {
           selected={designSource === "figma"}
           disabled={true}
           badge="Coming soon"
-          onSelect={() => {}}
+          value="figma"
         />
         <DesignOptionCard
           title="Let Space AI choose"
@@ -63,9 +68,9 @@ export default function DesignPage() {
             </svg>
           }
           selected={designSource === "ai"}
-          onSelect={() => setDesignSource("ai")}
+          value="ai"
         />
-      </div>
+      </RadioGroup>
     </StepLayout>
   );
 }

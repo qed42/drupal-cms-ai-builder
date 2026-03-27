@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import ProgressStepper from "@/components/onboarding/ProgressStepper";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useOnboarding } from "@/hooks/useOnboarding";
 
 interface ThemeOption {
@@ -53,17 +54,21 @@ export default function ThemeSelectionPage() {
         Each theme has a distinct visual style. Archie will customize it with your brand.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-10">
+      <RadioGroup
+        value={selected}
+        onValueChange={setSelected}
+        className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-10"
+      >
         {THEMES.map((theme) => (
-          <button
+          <label
             key={theme.id}
-            onClick={() => setSelected(theme.id)}
-            className={`text-left p-6 rounded-2xl border-2 transition-all ${
+            className={`text-left p-6 rounded-2xl border-2 transition-all cursor-pointer ${
               selected === theme.id
                 ? "border-brand-500 bg-white/10"
                 : "border-white/10 bg-white/5 hover:border-white/20"
             }`}
           >
+            <RadioGroupItem value={theme.id} className="sr-only" />
             <h3 className="text-lg font-semibold text-white mb-2">
               {theme.name}
             </h3>
@@ -78,9 +83,9 @@ export default function ThemeSelectionPage() {
                 </li>
               ))}
             </ul>
-          </button>
+          </label>
         ))}
-      </div>
+      </RadioGroup>
 
       <button
         onClick={handleNext}

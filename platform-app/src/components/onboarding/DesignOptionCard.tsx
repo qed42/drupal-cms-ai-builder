@@ -1,5 +1,7 @@
 "use client";
 
+import { RadioGroupItem } from "@/components/ui/radio-group";
+
 interface DesignOptionCardProps {
   title: string;
   subtitle: string;
@@ -7,7 +9,7 @@ interface DesignOptionCardProps {
   selected: boolean;
   disabled?: boolean;
   badge?: string;
-  onSelect: () => void;
+  value: string;
 }
 
 export default function DesignOptionCard({
@@ -17,12 +19,10 @@ export default function DesignOptionCard({
   selected,
   disabled,
   badge,
-  onSelect,
+  value,
 }: DesignOptionCardProps) {
   return (
-    <button
-      type="button"
-      onClick={disabled ? undefined : onSelect}
+    <label
       className={`relative flex flex-col items-center gap-3 rounded-2xl border-2 p-6 transition-all w-full ${
         disabled
           ? "border-white/10 bg-white/5 opacity-50 cursor-not-allowed"
@@ -31,6 +31,11 @@ export default function DesignOptionCard({
           : "border-white/10 bg-white/5 hover:border-white/30 cursor-pointer"
       }`}
     >
+      <RadioGroupItem
+        value={value}
+        disabled={disabled}
+        className="sr-only"
+      />
       {badge && (
         <span className="absolute top-3 right-3 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/50 uppercase tracking-wide">
           {badge}
@@ -46,6 +51,6 @@ export default function DesignOptionCard({
           </svg>
         </div>
       )}
-    </button>
+    </label>
   );
 }
