@@ -1,4 +1,5 @@
 import { BRAND } from "@/lib/brand";
+import ShowcaseCarousel from "@/components/auth/ShowcaseCarousel";
 
 export default function AuthLayout({
   children,
@@ -7,7 +8,7 @@ export default function AuthLayout({
 }) {
   return (
     <div className="flex min-h-screen">
-      {/* Left panel — value proposition */}
+      {/* Left panel — value proposition + showcase */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950 items-center justify-center p-12">
         <div className="max-w-md space-y-8">
           <div className="flex items-center gap-3">
@@ -24,23 +25,11 @@ export default function AuthLayout({
             Your professional Drupal website, built by AI in under 5 minutes.
           </h2>
 
-          <div className="space-y-4">
-            {[
-              { title: "Tell us about your business", desc: "Answer a few quick questions about your goals and brand." },
-              { title: "AI generates your site", desc: "Content, layout, and design — tailored to your industry." },
-              { title: "Launch and customize", desc: "Edit with a visual builder. Your site is live instantly." },
-            ].map((item, i) => (
-              <div key={i} className="flex gap-4 items-start">
-                <div className="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500/40 flex items-center justify-center shrink-0 mt-0.5">
-                  <span className="text-sm font-semibold text-brand-300">{i + 1}</span>
-                </div>
-                <div>
-                  <p className="text-white font-medium">{item.title}</p>
-                  <p className="text-white/50 text-sm">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ShowcaseCarousel />
+
+          <p className="text-xs text-white/30 text-center">
+            Sites built by {BRAND.name}
+          </p>
 
           <div className="pt-4 border-t border-white/10">
             <p className="text-white/40 text-sm">

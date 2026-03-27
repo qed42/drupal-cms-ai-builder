@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import ProgressStepper from "@/components/onboarding/ProgressStepper";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { navigateWithTransition } from "@/lib/view-transition";
 import { BRAND } from "@/lib/brand";
 
 export default function StartPage() {
@@ -40,7 +41,7 @@ export default function StartPage() {
       <Button
         variant="default"
         size="xl"
-        onClick={() => router.push(buildStepUrl("describe"))}
+        onClick={() => navigateWithTransition(router, buildStepUrl("describe"))}
         className="rounded-full shadow-lg shadow-brand-500/25"
       >
         Let&apos;s Go

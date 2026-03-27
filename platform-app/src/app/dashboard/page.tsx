@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import DashboardSiteList from "@/components/dashboard/DashboardSiteList";
 import AddNewSiteButton from "@/components/dashboard/AddNewSiteButton";
+import EmptyDashboard from "@/components/dashboard/EmptyDashboard";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -20,9 +21,9 @@ export default async function DashboardPage() {
     },
   });
 
-  // If no sites at all (shouldn't happen post-registration), redirect to onboarding
+  // Show empty state for new users with no sites
   if (sites.length === 0) {
-    redirect("/onboarding/start");
+    return <EmptyDashboard />;
   }
 
   const sitesData = sites.map((site) => {

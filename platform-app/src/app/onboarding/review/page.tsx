@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import PageSidebar from "./components/PageSidebar";
 import PagePreview from "./components/PagePreview";
 import ApproveButton from "./components/ApproveButton";
@@ -10,16 +11,68 @@ import { useAutoSave } from "./hooks/useAutoSave";
 import type { PageLayout, PageSection } from "@/lib/blueprint/types";
 import type { BlueprintInsights } from "@/lib/transparency/types";
 
+type ReviewMode = "celebration" | "preview" | "edit";
+
 interface BlueprintData {
   id: string;
   siteId: string;
   pages: PageLayout[];
 }
 
+function CelebrationScreen({ onComplete }: { onComplete: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onComplete, 2000);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+
+  return (
+    <div className="w-full h-screen flex items-center justify-center">
+      <div className="text-center space-y-4">
+        <style>{`
+          @keyframes check-scale {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+          }
+          @keyframes cele-fade {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .check-anim { animation: check-scale 400ms ease both; }
+          .cele-title { animation: cele-fade 300ms ease both 200ms; opacity: 0; }
+          .cele-sub { animation: cele-fade 300ms ease both 400ms; opacity: 0; }
+          @media (prefers-reduced-motion: reduce) {
+            .check-anim, .cele-title, .cele-sub {
+              animation: none; opacity: 1;
+            }
+          }
+        `}</style>
+        <div className="check-anim w-20 h-20 rounded-full bg-success/20 flex items-center justify-center mx-auto">
+          <svg className="w-10 h-10 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h1 className="cele-title text-3xl font-bold text-white">Your site is ready!</h1>
+        <p className="cele-sub text-white/50 text-lg">
+          Let&apos;s take a look at what Archie built
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function ReviewPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const siteId = searchParams.get("siteId");
+
+  // Celebration skip for returning visits
+  const celebrationKey = siteId ? `celebration-seen-${siteId}` : null;
+  const hasSeenCelebration = typeof window !== "undefined" && celebrationKey
+    ? localStorage.getItem(celebrationKey) === "true"
+    : false;
+
+  const [mode, setMode] = useState<ReviewMode>(hasSeenCelebration ? "preview" : "celebration");
 
   const [blueprint, setBlueprint] = useState<BlueprintData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +83,6 @@ export default function ReviewPage() {
   const [editingSection, setEditingSection] = useState<number | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
-  // Insights lazy-fetch state (TASK-414)
   const [insightsData, setInsightsData] = useState<BlueprintInsights | null>(null);
   const [insightsOpen, setInsightsOpen] = useState<number | null>(null);
   const [pageInsightsOpen, setPageInsightsOpen] = useState(false);
@@ -46,7 +98,7 @@ export default function ReviewPage() {
         setInsightsData(data);
       }
     } catch {
-      // Non-critical — tooltips just won't show data
+      // Non-critical
     }
   }, [siteId]);
 
@@ -73,7 +125,6 @@ export default function ReviewPage() {
     onSaveError: () => setSaveStatus("error"),
   });
 
-  // Load blueprint
   useEffect(() => {
     if (!siteId) {
       setError("No site ID provided");
@@ -92,7 +143,6 @@ export default function ReviewPage() {
           throw new Error("Failed to load blueprint");
         }
         const data = await res.json();
-        // Extract pages from the BlueprintBundle payload
         const payload = data.payload as { pages?: PageLayout[] } | null;
         setBlueprint({
           id: data.id,
@@ -109,7 +159,6 @@ export default function ReviewPage() {
     loadBlueprint();
   }, [siteId, router]);
 
-  // Track viewed pages
   const handlePageSelect = useCallback((index: number) => {
     setActivePageIndex(index);
     setEditingSection(null);
@@ -120,7 +169,6 @@ export default function ReviewPage() {
     });
   }, []);
 
-  // Handle section regeneration
   const handleSectionRegenerated = useCallback(
     (sectionIndex: number, newSection: PageSection) => {
       setBlueprint((prev) => {
@@ -137,7 +185,6 @@ export default function ReviewPage() {
     [activePageIndex]
   );
 
-  // Handle page regeneration
   const handlePageRegenerated = useCallback(
     (newPage: PageLayout) => {
       setBlueprint((prev) => {
@@ -150,7 +197,6 @@ export default function ReviewPage() {
     [activePageIndex]
   );
 
-  // Handle adding a new page
   const handleAddPage = useCallback(
     async (title: string, description: string) => {
       if (!siteId) return;
@@ -173,7 +219,6 @@ export default function ReviewPage() {
     [siteId]
   );
 
-  // Handle removing a page
   const handleRemovePage = useCallback(
     async (pageIndex: number) => {
       if (!siteId) return;
@@ -192,7 +237,6 @@ export default function ReviewPage() {
         const pages = prev.pages.filter((_, i) => i !== pageIndex);
         return { ...prev, pages };
       });
-      // Adjust active page if needed
       if (activePageIndex >= (blueprint?.pages.length ?? 1) - 1) {
         setActivePageIndex(Math.max(0, activePageIndex - 1));
       }
@@ -200,12 +244,10 @@ export default function ReviewPage() {
     [siteId, activePageIndex, blueprint?.pages.length]
   );
 
-  // Handle section edits
   const handleSectionChange = useCallback(
     (sectionIndex: number, field: string, value: string) => {
       if (!blueprint) return;
 
-      // Update local state
       setBlueprint((prev) => {
         if (!prev) return prev;
         const pages = [...prev.pages];
@@ -219,7 +261,6 @@ export default function ReviewPage() {
         return { ...prev, pages };
       });
 
-      // Auto-save
       save({
         pageIndex: activePageIndex,
         sectionIndex,
@@ -229,6 +270,18 @@ export default function ReviewPage() {
     },
     [blueprint, activePageIndex, save]
   );
+
+  const handleCelebrationComplete = useCallback(() => {
+    if (celebrationKey) {
+      localStorage.setItem(celebrationKey, "true");
+    }
+    setMode("preview");
+  }, [celebrationKey]);
+
+  // Celebration mode
+  if (mode === "celebration" && !loading && !error && blueprint) {
+    return <CelebrationScreen onComplete={handleCelebrationComplete} />;
+  }
 
   if (loading) {
     return (
@@ -260,25 +313,121 @@ export default function ReviewPage() {
 
   const activePage = blueprint.pages[activePageIndex];
 
+  // Preview mode — full-width read-only with floating edit button
+  if (mode === "preview") {
+    return (
+      <div className="w-full h-screen flex flex-col">
+        <header className="shrink-0 border-b border-white/10 bg-white/[0.02] px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => router.push("/dashboard")}
+              className="text-white/40 hover:text-white/70 transition-colors"
+              aria-label="Back to Dashboard"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div>
+              <h1 className="text-sm font-semibold text-white">Preview Your Site</h1>
+              <p className="text-xs text-white/40">
+                {blueprint.pages.length} pages generated &middot; Click &ldquo;Edit Content&rdquo; to make changes
+              </p>
+            </div>
+          </div>
+          <ApproveButton
+            siteId={blueprint.siteId}
+            totalPages={blueprint.pages.length}
+            viewedPages={viewedPages}
+          />
+        </header>
+
+        <div className="flex flex-1 overflow-hidden">
+          {/* Compact page nav */}
+          <div className="w-48 shrink-0 border-r border-white/10 bg-white/[0.01] p-3 overflow-y-auto">
+            {blueprint.pages.map((page, i) => (
+              <button
+                key={page.slug}
+                type="button"
+                onClick={() => handlePageSelect(i)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors mb-1 ${
+                  i === activePageIndex
+                    ? "bg-brand-500/10 text-white"
+                    : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                }`}
+              >
+                {page.title}
+              </button>
+            ))}
+          </div>
+
+          {/* Read-only preview */}
+          {activePage && (
+            <div className="flex-1 overflow-y-auto">
+              <PagePreview
+                siteId={blueprint.siteId}
+                page={activePage}
+                pageIndex={activePageIndex}
+                editingSection={null}
+                onEditSection={() => setMode("edit")}
+                onSectionChange={() => {}}
+                onSectionRegenerated={handleSectionRegenerated}
+                onPageRegenerated={handlePageRegenerated}
+                insightsData={insightsData}
+                insightsOpen={insightsOpen}
+                onInsightClick={handleInsightClick}
+                pageInsightsOpen={pageInsightsOpen}
+                onPageInsightsClick={handlePageInsightsClick}
+                onPageInsightsClose={() => setPageInsightsOpen(false)}
+                allPageSlugs={blueprint.pages.map((p) => p.slug)}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Floating Edit button */}
+        <Button
+          variant="cta"
+          size="lg"
+          className="fixed bottom-6 right-6 rounded-full shadow-lg shadow-brand-500/25 z-50"
+          onClick={() => setMode("edit")}
+        >
+          Edit Content
+          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </Button>
+      </div>
+    );
+  }
+
+  // Edit mode — full editor (existing layout)
   return (
     <div className="w-full h-screen flex flex-col">
-      {/* Top bar */}
       <header className="shrink-0 border-b border-white/10 bg-white/[0.02] px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
             type="button"
-            onClick={() => router.push("/dashboard")}
+            onClick={() => setMode("preview")}
             className="text-white/40 hover:text-white/70 transition-colors"
-            aria-label="Back to Dashboard"
+            aria-label="Back to Preview"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <div>
-            <h1 className="text-sm font-semibold text-white">Review Your Content</h1>
+            <h1 className="text-sm font-semibold text-white">Edit Your Content</h1>
             <p className="text-xs text-white/40">
-              Review and edit your generated content before building your site
+              Click any section to edit &middot;{" "}
+              <button
+                type="button"
+                onClick={() => setMode("preview")}
+                className="text-brand-400 hover:text-brand-300"
+              >
+                Back to Preview
+              </button>
             </p>
           </div>
         </div>
@@ -295,7 +444,6 @@ export default function ReviewPage() {
         </div>
       </header>
 
-      {/* Main layout: sidebar + preview */}
       <div className="flex flex-1 overflow-hidden">
         <PageSidebar
           pages={blueprint.pages.map((p) => ({ slug: p.slug, title: p.title }))}
@@ -327,7 +475,6 @@ export default function ReviewPage() {
         )}
       </div>
 
-      {/* Bottom approve bar */}
       <ApproveButton
         siteId={blueprint.siteId}
         totalPages={blueprint.pages.length}

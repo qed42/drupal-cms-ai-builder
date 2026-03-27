@@ -6,6 +6,7 @@ import ProgressStepper from "./ProgressStepper";
 import StepIcon from "./StepIcon";
 import ArchiePanel from "./ArchiePanel";
 import { getPrevStep, getTipsForStep } from "@/lib/onboarding-steps";
+import { navigateWithTransition } from "@/lib/view-transition";
 
 interface StepLayoutProps {
   step: string;
@@ -61,7 +62,7 @@ export default function StepLayout({
           type="button"
           variant="ghost"
           size="lg"
-          onClick={() => router.push(buildStepUrl(prevStep))}
+          onClick={() => navigateWithTransition(router, buildStepUrl(prevStep), "back")}
         >
           Back
         </Button>
