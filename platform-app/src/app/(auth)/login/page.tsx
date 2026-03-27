@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { BRAND } from "@/lib/brand";
 
 function LoginForm() {
@@ -92,13 +93,9 @@ function LoginForm() {
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-brand-600 py-3 font-medium text-white transition-colors hover:bg-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <Button type="submit" disabled={loading} className="w-full">
           {loading ? "Signing in..." : "Sign In"}
-        </button>
+        </Button>
       </form>
 
       <p className="mt-6 text-sm text-white/40">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import ProgressStepper from "./ProgressStepper";
 import StepIcon from "./StepIcon";
 import ArchiePanel from "./ArchiePanel";
@@ -55,22 +56,19 @@ export default function StepLayout({
   const navigationButtons = (
     <div className="flex items-center gap-4">
       {prevStep && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="lg"
           onClick={() => router.push(buildStepUrl(prevStep))}
-          className="rounded-full px-6 py-3 text-white/60 hover:text-white transition-colors"
         >
           Back
-        </button>
+        </Button>
       )}
-      <button
-        type="submit"
-        disabled={disabled}
-        className="rounded-full bg-white px-8 py-3 font-medium text-slate-900 transition-all hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
-      >
+      <Button type="submit" variant="cta" size="lg" disabled={disabled}>
         {buttonLabel}
         <span className="text-lg">&rarr;</span>
-      </button>
+      </Button>
     </div>
   );
 

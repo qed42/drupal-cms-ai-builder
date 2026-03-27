@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { downloadBlueprint } from "@/lib/download";
 import ImpactSummary from "./ImpactSummary";
 
@@ -64,8 +66,8 @@ export default function SiteCard({ site, subscription, impactBullets }: SiteCard
     setMenuOpen(false);
     try {
       await downloadBlueprint(site.id, site.name || "site");
-    } catch (error) {
-      console.error("Error downloading blueprint:", error);
+    } catch {
+      toast.error("Failed to download blueprint");
     } finally {
       setDownloadLoading(false);
     }
@@ -82,15 +84,15 @@ export default function SiteCard({ site, subscription, impactBullets }: SiteCard
 
       const data = await res.json();
       if (!res.ok) {
-        console.error("Failed to create login token:", data.error);
+        toast.error("Failed to open site editor");
         setEditLoading(false);
         return;
       }
 
       window.open(data.url, "_blank");
       setEditLoading(false);
-    } catch (error) {
-      console.error("Error launching editor:", error);
+    } catch {
+      toast.error("Failed to open site editor");
       setEditLoading(false);
     }
   }
@@ -106,11 +108,11 @@ export default function SiteCard({ site, subscription, impactBullets }: SiteCard
       if (res.ok) {
         router.push(`/onboarding/progress?siteId=${site.id}`);
       } else {
-        console.error("Failed to retry provisioning");
+        toast.error("Failed to retry provisioning");
         setRetryLoading(false);
       }
-    } catch (error) {
-      console.error("Error retrying provisioning:", error);
+    } catch {
+      toast.error("Failed to retry provisioning");
       setRetryLoading(false);
     }
   }
@@ -133,11 +135,7 @@ export default function SiteCard({ site, subscription, impactBullets }: SiteCard
     switch (site.status) {
       case "onboarding":
         return (
-          <button
-            onClick={handleContinueSetup}
-            disabled={resumeLoading}
-            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
+          <Button onClick={handleContinueSetup} disabled={resumeLoading} size="sm">
             {resumeLoading ? (
               <>
                 <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -146,35 +144,29 @@ export default function SiteCard({ site, subscription, impactBullets }: SiteCard
             ) : (
               "Continue Setup"
             )}
-          </button>
+          </Button>
         );
       case "generating":
         return (
-          <button
+          <Button
             onClick={() => router.push(`/onboarding/progress?siteId=${site.id}`)}
-            className="rounded-lg bg-brand-600/50 px-4 py-2 text-sm font-medium text-white/70 cursor-default flex items-center gap-2"
+            className="bg-brand-600/50 text-white/70 cursor-default hover:bg-brand-600/50"
+            size="sm"
           >
             <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             Generating...
-          </button>
+          </Button>
         );
       case "blueprint_ready":
         return (
-          <button
-            disabled
-            className="rounded-lg bg-emerald-600/50 px-4 py-2 text-sm font-medium text-white/70 cursor-not-allowed"
-          >
+          <Button disabled size="sm" className="bg-emerald-600/50 text-white/70 hover:bg-emerald-600/50">
             Awaiting Provisioning
-          </button>
+          </Button>
         );
       case "live":
         return (
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleEditSite}
-              disabled={editLoading}
-              className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
+            <Button onClick={handleEditSite} disabled={editLoading} size="sm">
               {editLoading ? (
                 <>
                   <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -183,36 +175,30 @@ export default function SiteCard({ site, subscription, impactBullets }: SiteCard
               ) : (
                 "Edit Site"
               )}
-            </button>
+            </Button>
             {site.drupalUrl && (
-              <a
-                href={site.drupalUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-              >
-                Visit Site
-              </a>
+              <Button variant="outline" size="sm" asChild>
+                <a href={site.drupalUrl} target="_blank" rel="noopener noreferrer">
+                  Visit Site
+                </a>
+              </Button>
             )}
           </div>
         );
       case "provisioning":
         return (
-          <button
+          <Button
             onClick={() => router.push(`/onboarding/progress?siteId=${site.id}`)}
-            className="rounded-lg bg-blue-600/50 px-4 py-2 text-sm font-medium text-white/70 cursor-default flex items-center gap-2"
+            className="bg-blue-600/50 text-white/70 cursor-default hover:bg-blue-600/50"
+            size="sm"
           >
             <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             Provisioning...
-          </button>
+          </Button>
         );
       case "provisioning_failed":
         return (
-          <button
-            onClick={handleRetryProvisioning}
-            disabled={retryLoading}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
+          <Button variant="destructive" onClick={handleRetryProvisioning} disabled={retryLoading} size="sm">
             {retryLoading ? (
               <>
                 <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -221,7 +207,7 @@ export default function SiteCard({ site, subscription, impactBullets }: SiteCard
             ) : (
               "Retry Setup"
             )}
-          </button>
+          </Button>
         );
       default:
         return null;
@@ -280,16 +266,18 @@ export default function SiteCard({ site, subscription, impactBullets }: SiteCard
 
                 {menuOpen && (
                   <div className="absolute right-0 top-10 w-48 rounded-lg bg-slate-800 border border-white/10 shadow-xl py-1 z-10">
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={handleDownloadBlueprint}
                       disabled={downloadLoading}
-                      className="w-full text-left px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-2 disabled:opacity-50"
+                      className="w-full justify-start rounded-none text-white/70 hover:text-white hover:bg-white/5"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a2 2 0 002 2h14a2 2 0 002-2v-3" />
                       </svg>
                       {downloadLoading ? "Downloading..." : "Download Blueprint"}
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>

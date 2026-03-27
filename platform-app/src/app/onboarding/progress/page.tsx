@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import PipelineProgress from "@/components/onboarding/PipelineProgress";
 import { downloadBlueprint } from "@/lib/download";
 
@@ -52,8 +54,8 @@ export default function ProgressPage() {
     setDownloadLoading(true);
     try {
       await downloadBlueprint(siteId, siteName || "site");
-    } catch (err) {
-      console.error("Error downloading blueprint:", err);
+    } catch {
+      toast.error("Failed to download blueprint");
     } finally {
       setDownloadLoading(false);
     }
@@ -267,32 +269,33 @@ export default function ProgressPage() {
 
       <div className="flex items-center gap-4">
         {done && siteStatus === "review" && siteId && (
-          <button
+          <Button
+            variant="default"
+            size="lg"
             onClick={() => router.push(`/onboarding/review?siteId=${siteId}`)}
-            className="rounded-full bg-brand-500 px-8 py-3 font-medium text-white transition-all hover:bg-brand-400 flex items-center gap-2 shadow-lg shadow-brand-500/25"
+            className="rounded-full shadow-lg shadow-brand-500/25"
           >
             Review Your Website
             <span className="text-lg">&rarr;</span>
-          </button>
+          </Button>
         )}
 
         {done && siteStatus !== "review" && (
-          <button
+          <Button
+            variant="default"
+            size="lg"
             onClick={() => router.push("/dashboard")}
-            className="rounded-full bg-brand-500 px-8 py-3 font-medium text-white transition-all hover:bg-brand-400 flex items-center gap-2"
+            className="rounded-full"
           >
             Continue to Dashboard
             <span className="text-lg">&rarr;</span>
-          </button>
+          </Button>
         )}
 
         {error && (
-          <button
-            onClick={handleRetry}
-            className="rounded-full bg-white px-8 py-3 font-medium text-slate-900 transition-all hover:bg-white/90 flex items-center gap-2"
-          >
+          <Button variant="cta" size="lg" onClick={handleRetry}>
             Try Again
-          </button>
+          </Button>
         )}
       </div>
     </div>

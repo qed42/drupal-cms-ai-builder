@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export default function AddNewSiteButton() {
   const router = useRouter();
@@ -14,24 +16,20 @@ export default function AddNewSiteButton() {
       const data = await res.json();
 
       if (!res.ok) {
-        console.error("Failed to create new site:", data.error);
+        toast.error("Failed to create new site");
         setLoading(false);
         return;
       }
 
       router.push(data.redirectUrl);
-    } catch (error) {
-      console.error("Error creating new site:", error);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
       setLoading(false);
     }
   }
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={loading}
-      className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-    >
+    <Button onClick={handleClick} disabled={loading}>
       {loading ? (
         <>
           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -55,6 +53,6 @@ export default function AddNewSiteButton() {
           Add new website
         </>
       )}
-    </button>
+    </Button>
   );
 }

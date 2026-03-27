@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import ProgressStepper from "@/components/onboarding/ProgressStepper";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { BRAND } from "@/lib/brand";
@@ -36,13 +37,15 @@ export default function StartPage() {
         Takes about 2 minutes &middot; No credit card required
       </p>
 
-      <button
+      <Button
+        variant="default"
+        size="xl"
         onClick={() => router.push(buildStepUrl("theme"))}
-        className="rounded-full bg-brand-500 px-10 py-4 text-lg font-medium text-white transition-all hover:bg-brand-400 flex items-center gap-2 shadow-lg shadow-brand-500/25"
+        className="rounded-full shadow-lg shadow-brand-500/25"
       >
         Let&apos;s Go
         <span className="text-xl">&rarr;</span>
-      </button>
+      </Button>
 
       <div className="mt-14">
         <ProgressStepper currentStep="start" />

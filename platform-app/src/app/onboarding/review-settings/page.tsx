@@ -2,11 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import StepIcon from "@/components/onboarding/StepIcon";
 import ProgressStepper from "@/components/onboarding/ProgressStepper";
 import { INDUSTRY_LABELS } from "@/lib/ai/prompts";
 import StrategyPreview from "@/components/onboarding/StrategyPreview";
+
+interface ImageUploadSummary {
+  id: string;
+  filename: string;
+  description: string;
+  status: string;
+}
 
 interface SessionData {
   name?: string;
@@ -17,6 +25,8 @@ interface SessionData {
   colors?: Record<string, string>;
   fonts?: { heading?: string; body?: string };
   tone?: string;
+  user_images?: ImageUploadSummary[];
+  use_stock_only?: boolean;
 }
 
 function SummarySection({ label, children }: { label: string; children: React.ReactNode }) {
@@ -140,6 +150,34 @@ export default function ReviewSettingsPage() {
         <SummarySection label="Tone">
           {toneLabel}
         </SummarySection>
+
+        {/* Image provenance (TASK-445) */}
+        {data.use_stock_only ? (
+          <SummarySection label="Images">
+            <span className="text-white/50">Stock photos (auto-selected)</span>
+          </SummarySection>
+        ) : data.user_images && data.user_images.filter((i) => i.status === "ready").length > 0 ? (
+          <SummarySection label="Images">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-green-500/10 text-xs text-green-400 border border-green-500/20">
+                  Your photos
+                </span>
+                <span className="text-xs text-white/50">
+                  {data.user_images.filter((i) => i.status === "ready").length} image{data.user_images.filter((i) => i.status === "ready").length !== 1 ? "s" : ""} uploaded
+                </span>
+              </div>
+              <p className="text-xs text-white/30 leading-relaxed">
+                Archie will match your photos to the best sections. Unmatched sections use stock photos.
+                All {data.user_images.filter((i) => i.status === "ready").length} images will be available in your Drupal Media Library.
+              </p>
+            </div>
+          </SummarySection>
+        ) : (
+          <SummarySection label="Images">
+            <span className="text-white/50">Stock photos (auto-selected)</span>
+          </SummarySection>
+        )}
       </div>
 
       {/* AI Strategy Preview */}
@@ -156,17 +194,20 @@ export default function ReviewSettingsPage() {
 
       {/* Actions */}
       <div className="flex items-center gap-4">
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="lg"
           onClick={() => router.push(buildStepUrl("tone"))}
-          className="rounded-full px-6 py-3 text-white/60 hover:text-white transition-colors"
         >
           Back
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="default"
+          size="xl"
           onClick={handleGenerate}
           disabled={generating}
-          className="rounded-full bg-brand-500 px-10 py-4 text-lg font-medium text-white transition-all hover:bg-brand-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-brand-500/25"
+          className="rounded-full shadow-lg shadow-brand-500/25"
         >
           {generating ? (
             <>
@@ -179,7 +220,7 @@ export default function ReviewSettingsPage() {
               <span className="text-xl">&rarr;</span>
             </>
           )}
-        </button>
+        </Button>
       </div>
 
       <div className="mt-12">

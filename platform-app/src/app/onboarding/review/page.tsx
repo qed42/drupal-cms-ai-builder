@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import PageSidebar from "./components/PageSidebar";
 import PagePreview from "./components/PagePreview";
 import ApproveButton from "./components/ApproveButton";
@@ -160,7 +161,8 @@ export default function ReviewPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to add page");
+        toast.error(data.error || "Failed to add page");
+        return;
       }
       const data = await res.json();
       setBlueprint((prev) => {
@@ -182,7 +184,8 @@ export default function ReviewPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to remove page");
+        toast.error(data.error || "Failed to remove page");
+        return;
       }
       setBlueprint((prev) => {
         if (!prev) return prev;
