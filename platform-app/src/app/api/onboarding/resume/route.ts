@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveStepSlug } from "@/lib/onboarding-steps";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({
-    step: onboarding.step,
+    step: resolveStepSlug(onboarding.step),
     data: onboarding.data,
     siteId: onboarding.siteId,
   });

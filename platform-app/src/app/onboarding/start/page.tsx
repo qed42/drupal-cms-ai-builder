@@ -40,7 +40,7 @@ export default function StartPage() {
       <Button
         variant="default"
         size="xl"
-        onClick={() => router.push(buildStepUrl("theme"))}
+        onClick={() => router.push(buildStepUrl("describe"))}
         className="rounded-full shadow-lg shadow-brand-500/25"
       >
         Let&apos;s Go
