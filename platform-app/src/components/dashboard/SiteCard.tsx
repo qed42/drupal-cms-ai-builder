@@ -1,9 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { downloadBlueprint } from "@/lib/download";
 import ImpactSummary from "./ImpactSummary";
 
@@ -44,26 +50,12 @@ export default function SiteCard({ site, subscription, impactBullets }: SiteCard
   const [editLoading, setEditLoading] = useState(false);
   const [retryLoading, setRetryLoading] = useState(false);
   const [downloadLoading, setDownloadLoading] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const config = STATUS_CONFIG[site.status] || STATUS_CONFIG.onboarding;
 
   const hasBlueprintReady = ["blueprint_ready", "provisioning", "live", "provisioning_failed"].includes(site.status);
 
-  // Close menu on outside click
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    }
-    if (menuOpen) document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [menuOpen]);
-
   async function handleDownloadBlueprint() {
     setDownloadLoading(true);
-    setMenuOpen(false);
     try {
       await downloadBlueprint(site.id, site.name || "site");
     } catch {
@@ -252,35 +244,28 @@ export default function SiteCard({ site, subscription, impactBullets }: SiteCard
 
             {/* Overflow menu for developer actions */}
             {hasBlueprintReady && (
-              <div className="relative" ref={menuRef}>
-                <button
-                  onClick={() => setMenuOpen(!menuOpen)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="5" r="2" />
-                    <circle cx="12" cy="12" r="2" />
-                    <circle cx="12" cy="19" r="2" />
-                  </svg>
-                </button>
-
-                {menuOpen && (
-                  <div className="absolute right-0 top-10 w-48 rounded-lg bg-slate-800 border border-white/10 shadow-xl py-1 z-10">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleDownloadBlueprint}
-                      disabled={downloadLoading}
-                      className="w-full justify-start rounded-none text-white/70 hover:text-white hover:bg-white/5"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a2 2 0 002 2h14a2 2 0 002-2v-3" />
-                      </svg>
-                      {downloadLoading ? "Downloading..." : "Download Blueprint"}
-                    </Button>
-                  </div>
-                )}
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon-sm">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="5" r="2" />
+                      <circle cx="12" cy="12" r="2" />
+                      <circle cx="12" cy="19" r="2" />
+                    </svg>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-slate-800 border-white/10">
+                  <DropdownMenuItem
+                    onClick={handleDownloadBlueprint}
+                    disabled={downloadLoading}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a2 2 0 002 2h14a2 2 0 002-2v-3" />
+                    </svg>
+                    {downloadLoading ? "Downloading..." : "Download Blueprint"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>

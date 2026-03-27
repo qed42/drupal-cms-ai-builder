@@ -14,10 +14,10 @@ Initialize shadcn/ui with the project's dark theme, then migrate all buttons, fo
 |----|------|-------|--------|------------|--------|
 | TASK-465 | Initialize shadcn/ui with dark theme configuration | US-092 | S | None | DONE |
 | TASK-466 | Migrate buttons to shadcn Button component | US-092 | M | TASK-465 | DONE |
-| TASK-467 | Migrate form inputs to shadcn Input/Textarea/Select | US-092 | M | TASK-465 | TODO |
-| TASK-468 | Migrate cards and badges to shadcn Card/Badge/Skeleton | US-092 | M | TASK-465 | TODO |
+| TASK-467 | Migrate form inputs to shadcn Input/Textarea/Select | US-092 | M | TASK-465 | DONE |
+| TASK-468 | Migrate cards and badges to shadcn Card/Badge/Skeleton | US-092 | M | TASK-465 | DONE |
 | TASK-469 | Add toast notification system (Sonner) | US-092 | S | TASK-465 | DONE |
-| TASK-470 | Migrate SiteCard menu to shadcn DropdownMenu | US-092 | S | TASK-465 | TODO |
+| TASK-470 | Migrate SiteCard menu to shadcn DropdownMenu | US-092 | S | TASK-465 | DONE |
 
 ## Execution Order
 

@@ -5,6 +5,8 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { BRAND } from "@/lib/brand";
 
 function LoginForm() {
@@ -64,31 +66,31 @@ function LoginForm() {
         )}
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-1.5">
+          <Label htmlFor="email" className="mb-1.5">
             Email
-          </label>
-          <input
+          </Label>
+          <Input
             id="email"
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg bg-white/5 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
+            className="h-12"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-white/70 mb-1.5">
+          <Label htmlFor="password" className="mb-1.5">
             Password
-          </label>
-          <input
+          </Label>
+          <Input
             id="password"
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg bg-white/5 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
+            className="h-12"
             placeholder="Your password"
           />
         </div>

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { BRAND } from "@/lib/brand";
 
 export default function RegisterPage() {
@@ -84,46 +86,46 @@ export default function RegisterPage() {
         )}
 
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-white/70 mb-1.5">
+          <Label htmlFor="name" className="mb-1.5">
             Name
-          </label>
-          <input
+          </Label>
+          <Input
             id="name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-lg bg-white/5 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
+            className="h-12"
             placeholder="Your name"
           />
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-1.5">
+          <Label htmlFor="email" className="mb-1.5">
             Email
-          </label>
-          <input
+          </Label>
+          <Input
             id="email"
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg bg-white/5 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
+            className="h-12"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-white/70 mb-1.5">
+          <Label htmlFor="password" className="mb-1.5">
             Password
-          </label>
-          <input
+          </Label>
+          <Input
             id="password"
             type="password"
             required
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg bg-white/5 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
+            className="h-12"
             placeholder="Min. 8 characters"
           />
         </div>
