@@ -72,7 +72,12 @@ async function resolveResearchPhase(
     const startTime = Date.now();
     // Validate cached preview against schema — it may have been stored
     // by an older version or a preview endpoint that skipped validation.
-    const brief = ResearchBriefSchema.parse(onboarding.researchPreview);
+    const parsed = ResearchBriefSchema.safeParse(onboarding.researchPreview);
+    if (!parsed.success) {
+      // Cached preview is stale or incomplete — run fresh research
+      return runResearchPhase(siteId, data);
+    }
+    const brief = parsed.data;
 
     // Determine next version number
     const lastBrief = await prisma.researchBrief.findFirst({

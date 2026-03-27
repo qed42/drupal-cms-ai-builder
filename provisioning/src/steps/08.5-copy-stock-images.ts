@@ -43,8 +43,19 @@ export async function copyStockImagesStep(
   let imagesCopied = 0;
   let pathsRewritten = 0;
 
+  // User images directory (TASK-444)
+  const userFilesDir = path.join(
+    config.drupalRoot,
+    "web",
+    "sites",
+    config.domain,
+    "files",
+    "user-images"
+  );
+
   /**
    * Copy a single image from platform-app public/ to Drupal files/.
+   * Routes user-uploaded images to files/user-images/ and stock to files/stock/.
    * Returns the new Drupal-relative path, or null on failure.
    */
   async function copyAndRewrite(imgObj: { src: string }): Promise<string | null> {
@@ -53,12 +64,15 @@ export async function copyStockImagesStep(
     const filename = path.basename(imgObj.src);
 
     // Source: /workspace/platform-app/public{imgObj.src}
-    // In Docker, platform-app is mounted at /workspace/platform-app (see docker-compose.yml)
     const sourcePath = path.join("/workspace/platform-app", "public", imgObj.src);
 
-    // Destination: drupal-site/web/sites/{domain}/files/stock/{filename}
-    await mkdir(siteFilesDir, { recursive: true });
-    const destPath = path.join(siteFilesDir, filename);
+    // Route user images vs stock images to different directories (TASK-444)
+    const isUserImage = imgObj.src.includes("/images/");
+    const destDir = isUserImage ? userFilesDir : siteFilesDir;
+    const destSubdir = isUserImage ? "user-images" : "stock";
+
+    await mkdir(destDir, { recursive: true });
+    const destPath = path.join(destDir, filename);
 
     try {
       await copyFile(sourcePath, destPath);
@@ -68,7 +82,7 @@ export async function copyStockImagesStep(
       return null;
     }
 
-    const newSrc = `/sites/${config.domain}/files/stock/${filename}`;
+    const newSrc = `/sites/${config.domain}/files/${destSubdir}/${filename}`;
     pathsRewritten++;
     return newSrc;
   }

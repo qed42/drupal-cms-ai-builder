@@ -23,10 +23,10 @@ test.describe("TASK-108: Wizard Screen 7 — Font Selection", () => {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(
-      page.getByRole("heading", { name: /Select a font/i })
-    ).toBeVisible();
+      page.getByRole("heading", { name: /Choose your typography/i })
+    ).toBeVisible({ timeout: 10000 });
     await expect(
-      page.getByText("Select a primary and a secondary font")
+      page.getByText("Your font pairing sets the tone")
     ).toBeVisible();
     await expect(
       page.getByRole("button", { name: /Continue/i })
@@ -37,8 +37,11 @@ test.describe("TASK-108: Wizard Screen 7 — Font Selection", () => {
     await page.goto("/onboarding/fonts");
     await page.waitForLoadState("domcontentloaded");
 
-    // 4 tiles each showing "Aa"
-    const tiles = page.locator("text=Aa");
+    // Wait for page to fully render
+    await expect(page.getByRole("heading", { name: /Choose your typography/i })).toBeVisible({ timeout: 10000 });
+
+    // 4 tiles each showing "Aa" inside the preview grid
+    const tiles = page.locator('[class*="aspect-square"] span');
     await expect(tiles).toHaveCount(4);
   });
 
@@ -70,8 +73,11 @@ test.describe("TASK-108: Wizard Screen 7 — Font Selection", () => {
     await page.goto("/onboarding/fonts");
     await page.waitForLoadState("domcontentloaded");
 
+    // Wait for page to fully render
+    await expect(page.getByRole("heading", { name: /Choose your typography/i })).toBeVisible({ timeout: 10000 });
+
     // Get initial font family on first tile
-    const firstTile = page.locator("text=Aa").first();
+    const firstTile = page.locator('[class*="aspect-square"] span').first();
     const initialFont = await firstTile.evaluate((el) => el.style.fontFamily);
 
     // Change heading font to Playfair Display
@@ -88,14 +94,17 @@ test.describe("TASK-108: Wizard Screen 7 — Font Selection", () => {
     await page.goto("/onboarding/fonts");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByText("Add font files locally")).toBeVisible();
+    await expect(page.getByText("Add font files locally")).toBeVisible({ timeout: 10000 });
   });
 
-  test("'Continue' saves font data and navigates to follow-up step", async ({
+  test("'Continue' saves font data and navigates to images step", async ({
     page,
   }) => {
     await page.goto("/onboarding/fonts");
     await page.waitForLoadState("domcontentloaded");
+
+    // Wait for page to fully render
+    await expect(page.getByRole("heading", { name: /Choose your typography/i })).toBeVisible({ timeout: 10000 });
 
     // Select specific fonts
     const headingSelect = page.locator("select").first();
@@ -104,7 +113,7 @@ test.describe("TASK-108: Wizard Screen 7 — Font Selection", () => {
     await bodySelect.selectOption("Lato");
 
     await page.getByRole("button", { name: /Continue/i }).click();
-    await page.waitForURL("**/onboarding/follow-up", { timeout: 10000 });
+    await page.waitForURL("**/onboarding/images", { timeout: 10000 });
 
     // Verify saved data
     const resumed = await page.evaluate(async () => {
@@ -119,6 +128,9 @@ test.describe("TASK-108: Wizard Screen 7 — Font Selection", () => {
     await page.goto("/onboarding/fonts");
     await page.waitForLoadState("domcontentloaded");
 
+    // Wait for page to fully render
+    await expect(page.getByRole("button", { name: "Back" })).toBeVisible({ timeout: 10000 });
+
     await page.getByRole("button", { name: "Back" }).click();
     await page.waitForURL("**/onboarding/brand", { timeout: 10000 });
   });
@@ -126,6 +138,9 @@ test.describe("TASK-108: Wizard Screen 7 — Font Selection", () => {
   test("preview tiles use brand colors from onboarding data", async ({ page }) => {
     await page.goto("/onboarding/fonts");
     await page.waitForLoadState("domcontentloaded");
+
+    // Wait for page to fully render
+    await expect(page.getByRole("heading", { name: /Choose your typography/i })).toBeVisible({ timeout: 10000 });
 
     // The first tile should use the primary color as background
     const tiles = page.locator('[class*="aspect-square"]');

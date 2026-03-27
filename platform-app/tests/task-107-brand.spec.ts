@@ -35,13 +35,13 @@ test.describe("TASK-107: Wizard Screen 6 — Brand Assets", () => {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(
-      page.getByRole("heading", { name: /Give it a face/i })
+      page.getByRole("heading", { name: /Show us your brand/i })
+    ).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.getByText("Drop your logo or brand kit")
     ).toBeVisible();
     await expect(
-      page.getByText("Drop your logo, brand kit, or inspiration")
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /Pick Your Fonts/i })
+      page.getByRole("button", { name: /Next: Brand & Style/i })
     ).toBeVisible();
   });
 
@@ -49,7 +49,7 @@ test.describe("TASK-107: Wizard Screen 6 — Brand Assets", () => {
     await page.goto("/onboarding/brand");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByText("Add logo")).toBeVisible();
+    await expect(page.getByText("Add logo")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText("Add color palette reference")).toBeVisible();
   });
 
@@ -58,6 +58,9 @@ test.describe("TASK-107: Wizard Screen 6 — Brand Assets", () => {
 
     await page.goto("/onboarding/brand");
     await page.waitForLoadState("domcontentloaded");
+
+    // Wait for page to load
+    await expect(page.getByText("Add logo")).toBeVisible({ timeout: 10000 });
 
     // Upload file via the hidden input inside the logo upload zone
     const fileInput = page.locator('input[type="file"][accept=".png,.jpg,.jpeg,.svg"]');
@@ -127,13 +130,19 @@ test.describe("TASK-107: Wizard Screen 6 — Brand Assets", () => {
     await page.goto("/onboarding/brand");
     await page.waitForLoadState("domcontentloaded");
 
-    await page.getByRole("button", { name: /Pick Your Fonts/i }).click();
+    // Wait for page to load
+    await expect(page.getByRole("heading", { name: /Show us your brand/i })).toBeVisible({ timeout: 10000 });
+
+    await page.getByRole("button", { name: /Next: Brand & Style/i }).click();
     await page.waitForURL("**/onboarding/fonts", { timeout: 10000 });
   });
 
   test("has Back button navigating to design step", async ({ page }) => {
     await page.goto("/onboarding/brand");
     await page.waitForLoadState("domcontentloaded");
+
+    // Wait for page to load
+    await expect(page.getByRole("button", { name: "Back" })).toBeVisible({ timeout: 10000 });
 
     await page.getByRole("button", { name: "Back" }).click();
     await page.waitForURL("**/onboarding/design", { timeout: 10000 });

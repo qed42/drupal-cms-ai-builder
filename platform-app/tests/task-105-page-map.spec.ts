@@ -25,17 +25,17 @@ test.describe("TASK-105: Wizard Screen 4 — Page Map", () => {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(
-      page.getByRole("heading", { name: /Let's map your site/i })
+      page.getByRole("heading", { name: /Here.s your site plan/i })
+    ).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.getByText("Archie mapped these pages based on your business")
     ).toBeVisible();
     await expect(
-      page.getByText("Based on what you've shared")
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /Shape the Experience/i })
+      page.getByRole("button", { name: /Continue/i })
     ).toBeVisible();
   });
 
-  test("renders AI-suggested pages as removable chips", async ({ page }) => {
+  test("renders AI-suggested pages as removable cards", async ({ page }) => {
     await seedOnboardingData(page, {
       _step: "audience",
       suggested_pages: [
@@ -50,7 +50,10 @@ test.describe("TASK-105: Wizard Screen 4 — Page Map", () => {
     await page.goto("/onboarding/pages");
     await page.waitForLoadState("domcontentloaded");
 
-    // Should see all 5 page chips
+    // Wait for page data to load
+    await expect(page.getByRole("heading", { name: /site plan/i })).toBeVisible({ timeout: 10000 });
+
+    // Should see all 5 page cards
     await expect(page.getByText("Home")).toBeVisible();
     await expect(page.getByText("About Us")).toBeVisible();
     await expect(page.getByText("Services")).toBeVisible();
@@ -76,6 +79,9 @@ test.describe("TASK-105: Wizard Screen 4 — Page Map", () => {
     await page.goto("/onboarding/pages");
     await page.waitForLoadState("domcontentloaded");
 
+    // Wait for page data to load
+    await expect(page.getByRole("heading", { name: /site plan/i })).toBeVisible({ timeout: 10000 });
+
     // Should see 4 pages initially
     await expect(page.getByText("4 of 12 pages")).toBeVisible();
 
@@ -99,6 +105,9 @@ test.describe("TASK-105: Wizard Screen 4 — Page Map", () => {
 
     await page.goto("/onboarding/pages");
     await page.waitForLoadState("domcontentloaded");
+
+    // Wait for page data to load
+    await expect(page.getByRole("heading", { name: /site plan/i })).toBeVisible({ timeout: 10000 });
 
     // Click "+ Add Custom Page" button
     await page.getByRole("button", { name: /Add Custom Page/i }).click();
@@ -126,7 +135,10 @@ test.describe("TASK-105: Wizard Screen 4 — Page Map", () => {
     await page.goto("/onboarding/pages");
     await page.waitForLoadState("domcontentloaded");
 
-    await page.getByRole("button", { name: /Shape the Experience/i }).click();
+    // Wait for page data to load
+    await expect(page.getByRole("button", { name: /Continue/i })).toBeVisible({ timeout: 10000 });
+
+    await page.getByRole("button", { name: /Continue/i }).click();
     await page.waitForURL("**/onboarding/design", { timeout: 10000 });
   });
 
@@ -142,6 +154,9 @@ test.describe("TASK-105: Wizard Screen 4 — Page Map", () => {
 
     await page.goto("/onboarding/pages");
     await page.waitForLoadState("domcontentloaded");
+
+    // Wait for page data to load
+    await expect(page.getByRole("button", { name: "Back" })).toBeVisible({ timeout: 10000 });
 
     await page.getByRole("button", { name: "Back" }).click();
     await page.waitForURL("**/onboarding/audience", { timeout: 10000 });
@@ -161,6 +176,9 @@ test.describe("TASK-105: Wizard Screen 4 — Page Map", () => {
 
     await page.goto("/onboarding/pages");
     await page.waitForLoadState("domcontentloaded");
+
+    // Wait for page data to load
+    await expect(page.getByRole("heading", { name: /site plan/i })).toBeVisible({ timeout: 10000 });
 
     await expect(page.getByText("5 of 12 pages")).toBeVisible();
   });

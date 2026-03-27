@@ -21,4 +21,5 @@ COPY platform-app/ .
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+# Auto-run Prisma migrations and start dev server
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma generate && npm run dev"]

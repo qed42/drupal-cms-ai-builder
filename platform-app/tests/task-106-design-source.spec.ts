@@ -24,10 +24,10 @@ test.describe("TASK-106: Wizard Screen 5 — Design Source Selection", () => {
       page.getByRole("heading", { name: /How should it feel/i })
     ).toBeVisible();
     await expect(
-      page.getByText("We can follow your exact design")
+      page.getByText("Upload a design reference or let Archie style it based on your brand")
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /Shape the Experience/i })
+      page.getByRole("button", { name: /Continue/i })
     ).toBeVisible();
   });
 
@@ -43,9 +43,8 @@ test.describe("TASK-106: Wizard Screen 5 — Design Source Selection", () => {
     await page.goto("/onboarding/design");
     await page.waitForLoadState("domcontentloaded");
 
-    // AI card should have the checkmark SVG (within the card that contains "Let Space AI choose")
-    const aiCard = page.locator("button", { hasText: "Let Space AI choose" });
-    // The selected card has an SVG checkmark
+    // AI card is a <label>; when selected it shows a checkmark SVG
+    const aiCard = page.locator("label", { hasText: "Let Space AI choose" });
     await expect(aiCard.locator("svg path[d*='5 13l4 4L19 7']")).toBeVisible();
   });
 
@@ -57,8 +56,8 @@ test.describe("TASK-106: Wizard Screen 5 — Design Source Selection", () => {
 
     await expect(page.getByText("Coming soon")).toBeVisible();
 
-    // Figma card should have opacity-50 (disabled styling)
-    const figmaCard = page.locator("button", { hasText: "Provide Figma details" });
+    // Figma card is a <label> with disabled styling
+    const figmaCard = page.locator("label", { hasText: "Provide Figma details" });
     await expect(figmaCard).toHaveClass(/opacity-50/);
     await expect(figmaCard).toHaveClass(/cursor-not-allowed/);
   });
@@ -67,7 +66,7 @@ test.describe("TASK-106: Wizard Screen 5 — Design Source Selection", () => {
     await page.goto("/onboarding/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await page.getByRole("button", { name: /Shape the Experience/i }).click();
+    await page.getByRole("button", { name: /Continue/i }).click();
     await page.waitForURL("**/onboarding/brand", { timeout: 10000 });
 
     // Verify data saved via resume API

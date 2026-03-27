@@ -8,7 +8,7 @@ test.describe("TASK-117: Platform Dashboard", () => {
     expect(page.url()).toContain("/login");
   });
 
-  test("dashboard renders with heading and site card for authenticated user", async ({
+  test("dashboard renders with heading and subtitle for authenticated user", async ({
     page,
   }) => {
     await registerAndLogin(page);
@@ -19,7 +19,8 @@ test.describe("TASK-117: Platform Dashboard", () => {
     await expect(
       page.getByRole("heading", { name: "Dashboard" })
     ).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText("Manage your website")).toBeVisible();
+    // Subtitle text (plural "websites")
+    await expect(page.getByText("Manage your websites")).toBeVisible();
   });
 
   test("dashboard shows site card with 'Setting Up' status for new user", async ({
@@ -52,36 +53,7 @@ test.describe("TASK-117: Platform Dashboard", () => {
     await page.waitForURL("**/onboarding/**", { timeout: 10000 });
   });
 
-  test("dashboard shows subscription section", async ({ page }) => {
-    await registerAndLogin(page);
-
-    await page.goto("/dashboard");
-    await page.waitForLoadState("domcontentloaded");
-
-    // Should show subscription heading
-    await expect(
-      page.getByRole("heading", { name: "Subscription" })
-    ).toBeVisible();
-
-    // Should show plan type
-    await expect(page.getByText("Free Trial")).toBeVisible();
-
-    // Should show status
-    await expect(page.getByText("Active")).toBeVisible();
-  });
-
-  test("dashboard shows trial countdown for trial users", async ({ page }) => {
-    await registerAndLogin(page);
-
-    await page.goto("/dashboard");
-    await page.waitForLoadState("domcontentloaded");
-
-    // Trial users should see days remaining
-    await expect(page.getByText(/Trial ends in/i)).toBeVisible();
-    await expect(page.getByText(/\d+ days?/)).toBeVisible();
-  });
-
-  test("dashboard layout shows nav bar with email and sign out", async ({
+  test("dashboard shows subscription badge inline on site card", async ({
     page,
   }) => {
     await registerAndLogin(page);
@@ -89,10 +61,22 @@ test.describe("TASK-117: Platform Dashboard", () => {
     await page.goto("/dashboard");
     await page.waitForLoadState("domcontentloaded");
 
-    // Nav bar brand
-    await expect(page.getByText("Drupal CMS")).toBeVisible();
+    // Subscription plan label rendered inline inside the SiteCard (no separate heading)
+    await expect(page.getByText("Free Trial")).toBeVisible();
+  });
 
-    // User email visible
+  test("dashboard layout shows nav bar with brand name and sign out", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+
+    await page.goto("/dashboard");
+    await page.waitForLoadState("domcontentloaded");
+
+    // Nav bar brand — now "Space AI"
+    await expect(page.getByText("Space AI")).toBeVisible();
+
+    // User email visible (all test emails end with @test.com)
     await expect(page.locator("text=@test.com")).toBeVisible();
 
     // Sign out button
@@ -101,28 +85,38 @@ test.describe("TASK-117: Platform Dashboard", () => {
     ).toBeVisible();
   });
 
-  test("dashboard shows site name when set", async ({ page }) => {
+  test("dashboard layout shows Sites nav link as active", async ({ page }) => {
     await registerAndLogin(page);
 
-    // Set a site name via onboarding
-    await page.evaluate(async () => {
-      await fetch("/api/onboarding/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          step: "name",
-          data: { name: "My Test Website" },
-        }),
-      });
-    });
-
-    // The site name is set by the generate-blueprint route,
-    // but for onboarding status it shows "Untitled Site" or the site name from DB
     await page.goto("/dashboard");
     await page.waitForLoadState("domcontentloaded");
 
-    // Should show some site identifier (either name or "Untitled Site")
+    // "Sites" link in the top nav
+    await expect(page.getByRole("link", { name: "Sites" })).toBeVisible();
+  });
+
+  test("dashboard shows 'Add new website' button", async ({ page }) => {
+    await registerAndLogin(page);
+
+    await page.goto("/dashboard");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(
+      page.getByRole("button", { name: /Add new website/i })
+    ).toBeVisible();
+  });
+
+  test("dashboard shows site name or 'Untitled Site' on site card", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+
+    await page.goto("/dashboard");
+    await page.waitForLoadState("domcontentloaded");
+
+    // New user's site has no name yet → shows "Untitled Site"
     const siteCard = page.locator('[class*="rounded-2xl"]').first();
     await expect(siteCard).toBeVisible();
+    await expect(siteCard.getByText("Untitled Site")).toBeVisible();
   });
 });

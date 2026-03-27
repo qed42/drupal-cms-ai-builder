@@ -17,6 +17,7 @@ import { importBlueprintStep } from "./steps/08-import-blueprint.js";
 import { copyStockImagesStep } from "./steps/08.5-copy-stock-images.js";
 import { applyBrandStep } from "./steps/09-apply-brand.js";
 import { configureSiteStep } from "./steps/10-configure-site.js";
+import { createUnplacedMediaStep } from "./steps/08.7-create-unplaced-media.js";
 import { callbackStep, sendFailureCallback, sendProgressCallback } from "./steps/11-callback.js";
 import type { ProvisioningConfig, RollbackAction } from "./types.js";
 import { rm } from "node:fs/promises";
@@ -111,6 +112,7 @@ async function provision(): Promise<void> {
     { name: "Copy stock images", label: "Adding images to your pages", fn: copyStockImagesStep },
     { name: "Apply brand tokens", label: "Applying your brand colors and fonts", fn: applyBrandStep },
     { name: "Import blueprint", label: "Loading your content and pages", fn: importBlueprintStep },
+    { name: "Create unplaced media", label: "Adding your photos to the media library", fn: createUnplacedMediaStep },
     { name: "Configure site", label: "Final site configuration", fn: configureSiteStep },
     { name: "Platform callback", label: "Completing setup", fn: callbackStep },
   ];

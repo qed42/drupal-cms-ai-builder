@@ -42,10 +42,19 @@ export async function registerAndLogin(page: Page, email?: string, password = "p
 
 export async function navigateToStep(
   page: Page,
-  step: "name" | "idea" | "audience" | "pages" | "design" | "brand" | "fonts" | "follow-up" | "tone"
+  step: "theme" | "name" | "idea" | "audience" | "pages" | "design" | "brand" | "fonts" | "images" | "follow-up" | "tone"
 ) {
-  // Click Start Building on start page
-  await page.getByRole("button", { name: /Start Building/i }).click();
+  // Ensure we're on the start page
+  await page.goto("/onboarding/start");
+  await page.waitForLoadState("domcontentloaded");
+
+  // Click "Let's Go" on start page → goes to theme
+  await page.getByRole("button", { name: /Let's Go/i }).click();
+  await page.waitForURL("**/onboarding/theme", { timeout: 10000 });
+  if (step === "theme") return;
+
+  // Click Continue on theme page → goes to name
+  await page.getByRole("button", { name: /Continue/i }).click();
   await page.waitForURL("**/onboarding/name", { timeout: 10000 });
   if (step === "name") return;
 
@@ -60,37 +69,42 @@ export async function navigateToStep(
     'textarea[placeholder="Describe your project or business..."]',
     "A healthcare clinic providing wellness and medical services to patients"
   );
-  await page.getByRole("button", { name: /Your Audience/i }).click();
+  await page.getByRole("button", { name: /Next: Your Audience/i }).click();
   await page.waitForURL("**/onboarding/audience", { timeout: 10000 });
   if (step === "audience") return;
 
   // Fill audience and go to pages
   await page.fill(
     'input[placeholder="Describe your ideal audience..."]',
-    "Patients and healthcare professionals"
+    "Patients and healthcare professionals seeking quality care"
   );
-  await page.getByRole("button", { name: /Plan the Structure/i }).click();
+  await page.getByRole("button", { name: /Next: Site Structure/i }).click();
   await page.waitForURL("**/onboarding/pages", { timeout: 15000 });
   // Wait for AI analysis to complete (spinner disappears, cards appear)
-  await page.waitForSelector('text="Shape the Experience"', { timeout: 30000 });
+  await page.waitForSelector('button:has-text("Continue")', { timeout: 30000 });
   if (step === "pages") return;
 
   // Click through pages screen
-  await page.getByRole("button", { name: /Shape the Experience/i }).click();
+  await page.getByRole("button", { name: /Continue/i }).click();
   await page.waitForURL("**/onboarding/design", { timeout: 10000 });
   if (step === "design") return;
 
   // Click through design screen (AI is default selected)
-  await page.getByRole("button", { name: /Shape the Experience/i }).click();
+  await page.getByRole("button", { name: /Continue/i }).click();
   await page.waitForURL("**/onboarding/brand", { timeout: 10000 });
   if (step === "brand") return;
 
   // Click through brand screen (no upload required)
-  await page.getByRole("button", { name: /Pick Your Fonts/i }).click();
+  await page.getByRole("button", { name: /Continue/i }).click();
   await page.waitForURL("**/onboarding/fonts", { timeout: 10000 });
   if (step === "fonts") return;
 
-  // Click through fonts screen
+  // Click through fonts screen — navigates to images step
+  await page.getByRole("button", { name: /Continue/i }).click();
+  await page.waitForURL("**/onboarding/images", { timeout: 10000 });
+  if (step === "images") return;
+
+  // Click through images screen
   await page.getByRole("button", { name: /Continue/i }).click();
   await page.waitForURL("**/onboarding/follow-up", { timeout: 10000 });
   if (step === "follow-up") return;

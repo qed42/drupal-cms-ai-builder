@@ -4,36 +4,60 @@ import { registerAndLogin } from "./helpers";
 test.describe("TASK-102: Onboarding Wizard Framework", () => {
   test.beforeEach(async ({ page }) => {
     await registerAndLogin(page);
-    // registerAndLogin lands us on /onboarding/start already
+    // After login, user lands on /dashboard. Navigate to onboarding start.
+    await page.goto("/onboarding/start");
+    await page.waitForLoadState("domcontentloaded");
   });
 
-  test("start page shows welcome message and Start Building button", async ({
+  test("start page shows welcome message and Let's Go button", async ({
     page,
   }) => {
     await expect(
-      page.getByRole("heading", { name: /shape your big idea/i })
+      page.getByRole("heading", { name: /let.s build your website/i })
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /Start Building/i })
+      page.getByRole("button", { name: /Let.s Go/i })
     ).toBeVisible();
   });
 
-  test("progress dots are visible on start screen", async ({ page }) => {
-    // Check that the ProgressDots component renders (4 step indicators)
-    const dots = page.locator('[class*="rounded-full"][class*="h-2"]');
-    await expect(dots.first()).toBeVisible({ timeout: 5000 });
-    const count = await dots.count();
-    expect(count).toBe(8);
+  test("progress stepper shows section labels on start screen", async ({
+    page,
+  }) => {
+    // ProgressStepper renders 4 section labels: Your Business, Site Structure, Brand & Style, Review & Build
+    // Use exact match to avoid strict-mode violation (desktop span vs mobile p with extra text)
+    await expect(page.getByText("Your Business", { exact: true })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("Site Structure", { exact: true })).toBeVisible();
+    await expect(page.getByText("Brand & Style", { exact: true })).toBeVisible();
+    await expect(page.getByText("Review & Build", { exact: true })).toBeVisible();
   });
 
-  test("clicking Start Building navigates to name step", async ({ page }) => {
-    await page.getByRole("button", { name: /Start Building/i }).click();
+  test("clicking Let's Go navigates to theme step", async ({ page }) => {
+    await page.getByRole("button", { name: /Let.s Go/i }).click();
+    await page.waitForURL("**/onboarding/theme", { timeout: 10000 });
+    await expect(page).toHaveURL(/\/onboarding\/theme/);
+  });
+
+  test("theme step shows design foundation heading and continues to name", async ({
+    page,
+  }) => {
+    await page.getByRole("button", { name: /Let.s Go/i }).click();
+    await page.waitForURL("**/onboarding/theme", { timeout: 10000 });
+
+    await expect(
+      page.getByRole("heading", { name: /pick a design foundation/i })
+    ).toBeVisible();
+
+    // Space DS is selected by default — click Continue to go to name
+    await page.getByRole("button", { name: /Continue/i }).click();
     await page.waitForURL("**/onboarding/name", { timeout: 10000 });
     await expect(page).toHaveURL(/\/onboarding\/name/);
   });
 
   test("back navigation works without data loss", async ({ page }) => {
-    await page.getByRole("button", { name: /Start Building/i }).click();
+    // Navigate: start → theme → name
+    await page.getByRole("button", { name: /Let.s Go/i }).click();
+    await page.waitForURL("**/onboarding/theme", { timeout: 10000 });
+    await page.getByRole("button", { name: /Continue/i }).click();
     await page.waitForURL("**/onboarding/name", { timeout: 10000 });
 
     const projectName = "My Test Project";
@@ -51,7 +75,10 @@ test.describe("TASK-102: Onboarding Wizard Framework", () => {
   });
 
   test("data saves to DB on each step forward", async ({ page }) => {
-    await page.getByRole("button", { name: /Start Building/i }).click();
+    // Navigate: start → theme → name
+    await page.getByRole("button", { name: /Let.s Go/i }).click();
+    await page.waitForURL("**/onboarding/theme", { timeout: 10000 });
+    await page.getByRole("button", { name: /Continue/i }).click();
     await page.waitForURL("**/onboarding/name", { timeout: 10000 });
 
     await page.fill('input[placeholder="Name of the Project"]', "Save Test");
@@ -67,7 +94,10 @@ test.describe("TASK-102: Onboarding Wizard Framework", () => {
   });
 
   test("refreshing page restores data", async ({ page }) => {
-    await page.getByRole("button", { name: /Start Building/i }).click();
+    // Navigate: start → theme → name
+    await page.getByRole("button", { name: /Let.s Go/i }).click();
+    await page.waitForURL("**/onboarding/theme", { timeout: 10000 });
+    await page.getByRole("button", { name: /Continue/i }).click();
     await page.waitForURL("**/onboarding/name", { timeout: 10000 });
 
     const projectName = "Refresh Test";

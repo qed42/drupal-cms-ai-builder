@@ -68,8 +68,9 @@ test.describe("TASK-101: Authentication System", () => {
       await page.fill("#password", "password123");
       await page.getByRole("button", { name: "Sign In" }).click();
 
-      await page.waitForURL("**/onboarding/start", { timeout: 15000 });
-      await expect(page).toHaveURL(/\/onboarding\/start/);
+      // Dashboard-first flow: login redirects to /dashboard (site exists from registration)
+      await page.waitForURL("**/dashboard", { timeout: 15000 });
+      await expect(page).toHaveURL(/\/dashboard/);
     });
 
     test("invalid credentials show error", async ({ page }) => {
@@ -103,16 +104,22 @@ test.describe("TASK-101: Authentication System", () => {
   test.describe("Session Persistence", () => {
     test("session persists across page navigation", async ({ page }) => {
       await registerAndLogin(page);
-      // registerAndLogin lands on onboarding/start
+      // registerAndLogin lands on /dashboard (dashboard-first flow)
 
-      // Navigate to name step
-      await page.getByRole("button", { name: /Start Building/i }).click();
-      await page.waitForURL("**/onboarding/name", { timeout: 10000 });
-
-      // Still on onboarding (not redirected to login)
-      await expect(page).toHaveURL(/\/onboarding\/name/);
+      // Verify we're on the dashboard (authenticated)
+      await expect(page).toHaveURL(/\/dashboard/);
       await expect(
-        page.getByRole("heading", { name: "What are we calling this?" })
+        page.getByRole("heading", { name: "Dashboard" })
+      ).toBeVisible();
+
+      // Navigate away and back — session should persist
+      await page.goto("/dashboard");
+      await page.waitForLoadState("domcontentloaded");
+
+      // Still on dashboard (not redirected to login)
+      await expect(page).toHaveURL(/\/dashboard/);
+      await expect(
+        page.getByRole("heading", { name: "Dashboard" })
       ).toBeVisible();
     });
   });

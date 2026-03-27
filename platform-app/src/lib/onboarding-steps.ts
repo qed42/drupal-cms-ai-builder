@@ -8,6 +8,7 @@ export const ONBOARDING_STEPS = [
   { slug: "design", label: "Design" },
   { slug: "brand", label: "Brand" },
   { slug: "fonts", label: "Fonts" },
+  { slug: "images", label: "Your Photos" },
   { slug: "follow-up", label: "Details" },
   { slug: "tone", label: "Voice" },
   { slug: "review-settings", label: "Review" },
@@ -18,7 +19,7 @@ export type StepSlug = (typeof ONBOARDING_STEPS)[number]["slug"];
 export const STEP_SECTIONS = [
   { name: "Your Business", steps: ["start", "theme", "name", "idea", "audience"] },
   { name: "Site Structure", steps: ["pages", "design", "brand", "fonts"] },
-  { name: "Brand & Style", steps: ["follow-up", "tone"] },
+  { name: "Brand & Style", steps: ["images", "follow-up", "tone"] },
   { name: "Review & Build", steps: ["review-settings"] },
 ] as const;
 

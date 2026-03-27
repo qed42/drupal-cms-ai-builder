@@ -8,6 +8,17 @@ export interface BlueprintBundle {
   forms: FormDefinitions;
   header?: HeaderConfig;
   footer?: FooterConfig;
+  /** Manifest of ALL user-uploaded images (TASK-442). */
+  user_images?: UserImageManifestEntry[];
+}
+
+/** A single entry in the blueprint's user_images manifest. */
+export interface UserImageManifestEntry {
+  id: string;
+  file_url: string;
+  description: string;
+  tags: string[];
+  filename: string;
 }
 
 export interface HeaderConfig {
@@ -82,9 +93,11 @@ export interface PageSection {
   };
   container_background?: string;       // Container background color
   children?: PageSectionChild[];       // Child components for slots
-  // Transparency metadata (TASK-411, TASK-412)
+  // Transparency metadata (TASK-411, TASK-412, TASK-441)
   _meta?: {
-    imageQuery?: string;               // Pexels search query used for this section
+    imageQuery?: string;               // Search query used for this section
+    imageSource?: "user" | "stock";    // Provenance: user upload or Pexels stock
+    imageMatchScore?: number;          // Match confidence for user images (0-1)
     contentBrief?: string;             // Content brief from ContentPlan
     targetKeywords?: string[];         // Target keywords from ContentPlan page
   };

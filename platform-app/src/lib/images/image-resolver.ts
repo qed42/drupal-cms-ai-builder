@@ -1,8 +1,8 @@
 /**
- * Resolve stock images for a page's sections before component tree building.
- * Fetches from Pexels and injects Canvas-compatible image objects into
- * section props (and child props for composed sections).
+ * Resolve images for a page's sections before component tree building.
+ * Prioritizes user-uploaded images over Pexels stock photos when available.
  * TASK-388: Image Resolver Service
+ * TASK-441: User image priority
  */
 
 import type { PageSection, PageSectionChild, PageLayout } from "@/lib/blueprint/types";
@@ -10,6 +10,9 @@ import { getDefaultAdapter } from "@/lib/design-systems/setup";
 import { buildSearchQuery } from "@/lib/images/image-intent";
 import { searchStockImage } from "@/lib/images/stock-image-service";
 import { downloadStockImage } from "@/lib/images/image-downloader";
+import { rankImages } from "@/lib/images/image-matcher";
+import type { UserImage } from "@/lib/images/image-matcher";
+import type { ImageOrientation } from "@/lib/images/image-description-service";
 
 interface CanvasImageObject {
   src: string;
@@ -23,24 +26,29 @@ interface FetchResult {
   photoId: string;
 }
 
+/** Minimum score for a user image to be used instead of stock. */
+const MATCH_THRESHOLD = 0.25;
+
 /**
- * Resolve stock images for all sections in a page.
- * Mutates section.props (and section.children[].props) in place with
- * Canvas-compatible image objects. Failures are non-fatal — sections
- * without images fall back to placeholders in tree-builders.
+ * Resolve images for all sections in a page.
+ * When userImages is provided, tries user-uploaded images first and falls back
+ * to Pexels stock photos when no match exceeds the threshold.
+ * Mutates section.props (and section.children[].props) in place.
  */
 export async function resolveImagesForSections(
   siteId: string,
   sections: PageSection[],
   pageTitle: string,
   industry: string,
-  audience: string
+  audience: string,
+  userImages?: UserImage[]
 ): Promise<{ imagesAdded: number; imagesFailed: number; queriesBySection: Map<number, string> }> {
   const adapter = getDefaultAdapter();
   let imagesAdded = 0;
   let imagesFailed = 0;
   const queriesBySection = new Map<number, string>();
   const usedPhotoIds = new Set<string>();
+  const usedUserImageIds = new Set<string>();
 
   // Build a minimal PageLayout for buildSearchQuery context
   const pageContext: PageLayout = {
@@ -59,6 +67,32 @@ export async function resolveImagesForSections(
         if (isImagePopulated(section.props[propName])) continue;
 
         const query = buildSearchQuery(section, pageContext, industry, audience);
+
+        // Try user images first
+        const userMatch = tryUserImageMatch(
+          userImages,
+          query,
+          section.component_id,
+          mapping.orientation as ImageOrientation,
+          pageTitle,
+          mapping.dimensions.width,
+          mapping.dimensions.height,
+          usedUserImageIds
+        );
+
+        if (userMatch) {
+          section.props[propName] = userMatch.image;
+          usedUserImageIds.add(userMatch.imageId);
+          if (!section._meta) section._meta = {};
+          section._meta.imageQuery = query;
+          section._meta.imageSource = "user";
+          section._meta.imageMatchScore = userMatch.score;
+          queriesBySection.set(secIdx, query);
+          imagesAdded++;
+          continue;
+        }
+
+        // Pexels fallback
         const result = await fetchAndDownload(
           siteId,
           query,
@@ -71,9 +105,9 @@ export async function resolveImagesForSections(
         if (result) {
           section.props[propName] = result.image;
           usedPhotoIds.add(result.photoId);
-          // Store the image query in section _meta (TASK-411)
           if (!section._meta) section._meta = {};
           section._meta.imageQuery = query;
+          section._meta.imageSource = "stock";
           queriesBySection.set(secIdx, query);
           imagesAdded++;
         } else {
@@ -92,6 +126,32 @@ export async function resolveImagesForSections(
           if (isImagePopulated(child.props[propName])) continue;
 
           const query = buildSearchQuery(section, pageContext, industry, audience, child);
+
+          // Try user images first
+          const userMatch = tryUserImageMatch(
+            userImages,
+            query,
+            child.component_id,
+            childMapping.orientation as ImageOrientation,
+            pageTitle,
+            childMapping.dimensions.width,
+            childMapping.dimensions.height,
+            usedUserImageIds
+          );
+
+          if (userMatch) {
+            child.props[propName] = userMatch.image;
+            usedUserImageIds.add(userMatch.imageId);
+            if (!section._meta) section._meta = {};
+            section._meta.imageQuery = query;
+            section._meta.imageSource = "user";
+            section._meta.imageMatchScore = userMatch.score;
+            queriesBySection.set(secIdx, query);
+            imagesAdded++;
+            continue;
+          }
+
+          // Pexels fallback
           const result = await fetchAndDownload(
             siteId,
             query,
@@ -104,9 +164,9 @@ export async function resolveImagesForSections(
           if (result) {
             child.props[propName] = result.image;
             usedPhotoIds.add(result.photoId);
-            // Store query on parent section _meta for composed sections (TASK-411)
             if (!section._meta) section._meta = {};
             section._meta.imageQuery = query;
+            section._meta.imageSource = "stock";
             queriesBySection.set(secIdx, query);
             imagesAdded++;
           } else {
@@ -118,6 +178,46 @@ export async function resolveImagesForSections(
   }
 
   return { imagesAdded, imagesFailed, queriesBySection };
+}
+
+/**
+ * Try matching a user image to this slot. Returns the image object and metadata
+ * if a match exceeds the threshold, otherwise null.
+ */
+function tryUserImageMatch(
+  userImages: UserImage[] | undefined,
+  textContent: string,
+  componentType: string,
+  orientation: ImageOrientation,
+  pageTitle: string,
+  width: number,
+  height: number,
+  usedUserImageIds: Set<string>
+): { image: CanvasImageObject; imageId: string; score: number } | null {
+  if (!userImages || userImages.length === 0) return null;
+
+  const candidates = rankImages(
+    userImages,
+    { textContent, componentType, orientation, pageTitle },
+    usedUserImageIds
+  );
+
+  const best = candidates[0];
+  if (!best || best.score < MATCH_THRESHOLD) return null;
+
+  // Find the matched user image to get its URL and description
+  const matched = userImages.find((img) => img.id === best.imageId);
+  if (!matched) return null;
+
+  // User images are already local — use their existing upload URL
+  const userImg = matched as UserImage & { url?: string; file_url?: string };
+  const src = userImg.url || userImg.file_url || "";
+
+  return {
+    image: { src, alt: matched.description, width, height },
+    imageId: best.imageId,
+    score: best.score,
+  };
 }
 
 /**
