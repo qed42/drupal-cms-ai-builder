@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import { Input } from "@/components/ui/input";
 import InferenceCard from "@/components/onboarding/InferenceCard";
 import type { InferenceCardItem } from "@/components/onboarding/InferenceCard";
 import {
@@ -139,12 +140,12 @@ export default function FollowUpPage() {
 
             {q.inputType === "text" && (
               <>
-                <input
+                <Input
                   type="text"
                   value={answers[q.id] || ""}
                   onChange={(e) => updateAnswer(q.id, e.target.value)}
                   placeholder={q.placeholder}
-                  className="w-full rounded-xl bg-white/10 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none"
+                  inputSize="lg"
                 />
                 {!answers[q.id] && (
                   <p className="text-xs text-white/30 mt-1">

@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import InferenceCard from "@/components/onboarding/InferenceCard";
 import type { InferenceCardItem } from "@/components/onboarding/InferenceCard";
 import { TONE_SAMPLES } from "@/lib/onboarding/tone-samples";
@@ -137,7 +139,7 @@ export default function TonePage() {
                 className={`rounded-xl p-4 text-left transition-all border ${
                   selectedTone === tone.id
                     ? "bg-brand-500/20 border-brand-500 ring-1 ring-brand-500/50"
-                    : "bg-white/5 border-white/10 hover:border-white/30"
+                    : "bg-white/5 border-white/10 hover:border-white/30 hover:scale-[1.02]"
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -172,12 +174,12 @@ export default function TonePage() {
           <label className="block text-sm font-medium text-white/80 mb-2">
             What makes your business different from competitors?
           </label>
-          <input
+          <Input
             type="text"
             value={differentiators}
             onChange={(e) => setDifferentiators(e.target.value)}
             placeholder={getDifferentiatorPlaceholder(industry)}
-            className="w-full rounded-xl bg-white/10 px-4 py-3 text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none"
+            inputSize="lg"
           />
           <p className="text-xs text-white/30 text-right mt-1">
             {differentiators.length} characters
@@ -213,12 +215,12 @@ export default function TonePage() {
                 </p>
                 {referenceUrls.map((url, i) => (
                   <div key={i} className="flex items-center gap-2 mb-2">
-                    <input
+                    <Input
                       type="url"
                       value={url}
                       onChange={(e) => updateUrl(i, e.target.value)}
                       placeholder="https://example.com"
-                      className="flex-1 rounded-xl bg-white/10 px-4 py-2 text-sm text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none"
+                      className="flex-1"
                     />
                     {referenceUrls.length > 1 && (
                       <button
@@ -250,14 +252,14 @@ export default function TonePage() {
                 <p className="text-xs text-white/30 mb-2">
                   Paste existing marketing text so the AI can match your voice.
                 </p>
-                <textarea
+                <Textarea
                   value={existingCopy}
                   onChange={(e) =>
                     setExistingCopy(e.target.value.slice(0, 2000))
                   }
                   placeholder="Paste existing website copy, brochure text, or marketing material..."
                   rows={4}
-                  className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none resize-none"
+                  className="resize-none"
                 />
                 <p className="text-xs text-white/20 text-right mt-1">
                   {existingCopy.length}/2,000

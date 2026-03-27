@@ -22,6 +22,20 @@ export default function ProgressStepper({
 
   return (
     <>
+      <style>{`
+        @keyframes step-complete {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.4); }
+          100% { transform: scale(1); }
+        }
+        .step-completed {
+          animation: step-complete 300ms ease;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .step-completed { animation: none; }
+        }
+      `}</style>
+
       {/* Desktop: dots + labels + connectors */}
       <div className="hidden md:flex items-start justify-center w-full max-w-lg mx-auto">
         {STEP_SECTIONS.map((section, i) => {
@@ -60,7 +74,7 @@ export default function ProgressStepper({
                   {/* Dot */}
                   <div className="relative flex items-center justify-center">
                     {isCompleted && (
-                      <div className="w-3 h-3 rounded-full bg-brand-500" />
+                      <div className="w-3 h-3 rounded-full bg-brand-500 step-completed" />
                     )}
                     {isActive && (
                       <>

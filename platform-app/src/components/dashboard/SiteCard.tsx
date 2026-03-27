@@ -14,13 +14,13 @@ import { downloadBlueprint } from "@/lib/download";
 import ImpactSummary from "./ImpactSummary";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  onboarding: { label: "Setting Up", color: "text-amber-400", bg: "bg-amber-400/10" },
+  onboarding: { label: "Setting Up", color: "text-warning", bg: "bg-warning/10" },
   generating: { label: "Generating", color: "text-brand-400", bg: "bg-brand-400/10" },
-  blueprint_ready: { label: "Blueprint Ready", color: "text-emerald-400", bg: "bg-emerald-400/10" },
-  provisioning: { label: "Provisioning", color: "text-blue-400", bg: "bg-blue-400/10" },
-  live: { label: "Live", color: "text-emerald-400", bg: "bg-emerald-400/10" },
-  provisioning_failed: { label: "Setup Failed", color: "text-red-400", bg: "bg-red-400/10" },
-  suspended: { label: "Suspended", color: "text-red-400", bg: "bg-red-400/10" },
+  blueprint_ready: { label: "Blueprint Ready", color: "text-success", bg: "bg-success/10" },
+  provisioning: { label: "Provisioning", color: "text-info", bg: "bg-info/10" },
+  live: { label: "Live", color: "text-success", bg: "bg-success/10" },
+  provisioning_failed: { label: "Setup Failed", color: "text-error", bg: "bg-error/10" },
+  suspended: { label: "Suspended", color: "text-error", bg: "bg-error/10" },
   expired: { label: "Expired", color: "text-gray-400", bg: "bg-gray-400/10" },
 };
 

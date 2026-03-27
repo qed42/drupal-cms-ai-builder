@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import { Textarea } from "@/components/ui/textarea";
 import InferenceCard from "@/components/onboarding/InferenceCard";
 import type { InferenceCardItem } from "@/components/onboarding/InferenceCard";
 import { INDUSTRY_LABELS } from "@/lib/ai/prompts";
@@ -166,7 +167,7 @@ export default function IdeaPage() {
       emptyStateText="Describe your business and Archie will identify your industry, services, and compliance needs."
     >
       <div className="w-full">
-        <textarea
+        <Textarea
           ref={textareaRef}
           value={idea}
           onChange={(e) => {
@@ -182,7 +183,8 @@ export default function IdeaPage() {
           onBlur={handleBlur}
           placeholder="Describe your project or business..."
           rows={4}
-          className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
+          inputSize="xl"
+          className="resize-none"
           autoFocus
         />
         <div className="flex items-center justify-between mt-2 px-1">

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import ProgressStepper from "./ProgressStepper";
 import StepIcon from "./StepIcon";
 import ArchiePanel from "./ArchiePanel";
-import { getPrevStep } from "@/lib/onboarding-steps";
+import { getPrevStep, getTipsForStep } from "@/lib/onboarding-steps";
 
 interface StepLayoutProps {
   step: string;
@@ -38,6 +38,7 @@ export default function StepLayout({
   const searchParams = useSearchParams();
   const siteId = searchParams.get("siteId");
   const prevStep = getPrevStep(step);
+  const tips = getTipsForStep(step);
 
   // Auto-detect layout mode if not explicitly set
   const mode = layoutMode ?? (previewSlot ? "split" : "centered");
@@ -142,7 +143,7 @@ export default function StepLayout({
             </div>
           ) : (
             <div className="pt-8">
-              <ArchiePanel isEmpty={!insightSlot} emptyStateText={emptyStateText}>
+              <ArchiePanel isEmpty={!insightSlot} emptyStateText={emptyStateText} tips={tips}>
                 {insightSlot}
               </ArchiePanel>
             </div>

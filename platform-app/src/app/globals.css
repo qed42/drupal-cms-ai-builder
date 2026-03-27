@@ -81,6 +81,12 @@
   --color-brand-900: #1E1B4B;
   --color-brand-950: #0F0D2E;
 
+  /* Semantic status colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
   /* Accent (cyan) — kept as brand-specific scale, separate from shadcn --accent */
   --color-accent-50: #ECFEFF;
   --color-accent-100: #CFFAFE;

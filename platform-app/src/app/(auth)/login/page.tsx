@@ -75,7 +75,7 @@ function LoginForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-12"
+            inputSize="lg"
             placeholder="you@example.com"
           />
         </div>
@@ -90,7 +90,7 @@ function LoginForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="h-12"
+            inputSize="lg"
             placeholder="Your password"
           />
         </div>

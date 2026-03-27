@@ -28,7 +28,7 @@ export default function DesignOptionCard({
           ? "border-white/10 bg-white/5 opacity-50 cursor-not-allowed"
           : selected
           ? "border-brand-500 bg-brand-500/10"
-          : "border-white/10 bg-white/5 hover:border-white/30 cursor-pointer"
+          : "border-white/10 bg-white/5 hover:border-white/30 hover:scale-[1.02] cursor-pointer"
       }`}
     >
       <RadioGroupItem

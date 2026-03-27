@@ -94,7 +94,7 @@ export default function RegisterPage() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="h-12"
+            inputSize="lg"
             placeholder="Your name"
           />
         </div>
@@ -109,7 +109,7 @@ export default function RegisterPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-12"
+            inputSize="lg"
             placeholder="you@example.com"
           />
         </div>
@@ -125,7 +125,7 @@ export default function RegisterPage() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="h-12"
+            inputSize="lg"
             placeholder="Min. 8 characters"
           />
         </div>

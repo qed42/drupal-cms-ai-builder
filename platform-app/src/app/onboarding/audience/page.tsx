@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import StepLayout from "@/components/onboarding/StepLayout";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import InferenceCard from "@/components/onboarding/InferenceCard";
 import type { InferenceCardItem } from "@/components/onboarding/InferenceCard";
 import { useOnboarding } from "@/hooks/useOnboarding";
@@ -115,13 +117,13 @@ export default function AudiencePage() {
       emptyStateText="I'm analyzing your audience suggestions..."
     >
       <div className="w-full space-y-4">
-        <input
+        <Input
           ref={inputRef}
           type="text"
           value={audience}
           onChange={(e) => setAudience(e.target.value)}
           placeholder="Describe your ideal audience..."
-          className="w-full rounded-xl bg-white/10 px-6 py-4 text-lg text-white placeholder-white/30 border border-white/10 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          inputSize="xl"
           autoFocus
         />
         <div className="flex items-center justify-between px-1">
@@ -149,9 +151,13 @@ export default function AudiencePage() {
 
         {/* AI-suggested audiences */}
         {loadingSuggestions && (
-          <div className="flex items-center justify-center gap-2 py-2">
-            <div className="w-3.5 h-3.5 border-2 border-brand-400/40 border-t-brand-400 rounded-full animate-spin" />
-            <span className="text-xs text-white/40">Suggesting audiences...</span>
+          <div className="space-y-2">
+            <p className="text-xs text-white/30 text-center">Finding audiences...</p>
+            <div className="flex flex-wrap gap-2 justify-center">
+              <Skeleton className="h-8 w-32 rounded-full" />
+              <Skeleton className="h-8 w-40 rounded-full" />
+              <Skeleton className="h-8 w-36 rounded-full" />
+            </div>
           </div>
         )}
         {!loadingSuggestions && suggestions.length > 0 && (
