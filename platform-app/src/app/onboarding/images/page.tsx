@@ -208,7 +208,7 @@ export default function ImagesPage() {
       use_stock_only: useStockOnly,
     });
     if (!res.ok) return false;
-    router.push(buildStepUrl("follow-up"));
+    router.push(buildStepUrl("details"));
     return true;
   }
 
@@ -258,7 +258,7 @@ export default function ImagesPage() {
       step="images"
       title="Show us your business"
       subtitle="Drop your photos here — Archie will figure out where they work best on your site."
-      buttonLabel="Next: Brand & Style"
+      buttonLabel="Next: Content Details"
       onSubmit={handleSubmit}
       disabled={hasUploading}
       insightSlot={inferenceSlot}

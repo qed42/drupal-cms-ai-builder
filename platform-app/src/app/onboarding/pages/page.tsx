@@ -127,7 +127,7 @@ export default function PagesPage() {
       })),
     });
     if (res.ok) {
-      router.push(buildStepUrl("design"));
+      router.push(buildStepUrl("images"));
       return true;
     }
     return false;

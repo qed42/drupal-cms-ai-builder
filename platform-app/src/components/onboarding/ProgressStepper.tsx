@@ -7,6 +7,21 @@ import {
   getStepIndex,
 } from "@/lib/onboarding-steps";
 
+function Dot({ state }: { state: "completed" | "active" | "upcoming" }) {
+  if (state === "completed") {
+    return <div className="w-3 h-3 rounded-full bg-brand-500 shrink-0" />;
+  }
+  if (state === "active") {
+    return (
+      <div className="relative w-3 h-3 shrink-0">
+        <div className="w-3 h-3 rounded-full border-2 border-brand-400 bg-transparent" />
+        <div className="absolute inset-0 m-auto w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
+      </div>
+    );
+  }
+  return <div className="w-3 h-3 rounded-full bg-white/20 shrink-0" />;
+}
+
 export default function ProgressStepper({
   currentStep,
 }: {
@@ -20,36 +35,42 @@ export default function ProgressStepper({
 
   const { sectionIndex, stepIndexInSection, sectionStepCount } = sectionInfo;
 
+  // Build flat array of elements: [dot, connector, dot, connector, dot, connector, dot]
+  const dotElements: React.ReactNode[] = [];
+  STEP_SECTIONS.forEach((_, i) => {
+    if (i > 0) {
+      dotElements.push(
+        <div
+          key={`c-${i}`}
+          className={`h-0.5 flex-1 ${
+            i <= sectionIndex ? "bg-brand-500" : "bg-white/10"
+          }`}
+        />
+      );
+    }
+    const state = i < sectionIndex ? "completed" : i === sectionIndex ? "active" : "upcoming";
+    dotElements.push(<Dot key={`d-${i}`} state={state} />);
+  });
+
   return (
     <>
-      <style>{`
-        @keyframes step-complete {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.4); }
-          100% { transform: scale(1); }
-        }
-        .step-completed {
-          animation: step-complete 300ms ease;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .step-completed { animation: none; }
-        }
-      `}</style>
+      {/* Desktop: dots + connectors, then labels underneath */}
+      <div className="hidden md:block w-full max-w-md mx-auto">
+        {/* Dots row */}
+        <div className="flex items-center w-full px-6">
+          {dotElements}
+        </div>
 
-      {/* Desktop: dots + labels + connectors */}
-      <div className="hidden md:flex items-start justify-center w-full max-w-lg mx-auto">
-        {STEP_SECTIONS.map((section, i) => {
-          const isCompleted = i < sectionIndex;
-          const isActive = i === sectionIndex;
-          const isUpcoming = i > sectionIndex;
+        {/* Labels row — evenly spaced to sit under each dot */}
+        <div className="grid mt-2.5" style={{ gridTemplateColumns: `repeat(${STEP_SECTIONS.length}, 1fr)` }}>
+          {STEP_SECTIONS.map((section, i) => {
+            const isCompleted = i < sectionIndex;
+            const isActive = i === sectionIndex;
 
-          return (
-            <div key={section.name} className="flex items-start flex-1">
-              {/* Section column */}
-              <div className="flex flex-col items-center flex-1">
-                {/* Label above dot */}
+            return (
+              <div key={section.name} className="flex flex-col items-center text-center">
                 <span
-                  className={`text-xs font-medium mb-2 ${
+                  className={`text-[11px] font-medium leading-none ${
                     isActive
                       ? "text-white"
                       : isCompleted
@@ -59,61 +80,18 @@ export default function ProgressStepper({
                 >
                   {section.name}
                 </span>
-
-                {/* Dot + connector row */}
-                <div className="flex items-center w-full">
-                  {/* Left connector (except first) */}
-                  {i > 0 && (
-                    <div
-                      className={`h-0.5 flex-1 ${
-                        i <= sectionIndex ? "bg-brand-500" : "bg-white/10"
-                      }`}
-                    />
-                  )}
-
-                  {/* Dot */}
-                  <div className="relative flex items-center justify-center">
-                    {isCompleted && (
-                      <div className="w-3 h-3 rounded-full bg-brand-500 step-completed" />
-                    )}
-                    {isActive && (
-                      <>
-                        <div className="w-3 h-3 rounded-full border-2 border-brand-400 bg-transparent" />
-                        <div className="absolute w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
-                      </>
-                    )}
-                    {isUpcoming && (
-                      <div className="w-3 h-3 rounded-full bg-white/20" />
-                    )}
-                  </div>
-
-                  {/* Right connector (except last) */}
-                  {i < STEP_SECTIONS.length - 1 && (
-                    <div
-                      className={`h-0.5 flex-1 ${
-                        i < sectionIndex ? "bg-brand-500" : "bg-white/10"
-                      }`}
-                    />
-                  )}
-                </div>
-
-                {/* Step fraction below active dot */}
-                <span
-                  className={`text-[10px] mt-1.5 ${
-                    isActive ? "text-white/50" : "text-transparent"
-                  }`}
-                >
-                  {isActive
-                    ? `${stepIndexInSection + 1} of ${sectionStepCount}`
-                    : "\u00A0"}
-                </span>
+                {isActive && (
+                  <span className="text-[10px] text-white/40 mt-1">
+                    {stepIndexInSection + 1} of {sectionStepCount}
+                  </span>
+                )}
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
-      {/* Mobile: single-line label + progress bar */}
+      {/* Mobile: label + progress bar */}
       <div className="flex md:hidden flex-col items-center gap-2 w-full max-w-xs mx-auto">
         <p className="text-xs text-white/50">
           {sectionInfo.sectionName} &middot; Step {stepIndexInSection + 1} of{" "}

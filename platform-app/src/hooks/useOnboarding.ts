@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useCallback } from "react";
+import { resolveStepSlug } from "@/lib/onboarding-steps";
 
 /**
  * Hook that scopes all onboarding API calls to a specific siteId
@@ -14,7 +15,8 @@ export function useOnboarding() {
 
   const buildStepUrl = useCallback(
     (step: string) => {
-      const base = `/onboarding/${step}`;
+      const resolved = resolveStepSlug(step);
+      const base = `/onboarding/${resolved}`;
       return siteId ? `${base}?siteId=${siteId}` : base;
     },
     [siteId]

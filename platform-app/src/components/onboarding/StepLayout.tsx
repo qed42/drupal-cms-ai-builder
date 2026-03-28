@@ -15,6 +15,7 @@ interface StepLayoutProps {
   buttonLabel: string;
   onSubmit: () => Promise<boolean>;
   disabled?: boolean;
+  submitting?: boolean;
   children: React.ReactNode;
   layoutMode?: "centered" | "split" | "summary";
   previewSlot?: React.ReactNode;
@@ -29,6 +30,7 @@ export default function StepLayout({
   buttonLabel,
   onSubmit,
   disabled,
+  submitting,
   children,
   layoutMode,
   previewSlot,
@@ -67,9 +69,18 @@ export default function StepLayout({
           Back
         </Button>
       )}
-      <Button type="submit" variant="cta" size="lg" disabled={disabled}>
-        {buttonLabel}
-        <span className="text-lg">&rarr;</span>
+      <Button type="submit" variant="cta" size="lg" disabled={disabled || submitting}>
+        {submitting ? (
+          <>
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            {buttonLabel}
+          </>
+        ) : (
+          <>
+            {buttonLabel}
+            <span className="text-lg">&rarr;</span>
+          </>
+        )}
       </Button>
     </div>
   );
