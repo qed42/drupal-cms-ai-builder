@@ -1,27 +1,36 @@
-# TASK-461: Platform App Production Dockerfile
+# TASK-461: Upgrade Platform Dockerfile.prod to Multi-Stage + Startup Script
 
 **Story:** US-086
-**Effort:** S
+**Effort:** M (upgraded from S)
 **Milestone:** M23 — AWS Deployment
+**Updated:** 2026-03-28 — Existing Dockerfile.prod needs significant rework, effort upgraded S→M.
 
 ## Description
-Create or update the platform app's production Dockerfile for AWS deployment. Ensure it builds the Next.js app in standalone mode, runs Prisma migrations on startup, and connects to the correct production services.
+Rewrite the existing `platform-app/Dockerfile.prod` as a multi-stage production build with standalone Next.js output, automatic Prisma migration on startup, and proper runtime dependencies for the provisioning engine.
+
+## Current State
+`Dockerfile.prod` exists as a single-stage build: installs all deps, generates Prisma client, builds Next.js, runs `npm start`. Missing: standalone mode, multi-stage (large image), no startup script, no Prisma migrate, no signal handling.
 
 ## Implementation Details
-1. Create/update `platform-app/Dockerfile.prod` for multi-stage production build
-2. Stage 1: Install dependencies + build Next.js in standalone output mode
-3. Stage 2: Minimal runtime image with Node.js, built artifacts, and Prisma client
-4. Add startup script that runs `prisma migrate deploy` before starting Next.js
-5. Ensure provisioning engine's Node.js dependencies are available at runtime
-6. Configure proper signal handling for graceful shutdown
+1. **Stage 1 (builder):** `node:22-alpine` — install deps, generate Prisma client, build Next.js with `output: "standalone"` in `next.config.js`
+2. **Stage 2 (runner):** `node:22-alpine` — copy standalone output, Prisma client + migrations, `docker-cli` (for provisioning)
+3. Create `platform-app/scripts/start-prod.sh`:
+   - Wait for postgres readiness (retry loop, max 30s)
+   - Run `npx prisma migrate deploy`
+   - Start Next.js standalone server with `exec node server.js` (proper PID 1 signal handling)
+4. Ensure `@space-ai/shared` workspace package is available at runtime (standalone should bundle it)
+5. Copy provisioning engine source + deps to runtime stage (it spawns child processes)
+6. Keep `docker-cli` in runtime for provisioning engine's container management
 
 ## Acceptance Criteria
 - [ ] `docker build -f platform-app/Dockerfile.prod .` succeeds
 - [ ] Container starts Next.js on port 3000 in production mode
-- [ ] Prisma migrations run automatically on startup
+- [ ] Prisma migrations run automatically on startup (verified by logs)
 - [ ] Provisioning engine can spawn child processes from within the container
-- [ ] Image size is under 500MB
+- [ ] Image size is under 500MB (multi-stage should achieve ~200-300MB)
+- [ ] Graceful shutdown on SIGTERM (no zombie processes)
 
 ## Files
-- `platform-app/Dockerfile.prod` (new or edit)
-- `platform-app/scripts/start-prod.sh` (new — startup script)
+- `platform-app/Dockerfile.prod` (rewrite)
+- `platform-app/scripts/start-prod.sh` (new)
+- `platform-app/next.config.js` or `next.config.mjs` (edit — add `output: "standalone"`)
