@@ -1,9 +1,98 @@
 services:
+  caddy:
+    build:
+      context: ./caddy
+      dockerfile: Dockerfile
+    container_name: ai-builder-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - GODADDY_API_KEY=${GODADDY_API_KEY}
+      - GODADDY_API_SECRET=${GODADDY_API_SECRET}
+    depends_on:
+      - platform
+      - drupal-web
+
   platform:
     build:
       context: .
       dockerfile: platform-app/Dockerfile.prod
+    container_name: ai-builder-platform
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://space:${PG_PASSWORD}@postgres:5432/space_platform
+      - NEXTAUTH_URL=https://app.drupalcms.app
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - JWT_SHARED_SECRET=${JWT_SHARED_SECRET}
+      - PROVISION_CALLBACK_KEY=${PROVISION_CALLBACK_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - SITE_DOMAIN_SUFFIX=drupalcms.app
+      - DDEV_WEB_CONTAINER=ai-builder-drupal-web
     volumes:
       - ./provisioning:/provisioning
-      - ./drupal-site:/drupal-site
+      - drupal_site:/drupal-site
       - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: ai-builder-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: space_platform
+      POSTGRES_USER: space
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U space -d space_platform"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  drupal-web:
+    build:
+      context: ./drupal-site
+      dockerfile: Dockerfile
+    container_name: ai-builder-drupal-web
+    restart: unless-stopped
+    volumes:
+      - drupal_site:/var/www/html
+      - drupal_files:/var/www/html/web/sites
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  mariadb:
+    image: mariadb:11.8
+    container_name: ai-builder-mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  caddy_data:
+  caddy_config:
+  pg_data:
+  mariadb_data:
+  drupal_site:
+  drupal_files:

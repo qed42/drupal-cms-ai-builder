@@ -67,7 +67,7 @@ export async function applyBrandStep(
 
   // Wait for the file to be visible inside the DDEV web container.
   // Docker shared volumes can have multi-second propagation delays.
-  const ddevWebContainer = "ddev-ai-site-builder-web";
+  const ddevWebContainer = process.env.DDEV_WEB_CONTAINER || "ddev-ai-site-builder-web";
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       await execFileAsync("docker", [

@@ -1,0 +1,21 @@
+{
+    email admin@drupalcms.app
+}
+
+app.drupalcms.app {
+    tls {
+        dns godaddy {
+            api_token {env.GODADDY_API_KEY}:{env.GODADDY_API_SECRET}
+        }
+    }
+    reverse_proxy platform:3000
+}
+
+*.drupalcms.app {
+    tls {
+        dns godaddy {
+            api_token {env.GODADDY_API_KEY}:{env.GODADDY_API_SECRET}
+        }
+    }
+    reverse_proxy drupal-web:80
+}

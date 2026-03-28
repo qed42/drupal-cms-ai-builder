@@ -1,10 +1,13 @@
-FROM node:22-alpine
+##
+## Stage 1: Build
+##
+FROM node:22-alpine AS builder
 
-RUN apk add --no-cache docker-cli
+RUN apk add --no-cache libc6-compat
 
 WORKDIR /workspace
 
-# Copy root workspace config and package directories
+# Copy root workspace config and shared packages
 COPY package.json ./
 COPY packages/ ./packages/
 COPY platform-app/package*.json ./platform-app/
@@ -12,16 +15,43 @@ COPY platform-app/package*.json ./platform-app/
 # Install all workspace dependencies
 RUN npm install
 
+# Copy platform app source
 WORKDIR /workspace/platform-app
-
 COPY platform-app/prisma ./prisma
 RUN npx prisma generate
-
 COPY platform-app/ .
 
-# Build the Next.js app
+# Build Next.js in standalone mode
 RUN npm run build
+
+##
+## Stage 2: Production Runtime
+##
+FROM node:22-alpine AS runner
+
+RUN apk add --no-cache docker-cli libc6-compat
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Copy standalone Next.js output
+COPY --from=builder /workspace/platform-app/.next/standalone ./
+COPY --from=builder /workspace/platform-app/.next/static ./platform-app/.next/static
+COPY --from=builder /workspace/platform-app/public ./platform-app/public
+
+# Copy Prisma client and migrations for runtime migrate
+COPY --from=builder /workspace/platform-app/prisma ./platform-app/prisma
+COPY --from=builder /workspace/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /workspace/node_modules/@prisma ./node_modules/@prisma
+
+# Copy provisioning engine dependencies (spawned as child process)
+COPY --from=builder /workspace/node_modules ./node_modules
+
+# Startup script
+COPY platform-app/scripts/start-prod.sh /app/start-prod.sh
+RUN chmod +x /app/start-prod.sh
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+CMD ["/app/start-prod.sh"]
