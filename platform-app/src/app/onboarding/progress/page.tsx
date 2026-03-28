@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import PipelineProgress from "@/components/onboarding/PipelineProgress";
+import ActivityLog from "@/components/onboarding/ActivityLog";
 import { downloadBlueprint } from "@/lib/download";
 
 interface PhaseStatus {
@@ -12,6 +13,8 @@ interface PhaseStatus {
   durationMs?: number;
   summary?: string;
   error?: string;
+  messages?: string[];
+  artifacts?: Record<string, unknown>;
 }
 
 interface PipelineData {
@@ -26,6 +29,13 @@ const DEFAULT_PIPELINE: PipelineData = {
   plan: { status: "pending" },
   generate: { status: "pending" },
   enhance: { status: "pending" },
+};
+
+const PHASE_LABELS: Record<string, string> = {
+  research: "Analyzing your business",
+  plan: "Designing your pages",
+  generate: "Writing your content",
+  enhance: "Adding images",
 };
 
 export default function ProgressPage() {
@@ -154,14 +164,18 @@ export default function ProgressPage() {
     setTimeout(() => setRetrying(false), 3000);
   }
 
-  // Extract page names from the generate phase summary if available
-  const pageNames: string[] = [];
-  if (done && pipeline.generate?.summary) {
-    const match = pipeline.generate.summary.match(/pages?:\s*(.+)/i);
-    if (match) {
-      pageNames.push(...match[1].split(",").map((s) => s.trim()).filter(Boolean));
-    }
-  }
+  // Build ActivityLog phases from pipeline data
+  const activityPhases = (["research", "plan", "generate", "enhance"] as const).map((key) => {
+    const phase = pipeline[key];
+    return {
+      key,
+      label: PHASE_LABELS[key],
+      status: phase?.status ?? ("pending" as const),
+      messages: phase?.messages ?? [],
+    };
+  });
+
+  const hasMessages = activityPhases.some((p) => p.messages.length > 0);
 
   function getHeading(): string {
     if (done) return `${siteName || "Your website"} is ready!`;
@@ -177,8 +191,9 @@ export default function ProgressPage() {
     return "This usually takes 2-3 minutes. You can stay on this page or come back later.";
   }
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-xl mx-auto px-6 text-center">
+  // Left column content (shared between desktop and mobile)
+  const leftContent = (
+    <>
       {/* Animated icon */}
       <div className="mb-8">
         {!done && !error && (
@@ -200,11 +215,11 @@ export default function ProgressPage() {
         )}
       </div>
 
-      <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+      <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 text-center lg:text-left">
         {getHeading()}
       </h1>
 
-      <p className="text-white/60 text-lg mb-8 max-w-md">
+      <p className="text-white/60 text-lg mb-8 max-w-md text-center lg:text-left">
         {getSubheading()}
       </p>
 
@@ -216,6 +231,13 @@ export default function ProgressPage() {
           error={error}
         />
       </div>
+
+      {/* Mobile: collapsed activity log */}
+      {hasMessages && (
+        <div className="w-full mb-8 lg:hidden">
+          <ActivityLog phases={activityPhases} maxVisible={3} />
+        </div>
+      )}
 
       {/* Provisioning step progress */}
       {siteStatus === "provisioning" && provisioningProgress && (
@@ -251,22 +273,6 @@ export default function ProgressPage() {
         </div>
       )}
 
-      {/* Completion summary — what was generated */}
-      {done && pageNames.length > 0 && (
-        <div className="w-full rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 mb-6">
-          <p className="text-sm text-emerald-400 font-medium mb-2">
-            {pageNames.length} page{pageNames.length !== 1 ? "s" : ""} generated
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {pageNames.map((name, i) => (
-              <span key={i} className="px-2 py-0.5 rounded-md bg-white/10 text-xs text-white/60">
-                {name}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="flex items-center gap-4">
         {done && siteStatus === "review" && siteId && (
           <Button
@@ -297,6 +303,33 @@ export default function ProgressPage() {
             Try Again
           </Button>
         )}
+      </div>
+    </>
+  );
+
+  return (
+    <div className="flex items-start justify-center min-h-[60vh] w-full max-w-5xl mx-auto px-6 pt-8">
+      {/* Desktop: two-column split layout */}
+      <div className="hidden lg:grid grid-cols-[55fr_45fr] gap-8 w-full">
+        {/* Left column: pipeline progress + actions */}
+        <div className="flex flex-col items-center lg:items-start">
+          {leftContent}
+        </div>
+
+        {/* Right column: activity log (sticky) */}
+        {hasMessages && (
+          <div className="sticky top-12 self-start">
+            <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">
+              Archie&apos;s Workshop
+            </h2>
+            <ActivityLog phases={activityPhases} />
+          </div>
+        )}
+      </div>
+
+      {/* Mobile: single column */}
+      <div className="lg:hidden flex flex-col items-center w-full max-w-xl">
+        {leftContent}
       </div>
     </div>
   );

@@ -51,6 +51,8 @@ interface PipelinePhaseStatus {
   durationMs?: number;
   summary?: string;
   error?: string;
+  messages?: string[];
+  artifacts?: Record<string, unknown>;
 }
 
 export async function GET(req: NextRequest) {
@@ -131,7 +133,9 @@ export async function GET(req: NextRequest) {
   })();
 
   // Build pipeline status object
-  const pipeline = await buildPipelineStatus(site.id, pipelinePhase, site.pipelineError, onboardingPages);
+  const pipelineMessages = (site as Record<string, unknown>).pipelineMessages as Record<string, string[]> | null;
+  const pipelineArtifacts = (site as Record<string, unknown>).pipelineArtifacts as Record<string, Record<string, unknown>> | null;
+  const pipeline = await buildPipelineStatus(site.id, pipelinePhase, site.pipelineError, onboardingPages, pipelineMessages, pipelineArtifacts);
 
   return NextResponse.json({
     siteId: site.id,
@@ -154,7 +158,9 @@ async function buildPipelineStatus(
   siteId: string,
   currentPhase: string | null,
   pipelineError: string | null,
-  onboardingPages: string[]
+  onboardingPages: string[],
+  pipelineMessages?: Record<string, string[]> | null,
+  pipelineArtifacts?: Record<string, Record<string, unknown>> | null
 ): Promise<Record<string, PipelinePhaseStatus>> {
   // Fetch latest research brief and content plan for this site
   const [researchBrief, contentPlan] = await Promise.all([
@@ -215,7 +221,18 @@ async function buildPipelineStatus(
   // Enhance phase status (stock images)
   const enhance: PipelinePhaseStatus = buildEnhancePhaseStatus(currentPhase, pipelineError);
 
-  return { research, plan, generate, enhance };
+  // Attach messages and artifacts to each phase
+  const phases = { research, plan, generate, enhance };
+  for (const [key, phase] of Object.entries(phases)) {
+    if (pipelineMessages?.[key]?.length) {
+      phase.messages = pipelineMessages[key];
+    }
+    if (pipelineArtifacts?.[key]) {
+      phase.artifacts = pipelineArtifacts[key];
+    }
+  }
+
+  return phases;
 }
 
 function buildPhaseStatus(

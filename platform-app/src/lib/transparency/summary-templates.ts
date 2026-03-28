@@ -124,7 +124,7 @@ export function buildGenerateProgressSummary(
  */
 export function buildCompletionSummary(
   pageCount: number,
-  wordCount: number,
+  sectionCount: number,
   imageCount: number,
   keywordCount: number
 ): string {
@@ -134,8 +134,8 @@ export function buildCompletionSummary(
     `Generated ${pageCount} page${pageCount === 1 ? "" : "s"}`
   );
 
-  if (wordCount > 0) {
-    parts.push(`~${wordCount.toLocaleString()} words`);
+  if (sectionCount > 0) {
+    parts.push(`${sectionCount} content section${sectionCount === 1 ? "" : "s"}`);
   }
 
   if (imageCount > 0) {
