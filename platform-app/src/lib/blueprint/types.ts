@@ -163,6 +163,16 @@ export interface OnboardingData {
   // Design system selection (M19)
   designSystemId?: string;
 
+  // Generation mode (M26): design_system uses SDC adapters, code_components uses Canvas Code Components
+  generationMode?: "design_system" | "code_components";
+
+  // Design preferences for code_components mode (M26)
+  designPreferences?: {
+    animationLevel: "subtle" | "moderate" | "dramatic";
+    visualStyle: "minimal" | "bold" | "elegant" | "playful";
+    interactivity: "static" | "scroll_effects" | "interactive";
+  };
+
   // v2 enrichment fields (US-033, US-034, US-035, US-036)
   followUpAnswers?: Record<string, string>;
   differentiators?: string;

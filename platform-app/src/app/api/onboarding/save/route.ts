@@ -47,13 +47,23 @@ export async function POST(req: NextRequest) {
   const mergedData = { ...existingData, ...data };
 
   // Save core onboarding data first — this must never fail
+  const updatePayload: Record<string, unknown> = {
+    step,
+    data: mergedData,
+    completed: false, // Re-open session if user is saving new data
+  };
+
+  // Persist generation mode and design preferences as dedicated columns (M26)
+  if (data?.generationMode) {
+    updatePayload.generationMode = data.generationMode;
+  }
+  if (data?.designPreferences) {
+    updatePayload.designPreferences = data.designPreferences;
+  }
+
   await prisma.onboardingSession.update({
     where: { id: onboarding.id },
-    data: {
-      step,
-      data: mergedData,
-      completed: false, // Re-open session if user is saving new data
-    },
+    data: updatePayload,
   });
 
   // Invalidate research preview cache if preview-relevant fields changed.

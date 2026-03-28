@@ -38,6 +38,12 @@ export default function StylePage() {
   const router = useRouter();
   const { buildStepUrl, resume, save } = useOnboarding();
 
+  // Section 0: Generation Mode
+  const [generationMode, setGenerationMode] = useState<"design_system" | "code_components">("design_system");
+  const [animationLevel, setAnimationLevel] = useState<"subtle" | "moderate" | "dramatic">("subtle");
+  const [visualStyle, setVisualStyle] = useState<"minimal" | "bold" | "elegant" | "playful">("minimal");
+  const [interactivity, setInteractivity] = useState<"static" | "scroll_effects" | "interactive">("static");
+
   // Section 1: Theme
   const [selectedTheme, setSelectedTheme] = useState("space_ds");
 
@@ -59,6 +65,13 @@ export default function StylePage() {
   useEffect(() => {
     resume()
       .then((d) => {
+        if (d.data?.generationMode) setGenerationMode(d.data.generationMode);
+        if (d.data?.designPreferences) {
+          const prefs = d.data.designPreferences;
+          if (prefs.animationLevel) setAnimationLevel(prefs.animationLevel);
+          if (prefs.visualStyle) setVisualStyle(prefs.visualStyle);
+          if (prefs.interactivity) setInteractivity(prefs.interactivity);
+        }
         if (d.data?.designSystemId) setSelectedTheme(d.data.designSystemId);
         if (d.data?.design_source) setDesignSource(d.data.design_source);
         if (d.data?.industry) setIndustry(d.data.industry);
@@ -96,6 +109,10 @@ export default function StylePage() {
     const cleanUrls = referenceUrls.filter((u) => u.trim() !== "");
 
     const res = await save("style", {
+      generationMode,
+      designPreferences: generationMode === "code_components"
+        ? { animationLevel, visualStyle, interactivity }
+        : undefined,
       designSystemId: selectedTheme,
       design_source: designSource,
       tone: selectedTone,
@@ -171,6 +188,111 @@ export default function StylePage() {
       emptyStateText="Pick a theme and tone, and I'll show you how they come together..."
     >
       <div className="space-y-8 text-left">
+        {/* Section 0: Design Approach */}
+        <div className="scroll-mt-24">
+          <label className="block text-sm font-medium text-white/80 mb-3">
+            Design approach
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setGenerationMode("design_system")}
+              className={`text-left p-5 rounded-xl border-2 transition-all cursor-pointer hover:scale-[1.02] ${
+                generationMode === "design_system"
+                  ? "border-brand-500 bg-white/10"
+                  : "border-white/10 bg-white/5 hover:border-white/20"
+              }`}
+            >
+              <h3 className="text-sm font-semibold text-white mb-1">Polished & Consistent</h3>
+              <p className="text-white/50 text-xs mb-2">
+                Uses a curated design system with pre-built components for a professional, cohesive look.
+              </p>
+              <ul className="space-y-0.5">
+                <li className="text-white/40 text-[11px] flex items-center gap-1">
+                  <span className="text-brand-400">&#10003;</span> Proven layouts
+                </li>
+                <li className="text-white/40 text-[11px] flex items-center gap-1">
+                  <span className="text-brand-400">&#10003;</span> Fast generation
+                </li>
+                <li className="text-white/40 text-[11px] flex items-center gap-1">
+                  <span className="text-brand-400">&#10003;</span> Brand-consistent
+                </li>
+              </ul>
+            </button>
+            <button
+              type="button"
+              onClick={() => setGenerationMode("code_components")}
+              className={`text-left p-5 rounded-xl border-2 transition-all cursor-pointer hover:scale-[1.02] ${
+                generationMode === "code_components"
+                  ? "border-brand-500 bg-white/10"
+                  : "border-white/10 bg-white/5 hover:border-white/20"
+              }`}
+            >
+              <h3 className="text-sm font-semibold text-white mb-1">Unique & Creative</h3>
+              <p className="text-white/50 text-xs mb-2">
+                AI generates custom components with animations and unique visual treatments.
+              </p>
+              <ul className="space-y-0.5">
+                <li className="text-white/40 text-[11px] flex items-center gap-1">
+                  <span className="text-brand-400">&#10003;</span> Custom designs
+                </li>
+                <li className="text-white/40 text-[11px] flex items-center gap-1">
+                  <span className="text-brand-400">&#10003;</span> Animations
+                </li>
+                <li className="text-white/40 text-[11px] flex items-center gap-1">
+                  <span className="text-brand-400">&#10003;</span> Standout visuals
+                </li>
+              </ul>
+            </button>
+          </div>
+
+          {/* Design preferences for code_components mode */}
+          {generationMode === "code_components" && (
+            <div className="mt-4 space-y-3 p-4 rounded-xl bg-white/5 border border-white/10">
+              <p className="text-xs text-white/50 mb-2">Fine-tune your creative direction</p>
+              <div>
+                <label className="block text-xs font-medium text-white/60 mb-1">Animation level</label>
+                <select
+                  value={animationLevel}
+                  onChange={(e) => setAnimationLevel(e.target.value as "subtle" | "moderate" | "dramatic")}
+                  className="w-full rounded-lg bg-white/5 border border-white/10 text-white text-sm px-3 py-2 focus:border-brand-500 focus:outline-none"
+                >
+                  <option value="subtle">Subtle — gentle transitions</option>
+                  <option value="moderate">Moderate — noticeable motion</option>
+                  <option value="dramatic">Dramatic — bold animations</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-white/60 mb-1">Visual style</label>
+                <select
+                  value={visualStyle}
+                  onChange={(e) => setVisualStyle(e.target.value as "minimal" | "bold" | "elegant" | "playful")}
+                  className="w-full rounded-lg bg-white/5 border border-white/10 text-white text-sm px-3 py-2 focus:border-brand-500 focus:outline-none"
+                >
+                  <option value="minimal">Minimal — clean and spacious</option>
+                  <option value="bold">Bold — strong contrasts</option>
+                  <option value="elegant">Elegant — refined details</option>
+                  <option value="playful">Playful — vibrant and fun</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-white/60 mb-1">Interactivity</label>
+                <select
+                  value={interactivity}
+                  onChange={(e) => setInteractivity(e.target.value as "static" | "scroll_effects" | "interactive")}
+                  className="w-full rounded-lg bg-white/5 border border-white/10 text-white text-sm px-3 py-2 focus:border-brand-500 focus:outline-none"
+                >
+                  <option value="static">Static — no scroll effects</option>
+                  <option value="scroll_effects">Scroll effects — parallax and reveals</option>
+                  <option value="interactive">Interactive — hover effects and micro-interactions</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="border-t border-white/5" />
+
         {/* Section 1: Visual Theme */}
         <div className="scroll-mt-24">
           <label className="block text-sm font-medium text-white/80 mb-3">
