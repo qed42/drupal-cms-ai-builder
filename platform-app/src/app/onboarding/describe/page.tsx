@@ -122,7 +122,17 @@ export default function DescribePage() {
   }, []);
 
   async function validateIdea(text: string) {
-    if (text.trim().length < 20 || text === lastValidated.current) return;
+    const result = await validateIdeaAndReturn(text);
+    return result;
+  }
+
+  /**
+   * Validate idea and return the quality result directly.
+   * This avoids the stale-closure problem where setQuality() hasn't
+   * re-rendered yet when the caller checks the quality state variable.
+   */
+  async function validateIdeaAndReturn(text: string): Promise<"good" | "vague" | "nonsense" | null> {
+    if (text.trim().length < 20 || text === lastValidated.current) return quality;
     lastValidated.current = text;
     setValidating(true);
     try {
@@ -138,12 +148,15 @@ export default function DescribePage() {
         if (data.quality === "good") {
           fetchAnalysis(text);
         }
+        return data.quality;
       }
     } catch {
       setQuality("good");
+      return "good";
     } finally {
       setValidating(false);
     }
+    return quality;
   }
 
   function handleIdeaBlur() {
@@ -153,22 +166,32 @@ export default function DescribePage() {
   }
 
   async function handleSubmit() {
-    // Validate idea if not yet validated
+    // Validate idea if not yet validated — must check returned quality
+    // since setQuality() is async and won't update the closure's `quality`.
     if (!quality && idea.trim().length >= 20) {
-      await validateIdea(idea);
+      const validationResult = await validateIdeaAndReturn(idea);
+      if (validationResult === "nonsense") return false;
+    } else if (quality === "nonsense") {
+      return false;
     }
-    if (quality === "nonsense") return false;
 
-    const res = await save("describe", {
-      name,
-      idea,
-      audience,
-    });
-    if (res.ok) {
-      router.push(buildStepUrl("style"));
-      return true;
+    try {
+      const res = await save("describe", {
+        name,
+        idea,
+        audience,
+      });
+      if (res.ok) {
+        router.push(buildStepUrl("style"));
+        return true;
+      }
+      const body = await res.json().catch(() => ({}));
+      console.error("[describe] Save failed:", res.status, body);
+      return false;
+    } catch (err) {
+      console.error("[describe] Save error:", err);
+      return false;
     }
-    return false;
   }
 
   if (!loaded) return null;

@@ -25,10 +25,13 @@ export async function POST(req: NextRequest) {
     orderBy: { createdAt: "desc" },
   });
 
-  // Fall back to completed session for this site (failed generation scenario)
-  if (!onboarding && siteId) {
+  // Fall back to any session (completed or not) — handles re-entry after generation
+  if (!onboarding) {
     onboarding = await prisma.onboardingSession.findFirst({
-      where: { userId: session.user.id, siteId },
+      where: {
+        userId: session.user.id,
+        ...(siteId ? { siteId } : {}),
+      },
       orderBy: { createdAt: "desc" },
     });
   }
@@ -75,7 +78,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Persist the project name to the Site record so the dashboard shows it
-  if (step === "name" && data?.name && onboarding.siteId) {
+  if ((step === "name" || step === "describe") && data?.name && onboarding.siteId) {
     await prisma.site.update({
       where: { id: onboarding.siteId },
       data: { name: data.name },
