@@ -7,6 +7,7 @@ function makeRuleset(overrides: Partial<DesignRuleSet> = {}): DesignRuleSet {
     composition: {},
     content: {},
     visual: {},
+    tokens: {},
     compliance: {},
     _meta: { layers: ["global"], persona: "general", resolvedAt: "2026-03-31T00:00:00Z" },
     ...overrides,
@@ -71,5 +72,74 @@ describe("compileRulesToPromptFragment", () => {
     expect(result).not.toContain("### Composition");
     expect(result).not.toContain("### Content");
     expect(result).not.toContain("### Compliance");
+  });
+
+  it("includes design tokens section with MUST USE label", () => {
+    const result = compileRulesToPromptFragment(
+      makeRuleset({
+        tokens: {
+          container: "max-w-6xl mx-auto px-6 lg:px-8",
+          card: "rounded-xl border p-6 shadow-sm",
+        },
+      })
+    );
+    expect(result).toContain("### Design Tokens (MUST USE");
+    expect(result).toContain("`max-w-6xl mx-auto px-6 lg:px-8`");
+    expect(result).toContain("`rounded-xl border p-6 shadow-sm`");
+  });
+
+  it("includes typography sub-tokens", () => {
+    const result = compileRulesToPromptFragment(
+      makeRuleset({
+        tokens: {
+          typography: {
+            h1: "text-5xl font-bold",
+            h2: "text-3xl font-bold",
+            body: "text-base leading-relaxed",
+          },
+        },
+      })
+    );
+    expect(result).toContain("**Typography scale**");
+    expect(result).toContain("h1: `text-5xl font-bold`");
+    expect(result).toContain("h2: `text-3xl font-bold`");
+    expect(result).toContain("body: `text-base leading-relaxed`");
+  });
+
+  it("includes button sub-tokens", () => {
+    const result = compileRulesToPromptFragment(
+      makeRuleset({
+        tokens: {
+          button: {
+            primary: "px-6 py-3 rounded-lg bg-blue-600 text-white",
+            secondary: "px-6 py-3 rounded-lg border-2",
+          },
+        },
+      })
+    );
+    expect(result).toContain("**Buttons**");
+    expect(result).toContain("primary: `px-6 py-3 rounded-lg bg-blue-600 text-white`");
+    expect(result).toContain("secondary: `px-6 py-3 rounded-lg border-2`");
+  });
+
+  it("includes background alternation as plain text", () => {
+    const result = compileRulesToPromptFragment(
+      makeRuleset({
+        tokens: {
+          backgroundAlternation: "white → gray-50 → white → brand",
+        },
+      })
+    );
+    expect(result).toContain("**Background alternation**: white → gray-50 → white → brand");
+  });
+
+  it("omits tokens section when no tokens defined", () => {
+    const result = compileRulesToPromptFragment(
+      makeRuleset({
+        tokens: {},
+        composition: { requiredSections: ["hero"] },
+      })
+    );
+    expect(result).not.toContain("Design Tokens");
   });
 });

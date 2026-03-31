@@ -15,6 +15,24 @@ content:
 visual:
   imageGuidance: "Prefer high-quality photography over generic illustrations"
 
+tokens:
+  container: "max-w-6xl mx-auto px-6 lg:px-8"
+  sectionSpacing: "py-16 md:py-24"
+  typography:
+    h1: "text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
+    h2: "text-3xl md:text-4xl font-bold leading-tight"
+    h3: "text-xl font-semibold leading-snug"
+    body: "text-base md:text-lg leading-relaxed"
+    small: "text-sm leading-normal"
+    maxWidth: "max-w-2xl"
+  card: "rounded-xl border border-gray-100 p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow"
+  button:
+    primary: "px-6 py-3 rounded-lg font-semibold bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity"
+    secondary: "px-6 py-3 rounded-lg font-semibold border-2 border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors"
+  backgroundAlternation: "Alternate section backgrounds: white → gray-50 → white → brand-primary/5. Never stack two sections with the same background."
+  focus: "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]"
+  gridGap: "gap-6 md:gap-8"
+
 compliance:
   accessibilityNotes:
     - "All interactive elements must be keyboard-accessible"

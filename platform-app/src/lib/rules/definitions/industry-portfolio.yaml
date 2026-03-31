@@ -19,6 +19,14 @@ content:
     - synergy
     - leverage
 
+tokens:
+  sectionSpacing: "py-20 md:py-32"
+  typography:
+    h1: "text-5xl md:text-6xl lg:text-7xl font-bold leading-none tracking-tight"
+    h2: "text-3xl md:text-5xl font-bold leading-tight tracking-tight"
+  card: "rounded-none border-0 p-0 shadow-none"
+  backgroundAlternation: "Alternate section backgrounds: white → gray-950 → white → gray-50. High contrast, editorial feel."
+
 visual:
   heroStyle: "Full-screen portfolio piece or dramatic typography. Let the work speak first."
   colorGuidance: "Monochromatic or muted palette. Let the portfolio work provide the color."

@@ -5,7 +5,7 @@
  * fragment for injection into the code component generation prompt.
  */
 
-import type { DesignRuleSet } from "./types";
+import type { DesignRuleSet, TokenRules } from "./types";
 
 /**
  * Compile a resolved ruleset into a prompt fragment string.
@@ -71,6 +71,12 @@ export function compileRulesToPromptFragment(rules: DesignRuleSet): string {
     sections.push(`### Visual Direction\n${visLines.join("\n")}`);
   }
 
+  // --- Design Tokens ---
+  const tokensSection = compileTokens(rules.tokens);
+  if (tokensSection) {
+    sections.push(tokensSection);
+  }
+
   // --- Compliance (elevated priority) ---
   const cpl = rules.compliance;
   const cplLines: string[] = [];
@@ -91,4 +97,63 @@ export function compileRulesToPromptFragment(rules: DesignRuleSet): string {
 
   const layerTrace = rules._meta.layers.join(" → ");
   return `## DESIGN RULES (Auto-resolved: ${layerTrace})\n\n${sections.join("\n\n")}`;
+}
+
+/**
+ * Compile token rules into a structured prompt section.
+ * Returns null if no tokens are defined.
+ */
+function compileTokens(tokens: TokenRules): string | null {
+  const lines: string[] = [];
+
+  if (tokens.container) {
+    lines.push(`- **Container**: \`${tokens.container}\``);
+  }
+  if (tokens.sectionSpacing) {
+    lines.push(`- **Section spacing**: \`${tokens.sectionSpacing}\``);
+  }
+
+  // Typography sub-tokens
+  const typo = tokens.typography;
+  if (typo) {
+    const typoLines: string[] = [];
+    if (typo.h1) typoLines.push(`  - h1: \`${typo.h1}\``);
+    if (typo.h2) typoLines.push(`  - h2: \`${typo.h2}\``);
+    if (typo.h3) typoLines.push(`  - h3: \`${typo.h3}\``);
+    if (typo.body) typoLines.push(`  - body: \`${typo.body}\``);
+    if (typo.small) typoLines.push(`  - small: \`${typo.small}\``);
+    if (typo.maxWidth) typoLines.push(`  - text max-width: \`${typo.maxWidth}\``);
+    if (typoLines.length > 0) {
+      lines.push(`- **Typography scale**:\n${typoLines.join("\n")}`);
+    }
+  }
+
+  if (tokens.card) {
+    lines.push(`- **Card base**: \`${tokens.card}\``);
+  }
+
+  // Button sub-tokens
+  const btn = tokens.button;
+  if (btn) {
+    const btnLines: string[] = [];
+    if (btn.primary) btnLines.push(`  - primary: \`${btn.primary}\``);
+    if (btn.secondary) btnLines.push(`  - secondary: \`${btn.secondary}\``);
+    if (btnLines.length > 0) {
+      lines.push(`- **Buttons**:\n${btnLines.join("\n")}`);
+    }
+  }
+
+  if (tokens.backgroundAlternation) {
+    lines.push(`- **Background alternation**: ${tokens.backgroundAlternation}`);
+  }
+  if (tokens.focus) {
+    lines.push(`- **Focus state**: \`${tokens.focus}\``);
+  }
+  if (tokens.gridGap) {
+    lines.push(`- **Grid gap**: \`${tokens.gridGap}\``);
+  }
+
+  if (lines.length === 0) return null;
+
+  return `### Design Tokens (MUST USE — apply these exact classes for cross-section consistency)\n${lines.join("\n")}`;
 }

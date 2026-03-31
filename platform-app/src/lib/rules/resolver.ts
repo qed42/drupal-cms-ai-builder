@@ -10,6 +10,32 @@
 import { loadRuleFile, slugifyIndustry } from "./loader";
 import type { DesignRuleDefinition, DesignRuleSet } from "./types";
 
+/** Shallow-merge a category object: arrays concat+dedup, scalars overwrite. */
+function mergeCategory(
+  base: Record<string, unknown>,
+  overlay: Record<string, unknown>
+): Record<string, unknown> {
+  const merged = { ...base };
+
+  for (const [key, value] of Object.entries(overlay)) {
+    const existing = merged[key];
+
+    if (Array.isArray(value) && Array.isArray(existing)) {
+      merged[key] = [...new Set([...existing, ...value])];
+    } else if (
+      value !== null && typeof value === "object" && !Array.isArray(value) &&
+      existing !== null && typeof existing === "object" && !Array.isArray(existing)
+    ) {
+      // Deep-merge nested objects (e.g., tokens.typography, tokens.button)
+      merged[key] = { ...(existing as Record<string, unknown>), ...(value as Record<string, unknown>) };
+    } else if (value !== undefined) {
+      merged[key] = value;
+    }
+  }
+
+  return merged;
+}
+
 /** Deep-merge two rule definitions. Later values win for scalars; arrays concatenate. */
 function mergeRules(
   base: DesignRuleDefinition,
@@ -17,26 +43,12 @@ function mergeRules(
 ): DesignRuleDefinition {
   const result: DesignRuleDefinition = structuredClone(base);
 
-  for (const category of ["composition", "content", "visual", "compliance"] as const) {
-    const baseCategory = result[category] || {};
-    const overlayCategory = overlay[category];
+  for (const category of ["composition", "content", "visual", "tokens", "compliance"] as const) {
+    const baseCategory = (result[category] || {}) as Record<string, unknown>;
+    const overlayCategory = overlay[category] as Record<string, unknown> | undefined;
     if (!overlayCategory) continue;
 
-    const merged = { ...baseCategory };
-
-    for (const [key, value] of Object.entries(overlayCategory)) {
-      const existing = (merged as Record<string, unknown>)[key];
-
-      if (Array.isArray(value) && Array.isArray(existing)) {
-        // Concatenate and deduplicate arrays
-        (merged as Record<string, unknown>)[key] = [...new Set([...existing, ...value])];
-      } else if (value !== undefined) {
-        // Scalar overwrite
-        (merged as Record<string, unknown>)[key] = value;
-      }
-    }
-
-    (result as Record<string, unknown>)[category] = merged;
+    (result as Record<string, unknown>)[category] = mergeCategory(baseCategory, overlayCategory);
   }
 
   return result;
@@ -78,6 +90,7 @@ export function resolveDesignRules(
     composition: merged.composition || {},
     content: merged.content || {},
     visual: merged.visual || {},
+    tokens: merged.tokens || {},
     compliance: merged.compliance || {},
     _meta: {
       layers: layers.map((l) => l.name),
