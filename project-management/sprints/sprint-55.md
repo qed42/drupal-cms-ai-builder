@@ -11,9 +11,9 @@ Complete the Code Component pipeline end-to-end — image enhancement for JSX, D
 
 | ID | Task | Story | Effort | Depends On | Status |
 |----|------|-------|--------|------------|--------|
-| TASK-505 | Enhance phase — image replacement in JSX | M26 | M | TASK-504 | Pending |
-| TASK-506 | Provisioning — import Code Component config entities | M26 | L | TASK-504 | Pending |
-| TASK-507 | Review editor — Code Component preview | M26 | M | TASK-504 | Pending |
+| TASK-505 | Enhance phase — image replacement in JSX | US-103 | M | TASK-504 | Done |
+| TASK-506 | Provisioning — import Code Component config entities | US-104 | L | TASK-504 | Done |
+| TASK-507 | Review editor — Code Component preview | US-105 | M | TASK-504 | Done |
 
 ## Execution Order
 

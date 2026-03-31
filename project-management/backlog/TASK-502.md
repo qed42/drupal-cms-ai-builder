@@ -1,6 +1,6 @@
 # TASK-502: Code Component Validator (HTML, A11y, Security)
 
-**Story:** Code Components Initiative
+**Story:** US-100 — Code Component Validation Pipeline
 **Priority:** P0
 **Effort:** M
 **Milestone:** M26 — Code Component Generation

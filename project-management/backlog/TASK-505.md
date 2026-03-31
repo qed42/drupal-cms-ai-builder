@@ -1,6 +1,6 @@
 # TASK-505: Enhance Phase — Image Replacement in JSX Components
 
-**Story:** Code Components Initiative
+**Story:** US-103 — Image Enhancement for Code Components
 **Priority:** P1
 **Effort:** M
 **Milestone:** M26 — Code Component Generation

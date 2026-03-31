@@ -1,6 +1,6 @@
 # TASK-506: Provisioning — Import Code Component Config Entities
 
-**Story:** Code Components Initiative
+**Story:** US-104 — Code Component Provisioning to Drupal Canvas
 **Priority:** P0
 **Effort:** L
 **Milestone:** M26 — Code Component Generation

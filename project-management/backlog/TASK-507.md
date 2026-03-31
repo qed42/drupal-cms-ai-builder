@@ -1,6 +1,6 @@
 # TASK-507: Review Editor — Code Component Preview
 
-**Story:** Code Components Initiative
+**Story:** US-105 — Code Component Preview in Review Editor
 **Priority:** P1
 **Effort:** M
 **Milestone:** M26 — Code Component Generation

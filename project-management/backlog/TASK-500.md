@@ -1,6 +1,6 @@
 # TASK-500: Add Generation Mode to Onboarding Data & UI
 
-**Story:** Code Components Initiative
+**Story:** US-098 — Design Approach Selection in Onboarding
 **Priority:** P0
 **Effort:** M
 **Milestone:** M26 — Code Component Generation

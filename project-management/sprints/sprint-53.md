@@ -11,9 +11,9 @@ Establish the foundation for Code Component generation — onboarding mode selec
 
 | ID | Task | Story | Effort | Depends On | Status |
 |----|------|-------|--------|------------|--------|
-| TASK-500 | Generation mode in onboarding data & UI | M26 | M | None | Pending |
-| TASK-501 | CodeComponentGenerator interface & config YAML builder | M26 | M | None | Pending |
-| TASK-502 | Code Component validator (JSX, a11y, security) | M26 | M | TASK-501 | Pending |
+| TASK-500 | Generation mode in onboarding data & UI | US-098 | M | None | Complete |
+| TASK-501 | CodeComponentGenerator interface & config YAML builder | US-099 | M | None | Complete |
+| TASK-502 | Code Component validator (JSX, a11y, security) | US-100 | M | TASK-501 | Complete |
 
 ## Execution Order
 

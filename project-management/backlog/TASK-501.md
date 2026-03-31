@@ -1,6 +1,6 @@
 # TASK-501: CodeComponentGenerator Interface & Config YAML Builder
 
-**Story:** Code Components Initiative
+**Story:** US-099 — Code Component Type System & Config Builder
 **Priority:** P0
 **Effort:** M
 **Milestone:** M26 — Code Component Generation

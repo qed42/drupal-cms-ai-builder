@@ -1,44 +1,134 @@
-# TASK-503: Designer Agent — Section-Level JSX/Tailwind Generation
+# TASK-503: Designer Agent — System Prompt & Zod Output Schema
 
-**Story:** Code Components Initiative
+**Story:** US-101 — Designer Agent — AI-Generated Custom Sections
 **Priority:** P0
-**Effort:** XL
+**Effort:** L
 **Milestone:** M26 — Code Component Generation
 
 ## Description
 
-Implement the Designer Agent — an AI agent that generates React/Preact + Tailwind CSS v4 code components for each section in the ContentPlan. This is the core creative engine for code component mode.
+Build the system prompt template and Zod output schema for the Designer Agent. This is the creative/prompt-engineering half of US-101 — the prompt defines what the LLM generates, and the schema enforces output structure.
 
 ## Technical Approach
 
-- Create `runDesignerAgent(brief: SectionDesignBrief, brand: BrandTokens, prefs: DesignPreferences): Promise<CodeComponentOutput>`
-- Build system prompt covering:
-  - React/Preact component structure (export default, props destructuring)
-  - Tailwind CSS v4 utility classes (responsive: `sm:`, `md:`, `lg:`)
-  - Animation with `motion-safe:` / `motion-reduce:` variants
-  - Brand token injection via CSS custom properties (`var(--color-primary)`)
-  - Image props using Canvas `image` prop type
-  - Available imports: `cn`, `clsx`, `cva`, `FormattedText`
-  - Section-to-section visual rhythm (pass previous section summary)
-- Use structured output (Zod schema) for reliable parsing
-- Implement retry loop (max 2) with validator feedback on failure
-- Support all section types: hero, features, testimonials, CTA, FAQ, team, gallery, stats, contact
+### 1. Zod Output Schema (`code-component-generation.ts`)
+
+Define a schema that mirrors `CodeComponentOutput` from `types.ts`:
+
+```typescript
+import { z } from "zod";
+
+export const CodeComponentResponseSchema = z.object({
+  machineName: z.string().regex(/^[a-z][a-z0-9_]{1,62}$/),
+  name: z.string().min(1).max(100),
+  jsx: z.string().min(50),  // must contain actual JSX
+  css: z.string(),           // may be empty if purely Tailwind utility classes
+  props: z.array(z.object({
+    name: z.string().regex(/^[a-z][a-zA-Z0-9_]*$/),
+    type: z.enum([
+      "string", "formatted_text", "boolean",
+      "integer", "number", "link", "image", "video"
+    ]),
+    required: z.boolean(),
+    default: z.unknown().optional(),
+    description: z.string().optional(),
+  })),
+  slots: z.array(z.object({
+    name: z.string(),
+    description: z.string().optional(),
+  })).optional(),
+});
+
+export type CodeComponentResponse = z.infer<typeof CodeComponentResponseSchema>;
+```
+
+### 2. System Prompt Builder (`code-component-generation.ts`)
+
+Follow the same pattern as `buildPageGenerationPrompt()` in `prompts/page-generation.ts`:
+
+```typescript
+export function buildCodeComponentPrompt(
+  brief: SectionDesignBrief,
+  previousSections?: Array<{ machineName: string; sectionType: string }>
+): string;
+```
+
+**Prompt sections to include:**
+
+1. **Role** — "You are a senior frontend designer generating React/Preact components for Drupal Canvas."
+2. **Tech stack constraints:**
+   - React/Preact with `export default function ComponentName(props)` pattern
+   - Tailwind CSS v4 utility classes (no raw CSS except `@apply`)
+   - Available imports: `cn`, `clsx`, `cva`, `tailwind-merge`, `FormattedText`
+   - Image props use Canvas `image` prop type, rendered as `<img src={props.imageName} />`
+   - No external dependencies, no `fetch`, no `eval`, no DOM manipulation
+3. **Brand token injection:**
+   - Colors as CSS custom properties: `text-[var(--color-primary)]`, `bg-[var(--color-accent)]`
+   - Fonts: `font-[var(--font-heading)]`, `font-[var(--font-body)]`
+4. **Responsive design:**
+   - Mobile-first with Tailwind breakpoints (`sm:`, `md:`, `lg:`)
+   - No `@media` queries — Tailwind utilities only
+5. **Animation rules (from brief.animationLevel):**
+   - `subtle`: opacity transitions, gentle hovers
+   - `moderate`: entrance animations, scroll-triggered fades, hover transforms
+   - `dramatic`: parallax effects, staggered reveals, complex transforms
+   - ALL animations must include `motion-reduce:` variant
+6. **Image placeholders:**
+   - Use `<img src="/placeholder/WxH" alt="descriptive context" />` convention
+   - Alt text should describe the desired image for stock photo matching
+7. **Visual style (from brief.visualStyle):**
+   - `minimal`: whitespace-heavy, thin borders, muted palette
+   - `bold`: high contrast, large typography, strong color blocks
+   - `elegant`: serif accents, subtle gradients, refined spacing
+   - `playful`: rounded corners, bright accents, casual typography
+8. **Section context:**
+   - Heading, content brief, section type, position, tone guidance
+   - Previous section summary (for visual rhythm — avoid repeating same layout)
+9. **Output format:**
+   - JSON matching `CodeComponentResponseSchema`
+   - `machineName` must be unique per site (append section type + short hash)
+   - `props` should expose content-editable fields (headings, descriptions, button text, image)
+
+### 3. Few-Shot Examples
+
+Include 2-3 reference examples as string constants in the prompt file. Cover:
+- **Hero section** — full-width, gradient overlay, animated entrance, CTA button
+- **Features/services grid** — responsive card layout, icon props, hover effects
+- **Testimonials** — quote styling, avatar image prop, rating display
+
+Each example must be a valid `CodeComponentResponse` JSON that passes the Zod schema.
+
+### 4. Section-Type Specific Guidance
+
+Include a section-type instruction map:
+
+```typescript
+const SECTION_TYPE_GUIDANCE: Record<string, string> = {
+  hero: "Full-viewport section with background image, overlay gradient, headline, subheadline, and CTA...",
+  features: "Grid of 3-4 feature cards with icons, titles, and descriptions...",
+  testimonials: "Testimonial cards or quotes with author avatar, name, role...",
+  cta: "Prominent call-to-action with compelling headline and action button...",
+  faq: "Accordion-style FAQ with expandable items (use useState for toggle)...",
+  team: "Team member cards in a responsive grid with photo, name, role...",
+  gallery: "Image gallery grid with lightbox-style hover effects...",
+  stats: "Large number displays with labels and optional animations...",
+  contact: "Contact information layout with address, phone, email, map placeholder...",
+};
+```
 
 ## Acceptance Criteria
 
-- [ ] Generates valid React/Preact components for 9+ section types
-- [ ] Output passes `CodeComponentValidator` (TASK-502) checks
-- [ ] Brand tokens applied via CSS custom properties
-- [ ] Animations respect `prefers-reduced-motion` via Tailwind variants
-- [ ] Responsive design using Tailwind breakpoints
-- [ ] Retry with validator error feedback on validation failure
-- [ ] Props defined with correct Canvas prop types (string, image, link, etc.)
+- [ ] `CodeComponentResponseSchema` validates all 11 Canvas prop types
+- [ ] `buildCodeComponentPrompt()` generates a complete prompt from a `SectionDesignBrief`
+- [ ] Prompt includes tech constraints, brand tokens, animation rules, and responsive requirements
+- [ ] At least 3 few-shot examples included (hero, features, testimonials) that pass Zod validation
+- [ ] Section-type guidance covers 9+ section types
+- [ ] Unit tests verify prompt structure for different brief configurations (minimal vs dramatic, bold vs elegant)
 
 ## Dependencies
-- TASK-501, TASK-502
+- TASK-501 (types), TASK-502 (validator)
 
 ## Files to Create
 
-- `platform-app/src/lib/code-components/designer-agent.ts`
-- `platform-app/src/lib/code-components/designer-prompt.ts`
-- `platform-app/src/lib/code-components/section-templates/` (reference examples per section type)
+- `platform-app/src/lib/ai/prompts/code-component-generation.ts`
+- `platform-app/src/lib/ai/prompts/__tests__/code-component-generation.test.ts`
