@@ -1,8 +1,8 @@
 /**
  * Design Rules Engine — Public API (M27).
  *
- * Feature-flagged via ENABLE_DESIGN_RULES=true.
- * Only active for code_components generation mode.
+ * Enabled by default for code_components mode.
+ * Set ENABLE_DESIGN_RULES=false to explicitly opt out.
  */
 
 import { inferPersona } from "./persona-inferrer";
@@ -28,12 +28,12 @@ interface DesignRulesResult {
  * Resolve design rules and compile to a prompt fragment.
  *
  * Returns null when:
- * - Feature flag ENABLE_DESIGN_RULES is not "true"
+ * - ENABLE_DESIGN_RULES is explicitly "false"
  * - Generation mode is not "code_components"
  * - No rules resolve (empty ruleset)
  */
 export function getDesignRules(data: DesignRulesInput): DesignRulesResult | null {
-  if (process.env.ENABLE_DESIGN_RULES !== "true") return null;
+  if (process.env.ENABLE_DESIGN_RULES === "false") return null;
   if (data.generationMode !== "code_components") return null;
 
   const industry = data.industry || "";

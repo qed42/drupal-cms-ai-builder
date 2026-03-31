@@ -20,13 +20,14 @@ describe("getDesignRules", () => {
     expect(result).toBeNull();
   });
 
-  it("returns null when feature flag is not set", () => {
+  it("returns rules when feature flag is not set (default ON)", () => {
     delete process.env.ENABLE_DESIGN_RULES;
     const result = getDesignRules({
       generationMode: "code_components",
       industry: "Healthcare",
     });
-    expect(result).toBeNull();
+    expect(result).not.toBeNull();
+    expect(result!.fragment).toContain("DESIGN RULES");
   });
 
   it("returns null for design_system mode", () => {

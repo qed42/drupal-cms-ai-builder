@@ -12,8 +12,8 @@ Complete the design tokens pipeline end-to-end — verify token injection into g
 | ID | Task | Story | Effort | Depends On | Status |
 |----|------|-------|--------|------------|--------|
 | TASK-509 | Wire design tokens into generation prompt | US-108 | M | — | Done |
-| TASK-510 | Heading hierarchy, color patterns, intra-section spacing | US-109 | M | TASK-509 | Backlog |
-| TASK-511 | Enable design rules by default (remove feature flag) | US-110 | S | TASK-509, TASK-510 | Backlog |
+| TASK-510 | Heading hierarchy, color patterns, intra-section spacing | US-109 | M | TASK-509 | Done |
+| TASK-511 | Enable design rules by default (remove feature flag) | US-110 | S | TASK-509, TASK-510 | Done |
 | TASK-512 | Fix BUG-053-001: industry-based mode defaults | US-098 | S | — | Done (prior session) |
 | TASK-513 | Fix BUG-054-001: missing list prop types | US-099 | S | — | Done |
 | TASK-499 | Fix progress page "ready" messaging | US-097 | S | — | Done |
