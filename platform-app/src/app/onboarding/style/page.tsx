@@ -65,7 +65,15 @@ export default function StylePage() {
   useEffect(() => {
     resume()
       .then((d) => {
-        if (d.data?.generationMode) setGenerationMode(d.data.generationMode);
+        if (d.data?.generationMode) {
+          setGenerationMode(d.data.generationMode);
+        } else if (d.data?.industry) {
+          // Default creative/portfolio industries to code_components (BUG-053-001)
+          const creativeIndustries = ["photography", "design", "art", "fashion", "music", "film", "portfolio", "creative_agency"];
+          if (creativeIndustries.includes(d.data.industry.toLowerCase())) {
+            setGenerationMode("code_components");
+          }
+        }
         if (d.data?.designPreferences) {
           const prefs = d.data.designPreferences;
           if (prefs.animationLevel) setAnimationLevel(prefs.animationLevel);
@@ -113,8 +121,8 @@ export default function StylePage() {
       designPreferences: generationMode === "code_components"
         ? { animationLevel, visualStyle, interactivity }
         : undefined,
-      designSystemId: selectedTheme,
-      design_source: designSource,
+      designSystemId: generationMode === "code_components" ? "mercury" : selectedTheme,
+      design_source: generationMode === "code_components" ? "ai" : designSource,
       tone: selectedTone,
       differentiators,
       referenceUrls: cleanUrls,
@@ -136,7 +144,7 @@ export default function StylePage() {
   const selectedThemeData = THEMES.find((t) => t.id === selectedTheme);
 
   const inferenceItems: InferenceCardItem[] = [];
-  if (selectedThemeData) {
+  if (generationMode === "design_system" && selectedThemeData) {
     inferenceItems.push({
       label: "Theme",
       value: selectedThemeData.name,
@@ -221,7 +229,11 @@ export default function StylePage() {
             </button>
             <button
               type="button"
-              onClick={() => setGenerationMode("code_components")}
+              onClick={() => {
+                setGenerationMode("code_components");
+                setSelectedTheme("mercury");
+                setDesignSource("ai");
+              }}
               className={`text-left p-5 rounded-xl border-2 transition-all cursor-pointer hover:scale-[1.02] ${
                 generationMode === "code_components"
                   ? "border-brand-500 bg-white/10"
@@ -291,82 +303,85 @@ export default function StylePage() {
           )}
         </div>
 
-        <div className="border-t border-white/5" />
-
-        {/* Section 1: Visual Theme */}
-        <div className="scroll-mt-24">
-          <label className="block text-sm font-medium text-white/80 mb-3">
-            Pick your visual style
-          </label>
-          <RadioGroup
-            value={selectedTheme}
-            onValueChange={setSelectedTheme}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-3"
-          >
-            {THEMES.map((theme) => (
-              <label
-                key={theme.id}
-                className={`text-left p-5 rounded-xl border-2 transition-all cursor-pointer hover:scale-[1.02] ${
-                  selectedTheme === theme.id
-                    ? "border-brand-500 bg-white/10"
-                    : "border-white/10 bg-white/5 hover:border-white/20"
-                }`}
-              >
-                <RadioGroupItem value={theme.id} className="sr-only" />
-                <h3 className="text-sm font-semibold text-white mb-1">
-                  {theme.name}
-                </h3>
-                <p className="text-white/50 text-xs mb-2">{theme.description}</p>
-                <ul className="space-y-0.5">
-                  {theme.features.map((feature) => (
-                    <li key={feature} className="text-white/40 text-[11px] flex items-center gap-1">
-                      <span className="text-brand-400">&#10003;</span> {feature}
-                    </li>
-                  ))}
-                </ul>
+        {/* Section 1: Visual Theme — only for design_system mode */}
+        {generationMode === "design_system" && (
+          <>
+            <div className="border-t border-white/5" />
+            <div className="scroll-mt-24">
+              <label className="block text-sm font-medium text-white/80 mb-3">
+                Pick your visual style
               </label>
-            ))}
-          </RadioGroup>
-        </div>
+              <RadioGroup
+                value={selectedTheme}
+                onValueChange={setSelectedTheme}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+              >
+                {THEMES.map((theme) => (
+                  <label
+                    key={theme.id}
+                    className={`text-left p-5 rounded-xl border-2 transition-all cursor-pointer hover:scale-[1.02] ${
+                      selectedTheme === theme.id
+                        ? "border-brand-500 bg-white/10"
+                        : "border-white/10 bg-white/5 hover:border-white/20"
+                    }`}
+                  >
+                    <RadioGroupItem value={theme.id} className="sr-only" />
+                    <h3 className="text-sm font-semibold text-white mb-1">
+                      {theme.name}
+                    </h3>
+                    <p className="text-white/50 text-xs mb-2">{theme.description}</p>
+                    <ul className="space-y-0.5">
+                      {theme.features.map((feature) => (
+                        <li key={feature} className="text-white/40 text-[11px] flex items-center gap-1">
+                          <span className="text-brand-400">&#10003;</span> {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </label>
+                ))}
+              </RadioGroup>
+            </div>
 
-        <div className="border-t border-white/5" />
+            <div className="border-t border-white/5" />
 
-        {/* Section 2: Design Source */}
-        <div className="scroll-mt-24">
-          <label className="block text-sm font-medium text-white/80 mb-3">
-            Design approach
-          </label>
-          <RadioGroup
-            value={designSource}
-            onValueChange={(val: string) => setDesignSource(val as "ai" | "figma")}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-3"
-          >
-            <DesignOptionCard
-              title="Let Space AI choose"
-              subtitle="We'll generate a template based on your answers"
-              icon={
-                <svg className="w-6 h-6 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                </svg>
-              }
-              selected={designSource === "ai"}
-              value="ai"
-            />
-            <DesignOptionCard
-              title="Provide Figma details"
-              subtitle="Upload your design or paste a URL"
-              icon={
-                <svg className="w-6 h-6 text-white/70" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5zM12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z" />
-                </svg>
-              }
-              selected={designSource === "figma"}
-              disabled={true}
-              badge="Coming soon"
-              value="figma"
-            />
-          </RadioGroup>
-        </div>
+            {/* Section 2: Design Source */}
+            <div className="scroll-mt-24">
+              <label className="block text-sm font-medium text-white/80 mb-3">
+                Design source
+              </label>
+              <RadioGroup
+                value={designSource}
+                onValueChange={(val: string) => setDesignSource(val as "ai" | "figma")}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+              >
+                <DesignOptionCard
+                  title="Let Space AI choose"
+                  subtitle="We'll generate a template based on your answers"
+                  icon={
+                    <svg className="w-6 h-6 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                    </svg>
+                  }
+                  selected={designSource === "ai"}
+                  value="ai"
+                />
+                <DesignOptionCard
+                  title="Provide Figma details"
+                  subtitle="Upload your design or paste a URL"
+                  icon={
+                    <svg className="w-6 h-6 text-white/70" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5zM12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z" />
+                    </svg>
+                  }
+                  selected={designSource === "figma"}
+                  disabled={true}
+                  badge="Coming soon"
+                  value="figma"
+                />
+              </RadioGroup>
+            </div>
+          </>
+        )}
 
         <div className="border-t border-white/5" />
 

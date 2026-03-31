@@ -1,0 +1,24 @@
+# Small business persona — local shops, services, restaurants
+composition:
+  requiredSections:
+    - contact
+    - testimonials
+
+content:
+  ctaGuidance: "Include phone number and address prominently. Local customers need quick contact."
+  toneOverrides:
+    - friendly
+    - trustworthy
+  terminologyPrefer:
+    - local
+    - community
+    - family-owned
+
+visual:
+  imageGuidance: "Show real business photos — storefront, team, products. Authenticity over polish."
+
+compliance:
+  footerRequirements:
+    - "Business hours"
+    - "Physical address"
+    - "Phone number"

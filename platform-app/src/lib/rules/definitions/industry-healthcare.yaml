@@ -1,0 +1,38 @@
+# Healthcare industry design rules
+composition:
+  requiredSections:
+    - services
+    - testimonials
+  avoidSections:
+    - pricing
+
+content:
+  toneOverrides:
+    - empathetic
+    - reassuring
+    - professional
+  ctaGuidance: "Use soft CTAs like 'Schedule a Consultation' or 'Learn More' instead of aggressive sales language"
+  terminologyPrefer:
+    - patient
+    - care team
+    - wellness
+    - provider
+  terminologyAvoid:
+    - cheap
+    - discount
+    - buy now
+    - guarantee
+
+visual:
+  heroStyle: "Calming imagery — nature, light, clean medical environments. Avoid stock photos of stethoscopes."
+  colorGuidance: "Prioritize trust colors (blue, green, white). Avoid aggressive reds as primary."
+  imageGuidance: "Show diverse patients in comfortable settings. Avoid overly clinical or sterile imagery."
+
+compliance:
+  requiredDisclosures:
+    - "HIPAA privacy notice"
+    - "This website does not provide medical advice disclaimer"
+  footerRequirements:
+    - "Display practice license number"
+  accessibilityNotes:
+    - "Target WCAG AAA contrast for medical content"

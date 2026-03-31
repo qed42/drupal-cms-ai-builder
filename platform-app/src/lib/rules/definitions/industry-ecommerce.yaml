@@ -1,0 +1,38 @@
+# E-commerce industry design rules
+composition:
+  requiredSections:
+    - features
+    - testimonials
+    - cta
+  sectionOrder:
+    - hero
+    - features
+    - testimonials
+    - stats
+    - cta
+
+content:
+  toneOverrides:
+    - confident
+    - clear
+    - value-focused
+  ctaGuidance: "Strong action CTAs — 'Shop Now', 'Browse Collection', 'Get Started'. Include urgency where appropriate."
+  terminologyPrefer:
+    - free shipping
+    - satisfaction guaranteed
+    - secure checkout
+  terminologyAvoid:
+    - maybe
+    - we think
+    - possibly
+
+visual:
+  heroStyle: "Product-focused hero with clear value proposition. Show the product in use or lifestyle context."
+  colorGuidance: "High-contrast CTAs. Use accent color for buttons and prices."
+  imageGuidance: "Clean product photography on white/neutral backgrounds. Lifestyle shots for hero."
+
+compliance:
+  footerRequirements:
+    - "Return/refund policy link"
+    - "Terms of service link"
+    - "Secure payment badges"

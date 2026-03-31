@@ -1,0 +1,26 @@
+# Portfolio / creative industry design rules
+composition:
+  requiredSections:
+    - gallery
+    - about
+  avoidSections:
+    - pricing
+    - faq
+  maxSectionsPerPage: 6
+
+content:
+  toneOverrides:
+    - artistic
+    - confident
+    - authentic
+  ctaGuidance: "Use personal CTAs like 'Let's Work Together', 'Start a Project', 'Get in Touch'"
+  terminologyAvoid:
+    - corporate
+    - synergy
+    - leverage
+
+visual:
+  heroStyle: "Full-screen portfolio piece or dramatic typography. Let the work speak first."
+  colorGuidance: "Monochromatic or muted palette. Let the portfolio work provide the color."
+  imageGuidance: "Full-bleed, high-resolution portfolio images. Minimal borders or frames."
+  layoutPreference: "Asymmetric, editorial-style layouts. Generous whitespace between sections."

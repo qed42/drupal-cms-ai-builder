@@ -1,0 +1,41 @@
+# Restaurant / food service industry design rules
+composition:
+  requiredSections:
+    - gallery
+    - contact
+  avoidSections:
+    - pricing
+  sectionOrder:
+    - hero
+    - features
+    - gallery
+    - testimonials
+    - contact
+    - cta
+
+content:
+  toneOverrides:
+    - warm
+    - inviting
+    - appetizing
+  ctaGuidance: "Use action CTAs like 'Reserve a Table', 'Order Online', 'View Our Menu'"
+  terminologyPrefer:
+    - fresh
+    - seasonal
+    - house-made
+    - locally sourced
+  terminologyAvoid:
+    - processed
+    - frozen
+
+visual:
+  heroStyle: "Full-bleed food photography with warm lighting. Show signature dishes or inviting dining atmosphere."
+  colorGuidance: "Warm earth tones, deep reds, golds. Avoid cold blues as primary."
+  imageGuidance: "High-quality food photography with natural lighting. Show real dishes, not stock photos."
+  layoutPreference: "Image-heavy layouts. Let the food visuals do the selling."
+
+compliance:
+  footerRequirements:
+    - "Business hours"
+    - "Physical address"
+    - "Phone number"

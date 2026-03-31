@@ -1,0 +1,28 @@
+# Enterprise persona — large organizations, regulated industries
+composition:
+  maxSectionsPerPage: 10
+
+content:
+  toneOverrides:
+    - authoritative
+    - professional
+    - data-driven
+  ctaGuidance: "Use measured CTAs — 'Request a Demo', 'Contact Sales', 'Download Whitepaper'"
+  terminologyPrefer:
+    - solutions
+    - platform
+    - enterprise-grade
+    - scalable
+
+visual:
+  heroStyle: "Clean, professional hero with clear value proposition. Data visualizations or abstract graphics."
+  colorGuidance: "Corporate palette — navy, charcoal, white. Accent colors for CTAs only."
+  imageGuidance: "Professional photography or abstract graphics. Avoid casual or playful imagery."
+
+compliance:
+  requiredDisclosures:
+    - "Privacy policy"
+    - "Terms of service"
+  footerRequirements:
+    - "Legal entity name"
+    - "Contact information"

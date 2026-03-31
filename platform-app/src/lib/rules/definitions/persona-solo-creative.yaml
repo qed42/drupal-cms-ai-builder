@@ -1,0 +1,15 @@
+# Solo creative persona — photographers, artists, freelancers
+composition:
+  requiredSections:
+    - about
+  maxSectionsPerPage: 6
+
+content:
+  ctaGuidance: "Use personal, approachable CTAs — 'Let's Work Together', 'Start a Conversation'. Include a direct email link."
+  toneOverrides:
+    - personal
+    - authentic
+
+visual:
+  imageGuidance: "Let the portfolio work dominate. Minimize stock photography."
+  layoutPreference: "Lean and visual. Less text, more imagery. White space is a feature."

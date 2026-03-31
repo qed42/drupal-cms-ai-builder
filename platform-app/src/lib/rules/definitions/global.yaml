@@ -1,0 +1,22 @@
+# Global design rules — apply to all projects
+composition:
+  maxSectionsPerPage: 8
+  requiredSections:
+    - hero
+    - cta
+
+content:
+  ctaGuidance: "Every page should have at least one clear call-to-action"
+  terminologyAvoid:
+    - "click here"
+    - "submit"
+    - "lorem ipsum"
+
+visual:
+  imageGuidance: "Prefer high-quality photography over generic illustrations"
+
+compliance:
+  accessibilityNotes:
+    - "All interactive elements must be keyboard-accessible"
+    - "Minimum WCAG AA contrast ratios"
+    - "All images must have descriptive alt text"
