@@ -97,4 +97,34 @@ describe("resolveDesignRules", () => {
     // Global body typography still present (not overridden)
     expect(result.tokens.typography?.body).toContain("text-base");
   });
+
+  it("resolves global heading hierarchy rule", () => {
+    const result = resolveDesignRules("Unknown", "general");
+    expect(result.composition.headingHierarchy).toContain("h1");
+    expect(result.composition.headingHierarchy).toContain("hero");
+  });
+
+  it("resolves global color usage pattern", () => {
+    const result = resolveDesignRules("Unknown", "general");
+    expect(result.visual.colorUsagePattern).toContain("--color-primary");
+    expect(result.visual.colorUsagePattern).toContain("--color-accent");
+  });
+
+  it("resolves global intra-section spacing", () => {
+    const result = resolveDesignRules("Unknown", "general");
+    expect(result.tokens.intraSpacing).toContain("mb-4");
+    expect(result.tokens.intraSpacing).toContain("mb-6");
+  });
+
+  it("healthcare overrides intra-section spacing with generous values", () => {
+    const result = resolveDesignRules("Healthcare", "general");
+    expect(result.tokens.intraSpacing).toContain("mb-6");
+    expect(result.tokens.intraSpacing).toContain("mb-14");
+  });
+
+  it("portfolio overrides intra-section spacing with tighter values", () => {
+    const result = resolveDesignRules("Portfolio", "general");
+    expect(result.tokens.intraSpacing).toContain("mb-3");
+    expect(result.tokens.intraSpacing).toContain("editorial");
+  });
 });

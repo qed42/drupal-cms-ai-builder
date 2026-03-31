@@ -29,6 +29,9 @@ export function compileRulesToPromptFragment(rules: DesignRuleSet): string {
   if (comp.sectionOrder?.length) {
     compLines.push(`- Preferred section order: ${comp.sectionOrder.join(" → ")}`);
   }
+  if (comp.headingHierarchy) {
+    compLines.push(`- Heading hierarchy: ${comp.headingHierarchy}`);
+  }
   if (compLines.length > 0) {
     sections.push(`### Composition Constraints\n${compLines.join("\n")}`);
   }
@@ -66,6 +69,9 @@ export function compileRulesToPromptFragment(rules: DesignRuleSet): string {
   }
   if (vis.layoutPreference) {
     visLines.push(`- Layout preference: ${vis.layoutPreference}`);
+  }
+  if (vis.colorUsagePattern) {
+    visLines.push(`- Color usage: ${vis.colorUsagePattern}`);
   }
   if (visLines.length > 0) {
     sections.push(`### Visual Direction\n${visLines.join("\n")}`);
@@ -151,6 +157,9 @@ function compileTokens(tokens: TokenRules): string | null {
   }
   if (tokens.gridGap) {
     lines.push(`- **Grid gap**: \`${tokens.gridGap}\``);
+  }
+  if (tokens.intraSpacing) {
+    lines.push(`- **Intra-section spacing**: ${tokens.intraSpacing}`);
   }
 
   if (lines.length === 0) return null;

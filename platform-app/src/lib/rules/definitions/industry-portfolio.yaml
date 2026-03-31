@@ -26,6 +26,7 @@ tokens:
     h2: "text-3xl md:text-5xl font-bold leading-tight tracking-tight"
   card: "rounded-none border-0 p-0 shadow-none"
   backgroundAlternation: "Alternate section backgrounds: white → gray-950 → white → gray-50. High contrast, editorial feel."
+  intraSpacing: "Within each section: heading→subtitle mb-3, subtitle→content mb-4, content→CTA mb-6. Tight editorial spacing for visual density."
 
 visual:
   heroStyle: "Full-screen portfolio piece or dramatic typography. Let the work speak first."

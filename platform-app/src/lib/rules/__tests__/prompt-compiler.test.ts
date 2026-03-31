@@ -142,4 +142,34 @@ describe("compileRulesToPromptFragment", () => {
     );
     expect(result).not.toContain("Design Tokens");
   });
+
+  it("includes heading hierarchy in composition constraints", () => {
+    const result = compileRulesToPromptFragment(
+      makeRuleset({
+        composition: { headingHierarchy: "h1 hero only, h2 section titles" },
+      })
+    );
+    expect(result).toContain("### Composition Constraints");
+    expect(result).toContain("Heading hierarchy: h1 hero only, h2 section titles");
+  });
+
+  it("includes color usage pattern in visual direction", () => {
+    const result = compileRulesToPromptFragment(
+      makeRuleset({
+        visual: { colorUsagePattern: "primary for CTAs, accent for hover" },
+      })
+    );
+    expect(result).toContain("### Visual Direction");
+    expect(result).toContain("Color usage: primary for CTAs, accent for hover");
+  });
+
+  it("includes intra-section spacing in tokens", () => {
+    const result = compileRulesToPromptFragment(
+      makeRuleset({
+        tokens: { intraSpacing: "heading→subtitle mb-4, subtitle→content mb-6" },
+      })
+    );
+    expect(result).toContain("### Design Tokens (MUST USE");
+    expect(result).toContain("**Intra-section spacing**: heading→subtitle mb-4");
+  });
 });

@@ -4,6 +4,7 @@ composition:
   requiredSections:
     - hero
     - cta
+  headingHierarchy: "h1 for hero headlines ONLY (one per page). h2 for section titles. h3 for card/feature/item titles. h4 for sub-headings within cards. Never skip levels."
 
 content:
   ctaGuidance: "Every page should have at least one clear call-to-action"
@@ -14,6 +15,7 @@ content:
 
 visual:
   imageGuidance: "Prefer high-quality photography over generic illustrations"
+  colorUsagePattern: "Use --color-primary for CTAs, key headings, and active states. Use --color-accent for hover states, decorative elements, and secondary highlights. Use --color-surface for alternating section backgrounds. Never use raw hex colors — always reference CSS custom properties."
 
 tokens:
   container: "max-w-6xl mx-auto px-6 lg:px-8"
@@ -32,6 +34,7 @@ tokens:
   backgroundAlternation: "Alternate section backgrounds: white → gray-50 → white → brand-primary/5. Never stack two sections with the same background."
   focus: "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]"
   gridGap: "gap-6 md:gap-8"
+  intraSpacing: "Within each section: heading→subtitle mb-4, subtitle→content mb-6, content→CTA mb-8 md:mb-12. Use consistent spacing scale (4→6→8→12) for visual rhythm."
 
 compliance:
   accessibilityNotes:

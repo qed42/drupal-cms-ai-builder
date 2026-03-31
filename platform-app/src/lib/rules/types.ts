@@ -14,6 +14,8 @@ export interface CompositionRules {
   maxSectionsPerPage?: number;
   /** Preferred section ordering hints */
   sectionOrder?: string[];
+  /** Heading hierarchy rules (e.g., "h1: hero only, h2: section titles") */
+  headingHierarchy?: string;
 }
 
 export interface ContentRules {
@@ -36,6 +38,8 @@ export interface VisualRules {
   imageGuidance?: string;
   /** Layout preference description */
   layoutPreference?: string;
+  /** Color usage pattern guidance (when to use primary vs accent) */
+  colorUsagePattern?: string;
 }
 
 export interface TokenTypography {
@@ -70,6 +74,8 @@ export interface TokenRules {
   focus?: string;
   /** Grid gap token */
   gridGap?: string;
+  /** Intra-section spacing scale (heading→subtitle→content→CTA) */
+  intraSpacing?: string;
 }
 
 export interface ComplianceRules {
