@@ -94,8 +94,8 @@ describe("CodeComponentResponseSchema", () => {
       jsx: 'export default function AllTypes({ a,b,c,d,e,f,g,h }) { return (<section><p>{a}</p></section>); }',
       css: "",
       props: [
-        { name: "textProp", type: "string", required: true, default: null, description: "" },
-        { name: "richText", type: "formatted_text", required: false, default: null, description: "" },
+        { name: "text_prop", type: "string", required: true, default: null, description: "" },
+        { name: "rich_text", type: "formatted_text", required: false, default: null, description: "" },
         { name: "flag", type: "boolean", required: false, default: false, description: "" },
         { name: "count", type: "integer", required: false, default: 0, description: "" },
         { name: "price", type: "number", required: false, default: 0, description: "" },
@@ -355,7 +355,7 @@ describe("CodeComponentResponseSchema — list prop types", () => {
       jsx: 'export default function Gallery({ imageUrls }) { return (<section>{imageUrls.map((u,i) => <img key={i} src={u} alt="" />)}</section>); }',
       css: "",
       props: [
-        { name: "imageUrls", type: "list:text", required: true, default: null, description: "List of image URLs" },
+        { name: "image_urls", type: "list:text", required: true, default: null, description: "List of image URLs" },
       ],
       slots: [],
     };

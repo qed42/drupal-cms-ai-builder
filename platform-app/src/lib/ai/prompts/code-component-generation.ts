@@ -26,7 +26,7 @@ export const CodeComponentResponseSchema = z.object({
     z.object({
       name: z
         .string()
-        .regex(/^[a-z][a-zA-Z0-9_]*$/, "Prop name must be camelCase"),
+        .regex(/^[a-z][a-z0-9_]{0,30}$/, "Prop name must be snake_case, max 31 chars"),
       type: z.enum([
         "string",
         "formatted_text",
@@ -44,7 +44,7 @@ export const CodeComponentResponseSchema = z.object({
         z.string(),
         z.number(),
         z.boolean(),
-        z.object({ url: z.string(), alt: z.string() }),
+        z.object({ src: z.string(), alt: z.string() }),
         z.null(),
       ]),
       description: z.string(),
@@ -88,12 +88,12 @@ const SECTION_TYPE_GUIDANCE: Record<string, string> = {
 const HERO_EXAMPLE: CodeComponentResponse = {
   machineName: "hero_gradient_ex",
   name: "Hero with Gradient Overlay",
-  jsx: `export default function HeroGradientEx({ heading, subheading, ctaText, ctaUrl, backgroundImage }) {
+  jsx: `export default function HeroGradientEx({ heading, subheading, cta_text, cta_url, bg_image }) {
   return (
     <section className="relative min-h-[80vh] flex items-center overflow-hidden">
       <img
-        src={backgroundImage || "/placeholder/1920x800"}
-        alt="Hero background"
+        src={bg_image?.src || "/placeholder/1920x800"}
+        alt={bg_image?.alt || "Hero background"}
         className="absolute inset-0 w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-primary)]/90 to-transparent" />
@@ -105,11 +105,11 @@ const HERO_EXAMPLE: CodeComponentResponse = {
           {subheading}
         </p>
         <a
-          href={ctaUrl || "#contact"}
+          href={cta_url || "#contact"}
           className="inline-block mt-8 px-8 py-4 bg-[var(--color-accent)] text-black font-semibold rounded-lg motion-safe:animate-[fadeInUp_600ms_ease_400ms_both] hover:scale-105 transition-transform motion-reduce:transition-none"
-          aria-label={ctaText}
+          aria-label={cta_text}
         >
-          {ctaText}
+          {cta_text}
         </a>
       </div>
     </section>
@@ -120,11 +120,11 @@ const HERO_EXAMPLE: CodeComponentResponse = {
   to { opacity: 1; transform: translateY(0); }
 }`,
   props: [
-    { name: "heading", type: "string", required: true, default: null, description: "Main hero headline" },
-    { name: "subheading", type: "string", required: false, default: null, description: "Supporting text below the headline" },
-    { name: "ctaText", type: "string", required: true, default: "Get Started", description: "Call-to-action button text" },
-    { name: "ctaUrl", type: "link", required: false, default: null, description: "CTA button destination URL" },
-    { name: "backgroundImage", type: "image", required: false, default: null, description: "Hero background image" },
+    { name: "heading", type: "string", required: true, default: "Transform Your Business Today", description: "Main hero headline" },
+    { name: "subheading", type: "string", required: false, default: "We deliver exceptional results that help you grow", description: "Supporting text below the headline" },
+    { name: "cta_text", type: "string", required: true, default: "Get Started", description: "Call-to-action button text" },
+    { name: "cta_url", type: "link", required: false, default: null, description: "CTA button destination URL" },
+    { name: "bg_image", type: "image", required: false, default: null, description: "Hero background image" },
   ],
   slots: [],
 };
@@ -132,20 +132,20 @@ const HERO_EXAMPLE: CodeComponentResponse = {
 const FEATURES_EXAMPLE: CodeComponentResponse = {
   machineName: "features_grid_ex",
   name: "Features Grid",
-  jsx: `export default function FeaturesGridEx({ sectionTitle, sectionDescription, feature1Title, feature1Desc, feature2Title, feature2Desc, feature3Title, feature3Desc }) {
+  jsx: `export default function FeaturesGridEx({ section_title, section_desc, card_1_title, card_1_desc, card_2_title, card_2_desc, card_3_title, card_3_desc }) {
   const features = [
-    { title: feature1Title, desc: feature1Desc, icon: "\\u2726" },
-    { title: feature2Title, desc: feature2Desc, icon: "\\u25C8" },
-    { title: feature3Title, desc: feature3Desc, icon: "\\u25C9" },
+    { title: card_1_title, desc: card_1_desc, icon: "\\u2726" },
+    { title: card_2_title, desc: card_2_desc, icon: "\\u25C8" },
+    { title: card_3_title, desc: card_3_desc, icon: "\\u25C9" },
   ];
 
   return (
     <section className="py-16 md:py-24 px-6 bg-[var(--color-surface,#f9fafb)]">
       <div className="max-w-6xl mx-auto text-center">
         <h2 className="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-[var(--color-primary)]">
-          {sectionTitle}
+          {section_title}
         </h2>
-        <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">{sectionDescription}</p>
+        <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">{section_desc}</p>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((f, i) => (
             <div
@@ -164,14 +164,14 @@ const FEATURES_EXAMPLE: CodeComponentResponse = {
 }`,
   css: "",
   props: [
-    { name: "sectionTitle", type: "string", required: true, default: null, description: "Section heading" },
-    { name: "sectionDescription", type: "string", required: false, default: null, description: "Section subtitle" },
-    { name: "feature1Title", type: "string", required: true, default: null, description: "First feature title" },
-    { name: "feature1Desc", type: "string", required: false, default: null, description: "First feature description" },
-    { name: "feature2Title", type: "string", required: true, default: null, description: "Second feature title" },
-    { name: "feature2Desc", type: "string", required: false, default: null, description: "Second feature description" },
-    { name: "feature3Title", type: "string", required: true, default: null, description: "Third feature title" },
-    { name: "feature3Desc", type: "string", required: false, default: null, description: "Third feature description" },
+    { name: "section_title", type: "string", required: true, default: "Why Choose Us", description: "Section heading" },
+    { name: "section_desc", type: "string", required: false, default: "Discover what sets us apart", description: "Section subtitle" },
+    { name: "card_1_title", type: "string", required: true, default: "Expert Service", description: "First feature title" },
+    { name: "card_1_desc", type: "string", required: false, default: "Our team brings years of experience to every project", description: "First feature description" },
+    { name: "card_2_title", type: "string", required: true, default: "Quality Results", description: "Second feature title" },
+    { name: "card_2_desc", type: "string", required: false, default: "We deliver outcomes that exceed expectations", description: "Second feature description" },
+    { name: "card_3_title", type: "string", required: true, default: "Personal Touch", description: "Third feature title" },
+    { name: "card_3_desc", type: "string", required: false, default: "Every client gets dedicated attention and care", description: "Third feature description" },
   ],
   slots: [],
 };
@@ -179,17 +179,17 @@ const FEATURES_EXAMPLE: CodeComponentResponse = {
 const TESTIMONIALS_EXAMPLE: CodeComponentResponse = {
   machineName: "testimonials_cards_ex",
   name: "Testimonials Cards",
-  jsx: `export default function TestimonialsCardsEx({ sectionTitle, quote1, author1, role1, avatar1, quote2, author2, role2, avatar2 }) {
+  jsx: `export default function TestimonialsCardsEx({ section_title, quote_1, author_1, role_1, avatar_1, quote_2, author_2, role_2, avatar_2 }) {
   const testimonials = [
-    { quote: quote1, author: author1, role: role1, avatar: avatar1 },
-    { quote: quote2, author: author2, role: role2, avatar: avatar2 },
+    { quote: quote_1, author: author_1, role: role_1, avatar: avatar_1 },
+    { quote: quote_2, author: author_2, role: role_2, avatar: avatar_2 },
   ];
 
   return (
     <section className="py-16 md:py-24 px-6">
       <div className="max-w-5xl mx-auto">
         <h2 className="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-center mb-12">
-          {sectionTitle}
+          {section_title}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {testimonials.map((t, i) => (
@@ -204,8 +204,8 @@ const TESTIMONIALS_EXAMPLE: CodeComponentResponse = {
               <p className="text-gray-700 text-lg leading-relaxed">{t.quote}</p>
               <div className="mt-6 flex items-center gap-3">
                 <img
-                  src={t.avatar || "/placeholder/48x48"}
-                  alt={"Photo of " + t.author}
+                  src={t.avatar?.src || "/placeholder/48x48"}
+                  alt={t.avatar?.alt || "Photo of " + t.author}
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div>
@@ -225,15 +225,15 @@ const TESTIMONIALS_EXAMPLE: CodeComponentResponse = {
   to { opacity: 1; transform: translateY(0); }
 }`,
   props: [
-    { name: "sectionTitle", type: "string", required: true, default: "What Our Clients Say", description: "Section heading" },
-    { name: "quote1", type: "string", required: true, default: null, description: "First testimonial quote" },
-    { name: "author1", type: "string", required: true, default: null, description: "First testimonial author name" },
-    { name: "role1", type: "string", required: false, default: null, description: "First author role/company" },
-    { name: "avatar1", type: "image", required: false, default: null, description: "First author photo" },
-    { name: "quote2", type: "string", required: true, default: null, description: "Second testimonial quote" },
-    { name: "author2", type: "string", required: true, default: null, description: "Second testimonial author name" },
-    { name: "role2", type: "string", required: false, default: null, description: "Second author role/company" },
-    { name: "avatar2", type: "image", required: false, default: null, description: "Second author photo" },
+    { name: "section_title", type: "string", required: true, default: "What Our Clients Say", description: "Section heading" },
+    { name: "quote_1", type: "string", required: true, default: "Outstanding service from start to finish. Highly recommended!", description: "First testimonial quote" },
+    { name: "author_1", type: "string", required: true, default: "Sarah Johnson", description: "First testimonial author name" },
+    { name: "role_1", type: "string", required: false, default: "Business Owner", description: "First author role/company" },
+    { name: "avatar_1", type: "image", required: false, default: null, description: "First author photo" },
+    { name: "quote_2", type: "string", required: true, default: "Professional, reliable, and truly exceptional quality.", description: "Second testimonial quote" },
+    { name: "author_2", type: "string", required: true, default: "Michael Chen", description: "Second testimonial author name" },
+    { name: "role_2", type: "string", required: false, default: "Marketing Director", description: "Second author role/company" },
+    { name: "avatar_2", type: "image", required: false, default: null, description: "Second author photo" },
   ],
   slots: [],
 };
@@ -333,7 +333,7 @@ export function buildCodeComponentPrompt(
 - **Framework:** React/Preact — export default function ComponentName(props)
 - **Styling:** Tailwind CSS v4 utility classes only. No raw CSS except @keyframes in the css field.
 - **Available imports:** cn, clsx, cva (class-variance-authority), tailwind-merge, FormattedText
-- **Image props:** Use Canvas "image" prop type. Render as <img src={props.imageName || "/placeholder/WxH"} alt="descriptive text" />
+- **Image props:** Use Canvas "image" prop type. Image props are objects with {src, alt}. Render as <img src={props.image_name?.src || "/placeholder/WxH"} alt={props.image_name?.alt || "descriptive text"} />
 - **Links:** Use standard <a href={props.ctaUrl}> elements
 - **State:** React useState is allowed for interactive elements (accordions, toggles, mobile menus)
 - **FORBIDDEN:** No fetch(), no Function constructor, no document.cookie, window.location, localStorage, innerHTML assignment, @import, external url() in CSS
@@ -380,7 +380,7 @@ Return a single JSON object matching this exact structure:
   "jsx": "export default function ComponentName({ ...props }) { return (<section>...</section>); }",
   "css": "@keyframes ... { } (only if needed for animations)",
   "props": [
-    { "name": "propName", "type": "string|formatted_text|boolean|integer|number|link|image|video|list:text|list:integer", "required": true, "default": "optional default", "description": "What this prop controls" }
+    { "name": "prop_name", "type": "string|formatted_text|boolean|integer|number|link|image|video|list:text|list:integer", "required": true, "default": "realistic content default", "description": "What this prop controls" }
   ],
   "slots": []
 }
@@ -394,6 +394,22 @@ Return a single JSON object matching this exact structure:
 - Use var(--color-primary), var(--color-accent), var(--font-heading), var(--font-body) for brand tokens
 - All <img> elements must have alt attributes
 - All animations must use motion-safe: or motion-reduce: Tailwind variants
+
+### PROP NAMING RULES (MUST FOLLOW):
+- Use short **snake_case** names: heading, cta_text, hero_img, quote_1
+- Max 31 characters per prop name
+- Use numbered suffixes for repeated items: card_1_title, card_2_title
+- NO camelCase — use underscores between words
+- Good: heading, body_text, cta_url, hero_img, card_1_title, section_desc
+- Bad: primaryCallToActionButtonText, firstFeatureCardDescription, sectionTitle
+
+### PROP DEFAULT VALUES (MUST FOLLOW):
+- ALL string/text props MUST have realistic default values — NEVER use null for content props
+- Defaults should match the content brief and tone guidance — not generic text like "Section Title" or "Description here"
+- CTA buttons: use action-oriented text relevant to the section type (e.g., "Book Now", "Learn More")
+- Headings: use the section heading from the content brief as the default
+- Descriptions: write a real sentence that fits the section purpose
+- Only use null for image, video, and link props (these get populated by the image pipeline)
 
 ${examplesSection}
 ${designRulesFragment ? `\n${designRulesFragment}\n` : ""}

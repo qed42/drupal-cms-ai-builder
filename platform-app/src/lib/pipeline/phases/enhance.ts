@@ -143,7 +143,8 @@ async function enhanceCodeComponentImages(
         // Skip if already a resolved image object with a real URL
         if (currentVal && typeof currentVal === "object" && !Array.isArray(currentVal)) {
           const obj = currentVal as Record<string, unknown>;
-          if (typeof obj.url === "string" && !isPlaceholderUrl(obj.url)) continue;
+          const imgUrl = (obj.src || obj.url) as string | undefined;
+          if (typeof imgUrl === "string" && !isPlaceholderUrl(imgUrl)) continue;
         }
 
         // Build search query from section context
@@ -169,7 +170,7 @@ async function enhanceCodeComponentImages(
             if (matched) {
               const userImg = matched as UserImage & { url?: string; file_url?: string };
               const src = userImg.url || userImg.file_url || "";
-              section.props[propName] = { url: src, alt: matched.description };
+              section.props[propName] = { src, width: 1200, height: 800, alt: matched.description };
               usedUserImageIds.add(best.imageId);
               if (!section._meta) section._meta = {};
               section._meta.imageQuery = query;
@@ -197,7 +198,7 @@ async function enhanceCodeComponentImages(
                 800
               );
               if (downloaded) {
-                section.props[propName] = { url: downloaded.localPath, alt: downloaded.alt };
+                section.props[propName] = { src: downloaded.localPath, width: 1200, height: 800, alt: downloaded.alt };
                 usedPhotoIds.add(stockResult.photoId);
                 if (!section._meta) section._meta = {};
                 section._meta.imageQuery = query;
