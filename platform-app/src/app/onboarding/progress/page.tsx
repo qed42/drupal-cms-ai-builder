@@ -178,13 +178,15 @@ export default function ProgressPage() {
   const hasMessages = activityPhases.some((p) => p.messages.length > 0);
 
   function getHeading(): string {
-    if (done) return `${siteName || "Your website"} is ready!`;
+    if (done && siteStatus === "live") return `${siteName || "Your website"} is live!`;
+    if (done) return "Your content is ready for review";
     if (error) return "Something went wrong";
     return `Building ${siteName || "your site"}...`;
   }
 
   function getSubheading(): string {
-    if (done) return "Review your generated content, make any edits, then approve to launch your site.";
+    if (done && siteStatus === "live") return "Your website is published and ready for visitors.";
+    if (done) return "Review your pages, make any edits, then launch.";
     if (error && siteStatus === "provisioning_failed") return "Your content is safe. You can retry launching your site.";
     if (error) return "Your data is safe. You can try again.";
     if (siteStatus === "provisioning") return "Launching your website. This usually takes 2-3 minutes.";

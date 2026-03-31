@@ -31,6 +31,7 @@ import type { GeneratePhaseResult, GenerateProgressCallback } from "./generate";
 function buildSectionDesignBrief(
   planSection: { heading: string; type: string; contentBrief: string },
   position: number,
+  totalSections: number,
   data: OnboardingData,
   research: ResearchBrief,
   targetKeywords?: string[],
@@ -47,6 +48,7 @@ function buildSectionDesignBrief(
     contentBrief: planSection.contentBrief,
     sectionType: planSection.type,
     position,
+    totalSections,
     brandTokens: {
       colors: data.colors || {},
       fonts: data.fonts || { heading: "Inter", body: "Inter" },
@@ -177,6 +179,7 @@ export async function runCodeComponentGeneratePhase(
       const brief = buildSectionDesignBrief(
         planSection,
         secIdx,
+        planPage.sections.length,
         data,
         research,
         planPage.targetKeywords,

@@ -302,6 +302,83 @@ describe("buildCodeComponentPrompt", () => {
     const prompt = buildCodeComponentPrompt(noBrandBrief);
     expect(prompt).toContain("Use default brand color variables");
   });
+
+  it("includes design rules fragment before GENERATE NOW when provided", () => {
+    const fragment = `## DESIGN RULES (Auto-resolved: global → industry-healthcare)
+
+### Design Tokens (MUST USE — apply these exact classes for cross-section consistency)
+- **Container**: \`max-w-6xl mx-auto px-6 lg:px-8\`
+- **Card base**: \`rounded-2xl border border-blue-100 p-6 md:p-8 shadow-sm bg-white\``;
+
+    const prompt = buildCodeComponentPrompt(baseBrief, undefined, fragment);
+    // Fragment should be present
+    expect(prompt).toContain("DESIGN RULES");
+    expect(prompt).toContain("Design Tokens (MUST USE");
+    expect(prompt).toContain("max-w-6xl mx-auto px-6 lg:px-8");
+    expect(prompt).toContain("rounded-2xl");
+    // Fragment should appear BEFORE "GENERATE NOW"
+    const fragmentIdx = prompt.indexOf("DESIGN RULES");
+    const generateIdx = prompt.indexOf("GENERATE NOW");
+    expect(fragmentIdx).toBeLessThan(generateIdx);
+    // Fragment should appear AFTER "REFERENCE EXAMPLES"
+    const examplesIdx = prompt.indexOf("REFERENCE EXAMPLES");
+    expect(fragmentIdx).toBeGreaterThan(examplesIdx);
+  });
+
+  it("omits design rules section when no fragment provided", () => {
+    const prompt = buildCodeComponentPrompt(baseBrief);
+    expect(prompt).not.toContain("DESIGN RULES");
+  });
+
+  it("includes total sections in position context", () => {
+    const briefWithTotal = { ...baseBrief, position: 2, totalSections: 6 };
+    const prompt = buildCodeComponentPrompt(briefWithTotal);
+    expect(prompt).toContain("Section 3 of 6");
+  });
+
+  it("includes section index in GENERATE NOW instruction", () => {
+    const briefWithTotal = { ...baseBrief, position: 0, totalSections: 5 };
+    const prompt = buildCodeComponentPrompt(briefWithTotal);
+    expect(prompt).toContain("Generate section 1 of 5 (hero)");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// List Prop Type Tests (TASK-513)
+// ---------------------------------------------------------------------------
+
+describe("CodeComponentResponseSchema — list prop types", () => {
+  it("accepts list:text prop type", () => {
+    const valid = {
+      machineName: "gallery_images",
+      name: "Gallery",
+      jsx: 'export default function Gallery({ imageUrls }) { return (<section>{imageUrls.map((u,i) => <img key={i} src={u} alt="" />)}</section>); }',
+      css: "",
+      props: [
+        { name: "imageUrls", type: "list:text", required: true, default: null, description: "List of image URLs" },
+      ],
+      slots: [],
+    };
+
+    const result = CodeComponentResponseSchema.safeParse(valid);
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts list:integer prop type", () => {
+    const valid = {
+      machineName: "stats_counter",
+      name: "Stats",
+      jsx: 'export default function Stats({ values }) { return (<section>{values.map((v,i) => <span key={i}>{v}</span>)}</section>); }',
+      css: "",
+      props: [
+        { name: "values", type: "list:integer", required: true, default: null, description: "List of stat values" },
+      ],
+      slots: [],
+    };
+
+    const result = CodeComponentResponseSchema.safeParse(valid);
+    expect(result.success).toBe(true);
+  });
 });
 
 // ---------------------------------------------------------------------------

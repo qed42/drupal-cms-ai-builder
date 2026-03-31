@@ -14,7 +14,9 @@ export type CodeComponentPropType =
   | "number"
   | "link"
   | "image"
-  | "video";
+  | "video"
+  | "list:text"
+  | "list:integer";
 
 /** A single prop definition for a Code Component. */
 export interface CodeComponentProp {
@@ -73,6 +75,8 @@ export interface SectionDesignBrief {
   sectionType: string;
   /** Position on the page (0-based index). */
   position: number;
+  /** Total number of sections on the page (for background alternation). */
+  totalSections?: number;
   /** Brand tokens (colors, fonts) for the site. */
   brandTokens: {
     colors: Record<string, string>;

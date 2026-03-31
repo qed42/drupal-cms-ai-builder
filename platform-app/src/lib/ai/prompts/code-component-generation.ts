@@ -36,6 +36,8 @@ export const CodeComponentResponseSchema = z.object({
         "link",
         "image",
         "video",
+        "list:text",
+        "list:integer",
       ]),
       required: z.boolean(),
       default: z.union([
@@ -343,7 +345,7 @@ ${brandSection}
 ## ${animationGuidance}
 
 ## ${styleGuidance}
-${designRulesFragment ? `\n${designRulesFragment}\n` : ""}
+
 ## RESPONSIVE DESIGN
 
 - Mobile-first: default styles for mobile, then sm: (640px), md: (768px), lg: (1024px)
@@ -378,7 +380,7 @@ Return a single JSON object matching this exact structure:
   "jsx": "export default function ComponentName({ ...props }) { return (<section>...</section>); }",
   "css": "@keyframes ... { } (only if needed for animations)",
   "props": [
-    { "name": "propName", "type": "string|formatted_text|boolean|integer|number|link|image|video", "required": true, "default": "optional default", "description": "What this prop controls" }
+    { "name": "propName", "type": "string|formatted_text|boolean|integer|number|link|image|video|list:text|list:integer", "required": true, "default": "optional default", "description": "What this prop controls" }
   ],
   "slots": []
 }
@@ -394,10 +396,10 @@ Return a single JSON object matching this exact structure:
 - All animations must use motion-safe: or motion-reduce: Tailwind variants
 
 ${examplesSection}
-
+${designRulesFragment ? `\n${designRulesFragment}\n` : ""}
 ## GENERATE NOW
 
-Generate the ${brief.sectionType} component based on the section context above. Return ONLY the JSON object, no markdown fencing.`;
+Generate section ${brief.position + 1}${brief.totalSections ? ` of ${brief.totalSections}` : ""} (${brief.sectionType}) based on the section context and design rules above. Return ONLY the JSON object, no markdown fencing.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -425,7 +427,7 @@ function buildContextSection(brief: SectionDesignBrief): string {
     `- **Heading:** "${brief.heading}"`,
     `- **Content brief:** ${brief.contentBrief}`,
     `- **Tone:** ${brief.toneGuidance}`,
-    `- **Position on page:** ${brief.position === 0 ? "First section (most prominent)" : `Section ${brief.position + 1}`}`,
+    `- **Position on page:** ${brief.position === 0 ? "First section (most prominent)" : `Section ${brief.position + 1}`}${brief.totalSections ? ` of ${brief.totalSections}` : ""}`,
   ];
 
   if (brief.targetKeywords?.length) {
