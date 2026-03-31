@@ -3,9 +3,11 @@
  *
  * Regenerates a single section within a page using AI, with research brief
  * and content plan context for consistency. Validates output against
- * Space DS component manifest.
+ * Space DS component manifest for SDC sections, or uses Designer Agent
+ * for code component sections.
  *
  * TASK-233: Per-Section AI Regeneration
+ * TASK-507: Code component regeneration support
  */
 
 import { auth } from "@/lib/auth";
@@ -18,8 +20,11 @@ import { buildSectionRegenerationPrompt } from "@/lib/ai/prompts/section-regener
 import { validateSections } from "@/lib/blueprint/component-validator";
 import { safeParsePropsJson } from "@/lib/ai/safe-parse-props";
 import { buildComponentTree } from "@/lib/blueprint/component-tree-builder";
+import { wrapAsCanvasTreeNode } from "@/lib/code-components/config-builder";
+import { generateCodeComponent } from "@/lib/code-components/designer-agent";
 import { loadPipelineContext } from "@/lib/blueprint/load-pipeline-context";
 import type { PageSection } from "@/lib/blueprint/types";
+import type { SectionDesignBrief } from "@/lib/code-components/types";
 
 interface RegenerateBody {
   pageIndex: number;
@@ -86,58 +91,139 @@ export async function POST(
   // Save previous section for undo
   const previousSection = { ...page.sections[body.sectionIndex] };
 
-  // Build surrounding sections (exclude current)
-  const surroundingSections: PageSection[] = page.sections
-    .filter((_, idx) => idx !== body.sectionIndex)
-    .map((s) => ({ component_id: s.component_id, props: s.props }));
+  const currentSection = page.sections[body.sectionIndex];
+  const isCodeComponent = currentSection.component_id.startsWith("js.");
 
-  // Build regeneration prompt
-  const prompt = buildSectionRegenerationPrompt({
-    siteName: (payload.site as Record<string, unknown>)?.name as string ?? "",
-    pageTitle: page.title,
-    pageSlug: page.slug,
-    sectionIndex: body.sectionIndex,
-    currentSection: {
-      component_id: page.sections[body.sectionIndex].component_id,
-      props: page.sections[body.sectionIndex].props,
-    },
-    surroundingSections,
-    research,
-    plan,
-    guidance: body.guidance,
-  });
+  let validatedSection: PageSection;
+  let validationIssues: unknown[] = [];
 
-  // Generate new section content
-  const provider = await getAIProvider("generate");
-  const generated = await generateValidatedJSON(
-    provider,
-    prompt,
-    PageSectionSchema,
-    { phase: "generate", temperature: 0.5, maxTokens: 2000 }
-  );
+  if (isCodeComponent) {
+    // TASK-507: Code component regeneration via Designer Agent
+    const siteData = payload.site as Record<string, unknown>;
+    const brandData = payload.brand as Record<string, string> | undefined;
+    const meta = (currentSection as PageSection)._meta;
 
-  // Parse props_json with safe recovery
-  const newSection: PageSection = {
-    component_id: generated.component_id,
-    props: safeParsePropsJson(generated.props_json, generated.component_id),
-  };
+    const brief: SectionDesignBrief = {
+      heading: (currentSection.props.heading as string) || page.title,
+      contentBrief: meta?.contentBrief || body.guidance || `Regenerate the ${meta?.codeComponent?.machineName || "section"} section`,
+      sectionType: meta?.codeComponent?.machineName?.replace(/^[a-z]+_/, "") || "section",
+      position: body.sectionIndex,
+      brandTokens: {
+        colors: (brandData as Record<string, string>) || {},
+        fonts: { heading: "Inter", body: "Inter" },
+      },
+      toneGuidance: (siteData?.tone as string) || research.toneGuidance?.primary || "professional",
+      animationLevel: "moderate",
+      visualStyle: "minimal",
+      previousSectionSummary: body.sectionIndex > 0
+        ? `Previous: ${page.sections[body.sectionIndex - 1].component_id}`
+        : undefined,
+      targetKeywords: meta?.targetKeywords,
+    };
 
-  // Validate against manifest
-  const validation = validateSections([newSection]);
-  const validatedSection = validation.sanitizedSections[0];
+    const previousSections = page.sections
+      .filter((_, idx) => idx !== body.sectionIndex)
+      .filter((s) => s.component_id.startsWith("js."))
+      .map((s) => ({
+        machineName: s.component_id.replace("js.", ""),
+        sectionType: (s as PageSection)._meta?.codeComponent?.machineName?.replace(/^[a-z]+_/, "") || "section",
+      }));
+
+    const result = await generateCodeComponent(brief, previousSections, page.slug);
+
+    validatedSection = {
+      component_id: `js.${result.output.machineName}`,
+      props: Object.fromEntries(
+        result.output.props.map((p) => {
+          if (p.default !== null && p.default !== undefined) return [p.name, p.default];
+          if (p.required) return [p.name, p.description || p.name];
+          return [p.name, undefined];
+        }).filter(([, v]) => v !== undefined)
+      ),
+      _meta: {
+        contentBrief: meta?.contentBrief,
+        targetKeywords: meta?.targetKeywords,
+        codeComponent: {
+          machineName: result.output.machineName,
+          generatedAt: new Date().toISOString(),
+          validationPassed: result.validationResult.valid,
+          retryCount: result.retryCount,
+        },
+      },
+    };
+
+    // Update _codeComponents configs in the payload
+    const codeComponents = (payload._codeComponents as {
+      configs: Record<string, string>;
+      metadata: Array<Record<string, unknown>>;
+    }) || { configs: {}, metadata: [] };
+
+    // Remove old config if machine name changed
+    const oldMachineName = meta?.codeComponent?.machineName;
+    if (oldMachineName && oldMachineName !== result.output.machineName) {
+      delete codeComponents.configs[oldMachineName];
+    }
+    codeComponents.configs[result.output.machineName] = result.configYaml;
+    payload._codeComponents = codeComponents;
+  } else {
+    // SDC section regeneration (existing flow)
+    const surroundingSections: PageSection[] = page.sections
+      .filter((_, idx) => idx !== body.sectionIndex)
+      .map((s) => ({ component_id: s.component_id, props: s.props }));
+
+    const prompt = buildSectionRegenerationPrompt({
+      siteName: (payload.site as Record<string, unknown>)?.name as string ?? "",
+      pageTitle: page.title,
+      pageSlug: page.slug,
+      sectionIndex: body.sectionIndex,
+      currentSection: {
+        component_id: currentSection.component_id,
+        props: currentSection.props,
+      },
+      surroundingSections,
+      research,
+      plan,
+      guidance: body.guidance,
+    });
+
+    const provider = await getAIProvider("generate");
+    const generated = await generateValidatedJSON(
+      provider,
+      prompt,
+      PageSectionSchema,
+      { phase: "generate", temperature: 0.5, maxTokens: 2000 }
+    );
+
+    const newSection: PageSection = {
+      component_id: generated.component_id,
+      props: safeParsePropsJson(generated.props_json, generated.component_id),
+    };
+
+    const validation = validateSections([newSection]);
+    validatedSection = validation.sanitizedSections[0];
+    validationIssues = validation.issues;
+  }
 
   // Update the blueprint
   const updatedPages = JSON.parse(JSON.stringify(pages));
   updatedPages[body.pageIndex].sections[body.sectionIndex] = validatedSection;
 
   // Rebuild component tree for the page
-  const updatedComponentTree = buildComponentTree(
-    updatedPages[body.pageIndex].sections.map((s: { component_id: string; props: Record<string, unknown> }) => ({
-      component_id: s.component_id,
-      props: s.props,
-    }))
-  );
-  updatedPages[body.pageIndex].component_tree = updatedComponentTree;
+  if (isCodeComponent) {
+    updatedPages[body.pageIndex].component_tree = updatedPages[body.pageIndex].sections
+      .filter((s: { component_id: string }) => s.component_id.startsWith("js.") && !s.component_id.startsWith("js.failed_"))
+      .map((s: { component_id: string; props: Record<string, unknown> }) => {
+        const machineName = s.component_id.replace("js.", "");
+        return wrapAsCanvasTreeNode(machineName, s.props);
+      });
+  } else {
+    updatedPages[body.pageIndex].component_tree = buildComponentTree(
+      updatedPages[body.pageIndex].sections.map((s: { component_id: string; props: Record<string, unknown> }) => ({
+        component_id: s.component_id,
+        props: s.props,
+      }))
+    );
+  }
 
   await prisma.blueprint.update({
     where: { id: site.blueprint.id },
@@ -148,6 +234,6 @@ export async function POST(
     success: true,
     section: validatedSection,
     previousSection,
-    validationIssues: validation.issues,
+    validationIssues,
   });
 }

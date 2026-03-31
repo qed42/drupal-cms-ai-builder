@@ -89,3 +89,37 @@ export interface SectionDesignBrief {
   /** SEO target keywords for this section. */
   targetKeywords?: string[];
 }
+
+/** Validation result for a code component. */
+export interface ValidationResult {
+  valid: boolean;
+  errors: ValidationError[];
+  warnings: ValidationWarning[];
+}
+
+export interface ValidationError {
+  rule: string;
+  message: string;
+  line?: number;
+}
+
+export interface ValidationWarning {
+  rule: string;
+  message: string;
+  line?: number;
+}
+
+/**
+ * CodeComponentGenerator interface — parallel to DesignSystemAdapter.
+ * Implementations generate unique code components from design briefs.
+ */
+export interface CodeComponentGenerator {
+  /** Generate a code component from a section design brief. */
+  generate(brief: SectionDesignBrief): Promise<CodeComponentOutput>;
+
+  /** Validate a generated component's JSX, a11y, and security. */
+  validate(output: CodeComponentOutput): ValidationResult;
+
+  /** Build Drupal config YAML from a component output. */
+  buildConfig(output: CodeComponentOutput): string;
+}

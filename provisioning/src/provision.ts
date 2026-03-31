@@ -14,6 +14,7 @@ import { installThemeStep } from "./steps/05-install-theme.js";
 import { enableModulesStep } from "./steps/06-enable-modules.js";
 import { importConfigStep } from "./steps/07-import-config.js";
 import { importBlueprintStep } from "./steps/08-import-blueprint.js";
+import { importCodeComponentsStep } from "./steps/08.3-import-code-components.js";
 import { copyStockImagesStep } from "./steps/08.5-copy-stock-images.js";
 import { applyBrandStep } from "./steps/09-apply-brand.js";
 import { configureSiteStep } from "./steps/10-configure-site.js";
@@ -111,6 +112,10 @@ async function provision(): Promise<void> {
     // so that rewritten paths (stock images, logo) are included in the import.
     { name: "Copy stock images", label: "Adding images to your pages", fn: copyStockImagesStep },
     { name: "Apply brand tokens", label: "Applying your brand colors and fonts", fn: applyBrandStep },
+    // Code components must be imported BEFORE the blueprint so that Canvas
+    // computes version hashes, which we then inject into the blueprint's
+    // component_tree before it gets imported.
+    { name: "Import code components", label: "Adding custom interactive components", fn: importCodeComponentsStep },
     { name: "Import blueprint", label: "Loading your content and pages", fn: importBlueprintStep },
     { name: "Create unplaced media", label: "Adding your photos to the media library", fn: createUnplacedMediaStep },
     { name: "Configure site", label: "Final site configuration", fn: configureSiteStep },

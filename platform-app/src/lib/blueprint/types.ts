@@ -10,6 +10,19 @@ export interface BlueprintBundle {
   footer?: FooterConfig;
   /** Manifest of ALL user-uploaded images (TASK-442). */
   user_images?: UserImageManifestEntry[];
+  /** Code component configs for provisioning — present only in code_components mode (M26). */
+  _codeComponents?: {
+    configs: Record<string, string>;
+    metadata: Array<{
+      machineName: string;
+      name: string;
+      sectionType: string;
+      pageSlug: string;
+      generatedAt: string;
+    }>;
+    /** Resolved design rules used for this generation (M27 observability). */
+    _designRules?: unknown;
+  };
 }
 
 /** A single entry in the blueprint's user_images manifest. */
@@ -100,6 +113,12 @@ export interface PageSection {
     imageMatchScore?: number;          // Match confidence for user images (0-1)
     contentBrief?: string;             // Content brief from ContentPlan
     targetKeywords?: string[];         // Target keywords from ContentPlan page
+    codeComponent?: {                  // Present on code component sections (M26)
+      machineName: string;
+      generatedAt: string;
+      validationPassed: boolean;
+      retryCount: number;
+    };
   };
 }
 

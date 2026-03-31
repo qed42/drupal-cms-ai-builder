@@ -7,6 +7,7 @@ import { getComponentLabel } from "@/lib/blueprint/markdown-renderer";
 import { getDefaultAdapter } from "@/lib/design-systems/setup";
 import SectionInsight from "./SectionInsight";
 import PageInsightsPanel from "./PageInsightsPanel";
+import CodeComponentPreview from "./CodeComponentPreview";
 
 interface PagePreviewProps {
   siteId: string;
@@ -25,6 +26,8 @@ interface PagePreviewProps {
   onPageInsightsClick?: () => void;
   onPageInsightsClose?: () => void;
   allPageSlugs?: string[];
+  /** Code component YAML configs keyed by machine name (TASK-507). */
+  codeComponentConfigs?: Record<string, string>;
 }
 
 /** Format a prop key into a human-readable label. */
@@ -422,6 +425,42 @@ function OrganismSectionTree({ section }: { section: PageSection }) {
   );
 }
 
+/**
+ * Extract JSX and CSS source code from a code component YAML config.
+ * Handles both block scalar (|) and single-line quoted string formats
+ * since the toYaml() serializer uses block scalars only for multi-line content.
+ */
+function extractCodeFromConfig(configYaml: string): { jsx: string; css: string } {
+  let jsx = "";
+  let css = "";
+
+  // Parse js.original — block scalar (| or |-) for multi-line JSX
+  const jsBlockMatch = configYaml.match(/^js:\n\s+original:\s*\|-?\n([\s\S]*?)(?=\ncss:|\n\w+:|\n$)/m);
+  if (jsBlockMatch) {
+    jsx = jsBlockMatch[1].split("\n").map((line) => line.replace(/^ {4}/, "")).join("\n").trim();
+  } else {
+    // Single-line quoted JSX (unlikely but handle it)
+    const jsInlineMatch = configYaml.match(/^js:\n\s+original:\s*'((?:[^']|'')*?)'/m);
+    if (jsInlineMatch) {
+      jsx = jsInlineMatch[1].replace(/''/g, "'");
+    }
+  }
+
+  // Parse css.original — try block scalar first, then single-line quoted
+  const cssBlockMatch = configYaml.match(/^css:\n\s+original:\s*\|-?\n([\s\S]*?)(?=\nprops:|\nslots:|\ndataDependencies:|\n\w+:|\n$)/m);
+  if (cssBlockMatch) {
+    css = cssBlockMatch[1].split("\n").map((line) => line.replace(/^ {4}/, "")).join("\n").trim();
+  } else {
+    // Single-line quoted string: css:\n  original: '.hero { color: red; }'
+    const cssInlineMatch = configYaml.match(/^css:\n\s+original:\s*'((?:[^']|'')*?)'/m);
+    if (cssInlineMatch) {
+      css = cssInlineMatch[1].replace(/''/g, "'");
+    }
+  }
+
+  return { jsx, css };
+}
+
 function SectionView({
   section,
   sectionIndex,
@@ -432,6 +471,7 @@ function SectionView({
   insightProps,
   insightOpen,
   onInsightToggle,
+  codeComponentConfigs,
 }: {
   section: PageLayout["sections"][number];
   sectionIndex: number;
@@ -448,10 +488,27 @@ function SectionView({
   };
   insightOpen?: boolean;
   onInsightToggle?: () => void;
+  codeComponentConfigs?: Record<string, string>;
 }) {
-  const label = getComponentLabel(section.component_id);
+  const isCodeComponent = section.component_id.startsWith("js.");
+  const label = isCodeComponent
+    ? section.component_id.replace("js.", "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : getComponentLabel(section.component_id);
   const hasChildren = section.children && section.children.length > 0;
   const isComposed = !!section.pattern || hasChildren;
+
+  // Extract JSX/CSS for code components
+  let codeComponentJsx: string | undefined;
+  let codeComponentCss: string | undefined;
+  if (isCodeComponent && codeComponentConfigs) {
+    const machineName = section.component_id.replace("js.", "");
+    const configYaml = codeComponentConfigs[machineName];
+    if (configYaml) {
+      const { jsx, css } = extractCodeFromConfig(configYaml);
+      codeComponentJsx = jsx || undefined;
+      codeComponentCss = css || undefined;
+    }
+  }
 
   return (
     <div className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
@@ -460,7 +517,10 @@ function SectionView({
         <div className="flex items-center gap-2">
           <span className="text-xs text-brand-400 font-medium">{label}</span>
           <span className="text-xs text-white/20">Section {sectionIndex + 1}</span>
-          {isComposed && (
+          {isCodeComponent && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400/60">code component</span>
+          )}
+          {!isCodeComponent && isComposed && (
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400/60">composed</span>
           )}
         </div>
@@ -491,9 +551,16 @@ function SectionView({
         </div>
       </div>
 
-      {/* Section content — full component tree hierarchy */}
+      {/* Section content */}
       <div className="px-5 py-4">
-        {isComposed ? (
+        {isCodeComponent ? (
+          <CodeComponentPreview
+            machineName={section.component_id.replace("js.", "")}
+            jsx={codeComponentJsx}
+            css={codeComponentCss}
+            props={section.props}
+          />
+        ) : isComposed ? (
           <ComposedSectionTree section={section} />
         ) : (
           <OrganismSectionTree section={section} />
@@ -519,6 +586,7 @@ export default function PagePreview({
   onPageInsightsClick,
   onPageInsightsClose,
   allPageSlugs,
+  codeComponentConfigs,
 }: PagePreviewProps) {
   const [regeneratingPage, setRegeneratingPage] = useState(false);
   const [regenPageError, setRegenPageError] = useState<string | null>(null);
@@ -616,6 +684,7 @@ export default function PagePreview({
                 insightProps={sectionInsightProps}
                 insightOpen={insightsOpen === sectionIndex}
                 onInsightToggle={onInsightClick ? () => onInsightClick(sectionIndex) : undefined}
+                codeComponentConfigs={codeComponentConfigs}
               />
             );
           })}

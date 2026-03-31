@@ -13,10 +13,21 @@ import type { BlueprintInsights } from "@/lib/transparency/types";
 
 type ReviewMode = "celebration" | "preview" | "edit";
 
+interface CodeComponentConfigs {
+  configs: Record<string, string>;
+  metadata: Array<{
+    machineName: string;
+    name: string;
+    sectionType: string;
+    pageSlug: string;
+  }>;
+}
+
 interface BlueprintData {
   id: string;
   siteId: string;
   pages: PageLayout[];
+  _codeComponents?: CodeComponentConfigs;
 }
 
 function CelebrationScreen({ onComplete }: { onComplete: () => void }) {
@@ -143,11 +154,12 @@ export default function ReviewPage() {
           throw new Error("Failed to load blueprint");
         }
         const data = await res.json();
-        const payload = data.payload as { pages?: PageLayout[] } | null;
+        const payload = data.payload as { pages?: PageLayout[]; _codeComponents?: CodeComponentConfigs } | null;
         setBlueprint({
           id: data.id,
           siteId: data.siteId,
           pages: payload?.pages ?? [],
+          _codeComponents: payload?._codeComponents,
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load");
@@ -381,6 +393,7 @@ export default function ReviewPage() {
                 onPageInsightsClick={handlePageInsightsClick}
                 onPageInsightsClose={() => setPageInsightsOpen(false)}
                 allPageSlugs={blueprint.pages.map((p) => p.slug)}
+                codeComponentConfigs={blueprint._codeComponents?.configs}
               />
             </div>
           )}

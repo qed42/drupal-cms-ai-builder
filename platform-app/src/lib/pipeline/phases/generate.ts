@@ -84,6 +84,12 @@ export async function runGeneratePhase(
   plan: ContentPlan,
   onProgress?: GenerateProgressCallback
 ): Promise<GeneratePhaseResult> {
+  // M26: Branch on generation mode — code_components uses the Designer Agent path
+  if (data.generationMode === "code_components") {
+    const { runCodeComponentGeneratePhase } = await import("./generate-code-components");
+    return runCodeComponentGeneratePhase(siteId, data, research, plan, onProgress);
+  }
+
   const startTime = Date.now();
   const provider = await getAIProvider("generate");
   const pages: PageLayout[] = [];

@@ -532,6 +532,17 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
       // Strip NULL and empty-object inputs so Canvas uses component defaults.
       $inputs = $this->stripNullInputs($inputs, $item['component_id']);
 
+      // Debug: log the actual inputs being saved for URL-related props.
+      foreach ($inputs as $propName => $propValue) {
+        if (is_string($propValue) && preg_match('/url|link|href/i', $propName)) {
+          $this->logger->info('DEBUG: @component input @prop = "@value"', [
+            '@component' => $item['component_id'],
+            '@prop' => $propName,
+            '@value' => $propValue,
+          ]);
+        }
+      }
+
       $entry = [
         'uuid' => $item['uuid'],
         'component_id' => $item['component_id'],
@@ -570,8 +581,8 @@ class BlueprintImportService implements BlueprintImportServiceInterface {
   protected function stripNullInputs(array $inputs, string $componentId): array {
     $filtered = [];
     foreach ($inputs as $key => $value) {
-      if ($value === NULL) {
-        $this->logger->info('Stripped NULL prop "@prop" from @component.', [
+      if ($value === NULL || $value === '') {
+        $this->logger->info('Stripped NULL/empty prop "@prop" from @component.', [
           '@prop' => $key,
           '@component' => $componentId,
         ]);
