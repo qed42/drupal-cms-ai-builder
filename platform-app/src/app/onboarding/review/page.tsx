@@ -1,17 +1,21 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import PageSidebar from "./components/PageSidebar";
 import PagePreview from "./components/PagePreview";
+import LivePreviewFrame from "./components/LivePreviewFrame";
 import ApproveButton from "./components/ApproveButton";
 import { useAutoSave } from "./hooks/useAutoSave";
-import type { PageLayout, PageSection } from "@/lib/blueprint/types";
+import type { PageLayout, PageSection, BrandTokens } from "@/lib/blueprint/types";
+import type { PreviewPayload } from "@/lib/preview/types";
 import type { BlueprintInsights } from "@/lib/transparency/types";
+import YAML from "yaml";
 
 type ReviewMode = "celebration" | "preview" | "edit";
+type PreviewView = "visual" | "data";
 
 interface CodeComponentConfigs {
   configs: Record<string, string>;
@@ -27,6 +31,8 @@ interface BlueprintData {
   id: string;
   siteId: string;
   pages: PageLayout[];
+  brand?: BrandTokens;
+  generationMode?: "design_system" | "code_components";
   _codeComponents?: CodeComponentConfigs;
 }
 
@@ -94,6 +100,9 @@ export default function ReviewPage() {
   const [editingSection, setEditingSection] = useState<number | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
+  // Visual preview vs data view toggle — default to visual for code_components
+  const [previewView, setPreviewView] = useState<PreviewView>("visual");
+
   const [insightsData, setInsightsData] = useState<BlueprintInsights | null>(null);
   const [insightsOpen, setInsightsOpen] = useState<number | null>(null);
   const [pageInsightsOpen, setPageInsightsOpen] = useState(false);
@@ -154,11 +163,17 @@ export default function ReviewPage() {
           throw new Error("Failed to load blueprint");
         }
         const data = await res.json();
-        const payload = data.payload as { pages?: PageLayout[]; _codeComponents?: CodeComponentConfigs } | null;
+        const payload = data.payload as {
+          pages?: PageLayout[];
+          brand?: BrandTokens;
+          _codeComponents?: CodeComponentConfigs;
+        } | null;
         setBlueprint({
           id: data.id,
           siteId: data.siteId,
           pages: payload?.pages ?? [],
+          brand: payload?.brand,
+          generationMode: payload?._codeComponents ? "code_components" : "design_system",
           _codeComponents: payload?._codeComponents,
         });
       } catch (err) {
@@ -290,6 +305,32 @@ export default function ReviewPage() {
     setMode("preview");
   }, [celebrationKey]);
 
+  // Build PreviewPayload for LivePreviewFrame — must be before early returns (Rules of Hooks)
+  const activePage = blueprint?.pages[activePageIndex] ?? null;
+  const previewPayload: PreviewPayload | null = useMemo(() => {
+    if (!activePage || !blueprint?.brand) return null;
+    const sources: Record<string, { jsx: string; css: string }> = {};
+    if (blueprint._codeComponents?.configs) {
+      for (const [name, yamlStr] of Object.entries(blueprint._codeComponents.configs)) {
+        try {
+          const parsed = YAML.parse(yamlStr);
+          sources[name] = {
+            jsx: parsed?.js?.original ?? "",
+            css: parsed?.css?.original ?? "",
+          };
+        } catch {
+          // If YAML parsing fails, skip this component
+        }
+      }
+    }
+    return {
+      page: activePage,
+      brand: blueprint.brand,
+      codeComponentSources: sources,
+      generationMode: blueprint.generationMode ?? "design_system",
+    };
+  }, [activePage, blueprint?.brand, blueprint?._codeComponents, blueprint?.generationMode]);
+
   // Celebration mode
   if (mode === "celebration" && !loading && !error && blueprint) {
     return <CelebrationScreen onComplete={handleCelebrationComplete} />;
@@ -323,7 +364,9 @@ export default function ReviewPage() {
     );
   }
 
-  const activePage = blueprint.pages[activePageIndex];
+  // Determine if visual preview is available (requires code_components or design_system with brand)
+  const hasCodeComponents = blueprint.generationMode === "code_components" && !!blueprint._codeComponents;
+  const canShowVisual = hasCodeComponents || (blueprint.brand != null);
 
   // Preview mode — full-width read-only with floating edit button
   if (mode === "preview") {
@@ -374,27 +417,67 @@ export default function ReviewPage() {
             ))}
           </div>
 
-          {/* Read-only preview */}
+          {/* Preview content area */}
           {activePage && (
-            <div className="flex-1 overflow-y-auto">
-              <PagePreview
-                siteId={blueprint.siteId}
-                page={activePage}
-                pageIndex={activePageIndex}
-                editingSection={null}
-                onEditSection={() => setMode("edit")}
-                onSectionChange={() => {}}
-                onSectionRegenerated={handleSectionRegenerated}
-                onPageRegenerated={handlePageRegenerated}
-                insightsData={insightsData}
-                insightsOpen={insightsOpen}
-                onInsightClick={handleInsightClick}
-                pageInsightsOpen={pageInsightsOpen}
-                onPageInsightsClick={handlePageInsightsClick}
-                onPageInsightsClose={() => setPageInsightsOpen(false)}
-                allPageSlugs={blueprint.pages.map((p) => p.slug)}
-                codeComponentConfigs={blueprint._codeComponents?.configs}
-              />
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Visual / Data toggle */}
+              {canShowVisual && (
+                <div className="shrink-0 flex items-center gap-1 px-4 py-2 border-b border-white/5 bg-white/[0.01]">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewView("visual")}
+                    className={`text-xs px-3 py-1.5 rounded-md transition-colors ${
+                      previewView === "visual"
+                        ? "bg-brand-500/20 text-brand-400"
+                        : "text-white/40 hover:text-white/60 hover:bg-white/5"
+                    }`}
+                  >
+                    Visual Preview
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewView("data")}
+                    className={`text-xs px-3 py-1.5 rounded-md transition-colors ${
+                      previewView === "data"
+                        ? "bg-brand-500/20 text-brand-400"
+                        : "text-white/40 hover:text-white/60 hover:bg-white/5"
+                    }`}
+                  >
+                    Data View
+                  </button>
+                </div>
+              )}
+
+              {/* Visual preview (LivePreviewFrame) */}
+              {previewView === "visual" && canShowVisual && previewPayload ? (
+                <div className="flex-1 overflow-hidden">
+                  <LivePreviewFrame
+                    payload={previewPayload}
+                    onSectionClick={() => setMode("edit")}
+                  />
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto">
+                  <PagePreview
+                    siteId={blueprint.siteId}
+                    page={activePage}
+                    pageIndex={activePageIndex}
+                    editingSection={null}
+                    onEditSection={() => setMode("edit")}
+                    onSectionChange={() => {}}
+                    onSectionRegenerated={handleSectionRegenerated}
+                    onPageRegenerated={handlePageRegenerated}
+                    insightsData={insightsData}
+                    insightsOpen={insightsOpen}
+                    onInsightClick={handleInsightClick}
+                    pageInsightsOpen={pageInsightsOpen}
+                    onPageInsightsClick={handlePageInsightsClick}
+                    onPageInsightsClose={() => setPageInsightsOpen(false)}
+                    allPageSlugs={blueprint.pages.map((p) => p.slug)}
+                    codeComponentConfigs={blueprint._codeComponents?.configs}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

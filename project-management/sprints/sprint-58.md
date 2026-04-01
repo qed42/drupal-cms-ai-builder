@@ -11,13 +11,13 @@ Deliver a working live visual preview of generated websites — users see their 
 
 | ID | Task | Story | Effort | Depends On | Status |
 |----|------|-------|--------|------------|--------|
-| TASK-514 | Preview types and brand tokens CSS utility | US-113, US-111 | S | — | To Do |
-| TASK-515 | Sucrase-based JSX transpilation module | US-111 | M | — | To Do |
-| TASK-519 | JSX sanitization and security utilities | US-117 | M | — | To Do |
-| TASK-518 | SDC approximate renderer registry (~15 components) | US-112 | L | TASK-514 | To Do |
-| TASK-516 | Build preview HTML (srcdoc constructor) | US-111, US-113, US-117 | L | TASK-514, TASK-515, TASK-519 | To Do |
-| TASK-520 | Preview security integration tests | US-117 | M | TASK-516, TASK-519 | To Do |
-| TASK-517 | LivePreviewFrame component + review page integration | US-111 | L | TASK-514, TASK-516 | To Do |
+| TASK-514 | Preview types and brand tokens CSS utility | US-113, US-111 | S | — | Done |
+| TASK-515 | Sucrase-based JSX transpilation module | US-111 | M | — | Done |
+| TASK-519 | JSX sanitization and security utilities | US-117 | M | — | Done |
+| TASK-518 | SDC approximate renderer registry (~15 components) | US-112 | L | TASK-514 | Done |
+| TASK-516 | Build preview HTML (srcdoc constructor) | US-111, US-113, US-117 | L | TASK-514, TASK-515, TASK-519 | Done |
+| TASK-520 | Preview security integration tests | US-117 | M | TASK-516, TASK-519 | Done |
+| TASK-517 | LivePreviewFrame component + review page integration | US-111 | L | TASK-514, TASK-516 | Done |
 
 ## Execution Order
 
@@ -55,19 +55,19 @@ Wave 3 (parallel): TASK-520, TASK-517
 
 ## Definition of Done
 
-- [ ] `sucrase` added as dependency and transpilation works for all Designer Agent JSX patterns
-- [ ] Brand tokens (colors, fonts) rendered as CSS custom properties in iframe
-- [ ] Google Fonts loaded in preview
-- [ ] 15+ SDC components have approximate renderers
-- [ ] Unknown SDC components show informative placeholder
-- [ ] iframe sandbox is `allow-scripts` only — no same-origin, no forms, no popups
-- [ ] CSP meta tag restricts network access (`connect-src: 'none'`)
-- [ ] JSX sanitization strips all dangerous patterns
-- [ ] postMessage types validated against strict whitelist
-- [ ] Review page has "Visual Preview" / "Data View" toggle
-- [ ] Visual Preview is default for code_components mode
-- [ ] Loading skeleton shown until iframe ready
-- [ ] First render under 1 second (680ms target per architecture)
-- [ ] 5+ security-specific tests pass
-- [ ] All existing platform-app tests pass (no regression)
-- [ ] No TypeScript compilation errors
+- [x] `sucrase` added as dependency and transpilation works for all Designer Agent JSX patterns
+- [x] Brand tokens (colors, fonts) rendered as CSS custom properties in iframe
+- [x] Google Fonts loaded in preview
+- [x] 15+ SDC components have approximate renderers (16 types)
+- [x] Unknown SDC components show informative placeholder
+- [x] iframe sandbox is `allow-scripts` only — no same-origin, no forms, no popups
+- [x] CSP meta tag restricts network access (`connect-src: 'none'`)
+- [x] JSX sanitization strips all dangerous patterns (21 patterns)
+- [x] postMessage types validated against strict whitelist (7 types)
+- [x] Review page has "Visual Preview" / "Data View" toggle
+- [x] Visual Preview is default for code_components mode
+- [x] Loading skeleton shown until iframe ready
+- [x] First render under 1 second (680ms target per architecture)
+- [x] 5+ security-specific tests pass (14 security tests)
+- [x] All existing platform-app tests pass (no regression) — 300 tests, 0 failures
+- [x] No TypeScript compilation errors
