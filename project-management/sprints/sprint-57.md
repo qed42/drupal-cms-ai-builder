@@ -33,15 +33,18 @@ Four root causes identified:
 | TASK-525 | Fix image prop format in prompt + enhance phase | BUG-057 | M | — | Done |
 | TASK-527 | Update generation prompt for content-aware defaults | BUG-057 | M | — | Done |
 | TASK-528 | Enforce short snake_case prop names in generation + validation | BUG-057 | M | — | Done |
-| TASK-526 | Add Content Hydration phase to pipeline | BUG-057, US-120 | XL | TASK-525, TASK-528 | To Do |
+| TASK-529 | Fix Canvas LinkUrl null crash for link-type props | BUG-057 | S | TASK-528 | Done |
+| TASK-526 | Add Content Hydration phase to pipeline | BUG-057, US-120 | XL | TASK-525, TASK-528 | Done |
 
 ## Execution Order
 
 ```
-Wave 1 (parallel): TASK-525, TASK-527, TASK-528
+Wave 1 (parallel): TASK-525, TASK-527, TASK-528, TASK-529
   - TASK-525: Fix image prop format (prompt + enhance phase) — direct bug fix
   - TASK-527: Update prompt for content-aware defaults — reduce null defaults from AI
   - TASK-528: Enforce short snake_case prop names — Drupal convention compliance
+  - TASK-529: Fix Canvas LinkUrl null crash — optional link props with null/empty defaults
+    crash Canvas LinkUrl::getCastedValue() typed data layer
 
 Wave 2: TASK-526
   - Content Hydration phase — depends on TASK-525 (correct image format) + TASK-528 (predictable prop names for mapping)

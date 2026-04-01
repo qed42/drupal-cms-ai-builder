@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { runResearchPhase } from "./phases/research";
 import { runPlanPhase } from "./phases/plan";
 import { runGeneratePhase } from "./phases/generate";
+import { runHydratePhase } from "./phases/hydrate";
 import { runEnhancePhase } from "./phases/enhance";
 import { setActiveAdapter } from "@/lib/design-systems/setup";
 import { computeInputHash } from "@/lib/transparency/input-hash";
@@ -23,6 +24,9 @@ export type PipelinePhase =
   | "plan_complete"
   | "generate"
   | "generate_complete"
+  | "hydrate"
+  | "hydrate_complete"
+  | "hydrate_failed"
   | "enhance"
   | "enhance_complete"
   | "research_failed"
@@ -53,7 +57,7 @@ async function updatePipelinePhase(
   });
 }
 
-type PipelinePhaseName = "research" | "plan" | "generate" | "enhance";
+type PipelinePhaseName = "research" | "plan" | "generate" | "hydrate" | "enhance";
 
 /**
  * Append a reasoning message to a pipeline phase's message list.
@@ -291,6 +295,40 @@ export async function runPipeline(
 
   await emitMessage(siteId, "generate", `All ${pageNames.length} pages written successfully`);
   await updatePipelinePhase(siteId, "generate_complete");
+
+  // --- Phase 3.5: Hydrate (content enrichment for code components) ---
+  if (data.generationMode === "code_components") {
+    await updatePipelinePhase(siteId, "hydrate");
+    await emitMessage(siteId, "hydrate", `Populating your ${brief.industry || "business"} content...`);
+
+    try {
+      const hydrateResult = await runHydratePhase(
+        siteId,
+        data,
+        researchResult.brief as ResearchBrief,
+        planResult.plan as ContentPlan
+      );
+      await emitMessage(
+        siteId,
+        "hydrate",
+        `${hydrateResult.propsHydrated} content fields populated (${hydrateResult.propsDirectMapped} mapped, ${hydrateResult.propsAiGenerated} AI-generated)`
+      );
+      await emitArtifact(siteId, "hydrate", {
+        propsHydrated: hydrateResult.propsHydrated,
+        propsDirectMapped: hydrateResult.propsDirectMapped,
+        propsAiGenerated: hydrateResult.propsAiGenerated,
+      });
+    } catch (err) {
+      // Hydrate failures are non-fatal — site works with AI-generated defaults
+      const message = err instanceof Error ? err.message : "Hydrate phase failed";
+      console.warn(`[pipeline] Hydrate phase failed (non-fatal): ${message}`);
+      await emitMessage(siteId, "hydrate", `Content enrichment had issues — using generated defaults. ${message}`);
+      await updatePipelinePhase(siteId, "hydrate_failed");
+      // Continue to Enhance — don't throw
+    }
+
+    await updatePipelinePhase(siteId, "hydrate_complete");
+  }
 
   // --- Phase 4: Enhance (stock images) ---
   await updatePipelinePhase(siteId, "enhance");

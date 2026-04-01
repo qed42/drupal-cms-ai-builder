@@ -5,7 +5,7 @@ export interface GenerateOptions {
   temperature?: number;
   maxTokens?: number;
   retries?: number;
-  phase?: "research" | "plan" | "generate";
+  phase?: "research" | "plan" | "generate" | "hydrate";
 }
 
 export interface AIProvider {

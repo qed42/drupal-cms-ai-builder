@@ -22,7 +22,9 @@ function sanitizeBlueprintInputs(blueprint: Record<string, unknown>, logger: win
   function sanitizeInputs(inputs: Record<string, unknown>): void {
     for (const [key, value] of Object.entries(inputs)) {
       if (typeof value === "string" && URL_PROP_PATTERN.test(key)) {
-        if (value && !VALID_URL_PATTERN.test(value)) {
+        // Empty strings and non-URL text both crash Canvas's
+        // LinkUrl::getCastedValue() which requires a valid URI string.
+        if (!value || !VALID_URL_PATTERN.test(value)) {
           inputs[key] = SAFE_URL_PLACEHOLDER;
           fixed++;
         }

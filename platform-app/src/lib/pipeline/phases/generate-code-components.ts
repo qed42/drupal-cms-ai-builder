@@ -235,13 +235,21 @@ export async function runCodeComponentGeneratePhase(
         component_id: `js.${result.output.machineName}`,
         props: Object.fromEntries(
           result.output.props.map((p) => {
+            // Link props MUST always have a valid absolute URL.
+            // Canvas validates format:uri with strict RFC 3986 — null, empty
+            // string, "#", and description text all cause LinkUrl::getCastedValue()
+            // to return null, crashing the typed data layer.
+            if (p.type === "link") {
+              const val = p.default != null ? String(p.default) : "";
+              const isValidUrl = /^(https?:\/\/|mailto:|tel:)/.test(val);
+              return [p.name, isValidUrl ? val : "https://example.com"];
+            }
             // Use the AI-generated default if available
             if (p.default !== null && p.default !== undefined) return [p.name, p.default];
             // For required props, use type-appropriate placeholder values.
             // NEVER use description text — Canvas validates format:uri props
             // with strict RFC 3986 URI validation.
             if (p.required) {
-              if (p.type === "link") return [p.name, "https://example.com"];
               if (p.type === "image") return [p.name, { src: "https://placehold.co/1200x800", alt: p.description || p.name, width: 1200, height: 800 }];
               return [p.name, p.description || p.name];
             }
