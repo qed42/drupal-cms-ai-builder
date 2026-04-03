@@ -453,6 +453,7 @@ Return a single JSON object matching this exact structure:
 - Use var(--color-primary), var(--color-accent), var(--font-heading), var(--font-body) for brand tokens
 - All <img> elements must have alt attributes
 - All animations must use motion-safe: or motion-reduce: Tailwind variants
+- CRITICAL: Do NOT use object/array literals as default prop values in the function signature. Use null for image/link/video props and simple strings/numbers/booleans for other props. Example: \`hero_img = null\` NOT \`hero_img = {"src":"..."}\`
 
 ### PROP NAMING RULES (MUST FOLLOW):
 - Use short **snake_case** names: heading, cta_text, hero_img, quote_1

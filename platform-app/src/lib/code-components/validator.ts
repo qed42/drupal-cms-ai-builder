@@ -80,6 +80,20 @@ function validateJsxStructure(jsx: string, errors: ValidationError[], warnings: 
     });
   }
 
+  // No object/array literals as default prop values in function signature
+  // These break Babel transpilation in the preview iframe.
+  // Match: propName = {"key":...} or propName = [...] in the function params
+  const funcSignature = jsx.match(/export\s+default\s+function\s+\w+\s*\(([^)]*)\)/s);
+  if (funcSignature) {
+    const params = funcSignature[1];
+    if (/=\s*\{[^}]*"[^"]*"\s*:/.test(params) || /=\s*\[[^\]]*\{/.test(params)) {
+      errors.push({
+        rule: "jsx-no-object-default",
+        message: "Do not use object or array literals as default prop values in the function signature — use null for image/link/video props. Example: hero_img = null, NOT hero_img = {\"src\":\"...\"}",
+      });
+    }
+  }
+
   // Check for balanced JSX tags (basic check)
   const openTags = jsx.match(/<[A-Za-z][A-Za-z0-9.]*(?:\s|>|\/)/g) || [];
   const selfClosing = jsx.match(/<[A-Za-z][A-Za-z0-9.]*\s[^>]*\/>/g) || [];
