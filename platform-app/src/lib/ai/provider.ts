@@ -8,6 +8,13 @@ export interface GenerateOptions {
   phase?: "research" | "plan" | "generate" | "hydrate";
 }
 
+export interface VisionInput {
+  /** Base64-encoded image data. */
+  base64: string;
+  /** MIME type of the image. */
+  mediaType: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+}
+
 export interface AIProvider {
   readonly name: string;
 
@@ -29,6 +36,17 @@ export interface AIProvider {
     prompt: string,
     options?: GenerateOptions
   ): Promise<string>;
+
+  /**
+   * Analyze an image and return structured JSON validated against a Zod schema.
+   * Uses the provider's vision/multimodal API.
+   */
+  generateVisionJSON<T>(
+    image: VisionInput,
+    prompt: string,
+    schema: z.ZodType<T>,
+    options?: GenerateOptions
+  ): Promise<T>;
 }
 
 /**

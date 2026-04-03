@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { type z, toJSONSchema } from "zod";
-import type { GenerateOptions } from "../provider";
+import type { GenerateOptions, VisionInput } from "../provider";
 import {
   type AIProvider,
   backoffDelay,
@@ -72,6 +72,54 @@ export class OpenAIProvider implements AIProvider {
       const content = completion.choices[0]?.message?.content;
       if (!content) throw new Error("Empty OpenAI response");
       return content;
+    }, options?.retries);
+  }
+
+  async generateVisionJSON<T>(
+    image: VisionInput,
+    prompt: string,
+    schema: z.ZodType<T>,
+    options?: GenerateOptions
+  ): Promise<T> {
+    // Vision requires a model that supports images — gpt-4o-mini supports vision
+    const model = options?.model || resolveModel(options?.phase) || DEFAULT_MODEL;
+    const jsonSchema = toJSONSchema(schema);
+
+    return this.withRetry(async () => {
+      const completion = await getClient().chat.completions.create({
+        model,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:${image.mediaType};base64,${image.base64}`,
+                  detail: "low",
+                },
+              },
+              { type: "text", text: prompt },
+            ],
+          },
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "response",
+            strict: true,
+            schema: jsonSchema as Record<string, unknown>,
+          },
+        },
+        temperature: options?.temperature ?? 0.3,
+        max_tokens: options?.maxTokens ?? 1024,
+      });
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content) throw new Error("Empty OpenAI Vision response");
+
+      const parsed = JSON.parse(content);
+      return schema.parse(parsed);
     }, options?.retries);
   }
 

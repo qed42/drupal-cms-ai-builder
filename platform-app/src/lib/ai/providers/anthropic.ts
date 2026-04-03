@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { type z, toJSONSchema } from "zod";
-import type { GenerateOptions } from "../provider";
+import type { GenerateOptions, VisionInput } from "../provider";
 import {
   type AIProvider,
   backoffDelay,
@@ -84,6 +84,59 @@ export class AnthropicProvider implements AIProvider {
       }
 
       return textBlock.text;
+    }, options?.retries);
+  }
+
+  async generateVisionJSON<T>(
+    image: VisionInput,
+    prompt: string,
+    schema: z.ZodType<T>,
+    options?: GenerateOptions
+  ): Promise<T> {
+    const model = options?.model || resolveModel(options?.phase) || DEFAULT_MODEL;
+    const jsonSchema = toJSONSchema(schema);
+
+    return this.withRetry(async () => {
+      const response = await getClient().messages.create({
+        model,
+        max_tokens: options?.maxTokens ?? 1024,
+        temperature: options?.temperature ?? 0.3,
+        tools: [
+          {
+            name: "structured_output",
+            description:
+              "Return the response as structured JSON matching the provided schema.",
+            input_schema: jsonSchema as Anthropic.Tool["input_schema"],
+          },
+        ],
+        tool_choice: { type: "tool", name: "structured_output" },
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image",
+                source: {
+                  type: "base64",
+                  media_type: image.mediaType,
+                  data: image.base64,
+                },
+              },
+              { type: "text", text: prompt },
+            ],
+          },
+        ],
+      });
+
+      const toolBlock = response.content.find(
+        (block) => block.type === "tool_use"
+      );
+
+      if (!toolBlock || toolBlock.type !== "tool_use") {
+        throw new Error("Anthropic Vision did not return a tool use response");
+      }
+
+      return schema.parse(toolBlock.input);
     }, options?.retries);
   }
 

@@ -1,17 +1,20 @@
 /**
- * AI-powered image analysis service using Claude Vision.
+ * AI-powered image analysis service using the configured AI provider.
  * TASK-435: Image Description Service
  *
  * Analyzes user-uploaded images to produce marketing-aware descriptions,
  * semantic tags, dominant colors, subject classification, and orientation.
  * Used by the image matching engine to place user photos in blueprint sections.
+ *
+ * Supports both Claude Vision and OpenAI Vision via the AIProvider interface.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
-import { z, toJSONSchema } from "zod";
+import { z } from "zod";
 import fs from "fs";
 import path from "path";
 import { Vibrant } from "node-vibrant/node";
+import { getAIProvider } from "@/lib/ai/factory";
+import type { VisionInput } from "@/lib/ai/provider";
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -39,7 +42,7 @@ export interface BusinessContext {
   audience: string;
 }
 
-// ── Zod schema for structured Claude output ────────────────────────
+// ── Zod schema for structured output ──────────────────────────────
 
 const visionResponseSchema = z.object({
   description: z
@@ -61,19 +64,6 @@ const visionResponseSchema = z.object({
       "Image orientation: landscape if wider than tall, portrait if taller than wide, square if roughly equal"
     ),
 });
-
-type VisionResponse = z.infer<typeof visionResponseSchema>;
-
-// ── Anthropic client singleton ─────────────────────────────────────
-
-let client: Anthropic | null = null;
-
-function getClient(): Anthropic {
-  if (!client) {
-    client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  }
-  return client;
-}
 
 // ── MIME detection ─────────────────────────────────────────────────
 
@@ -111,10 +101,9 @@ async function extractDominantColors(filePath: string): Promise<string[]> {
 
 // ── Core analysis function ─────────────────────────────────────────
 
-const VISION_MODEL = "claude-sonnet-4-20250514";
-
 /**
- * Analyze an uploaded image using Claude Vision and node-vibrant.
+ * Analyze an uploaded image using the configured AI provider's vision API
+ * and node-vibrant for color extraction.
  *
  * @param imagePath - Absolute path to the image file on disk.
  * @param businessContext - The user's business idea, industry, and audience
@@ -130,13 +119,24 @@ export async function analyzeImage(
   const base64Image = imageBuffer.toString("base64");
   const mediaType = getMimeType(imagePath);
 
-  // Run Claude Vision and color extraction in parallel
+  const prompt = buildPrompt(businessContext);
+
+  const visionInput: VisionInput = {
+    base64: base64Image,
+    mediaType,
+  };
+
+  // Run AI vision analysis and color extraction in parallel
+  const provider = await getAIProvider();
   const [visionResult, vibrantColors] = await Promise.all([
-    analyzeWithVision(base64Image, mediaType, businessContext),
+    provider.generateVisionJSON(visionInput, prompt, visionResponseSchema, {
+      maxTokens: 1024,
+      temperature: 0.3,
+    }),
     extractDominantColors(imagePath),
   ]);
 
-  // Prefer node-vibrant colors (algorithmic accuracy) over Claude's visual estimate.
+  // Prefer node-vibrant colors (algorithmic accuracy) over AI's visual estimate.
   // Fall back to empty array if both fail — the matcher doesn't require colors.
   const dominant_colors =
     vibrantColors.length > 0 ? vibrantColors : [];
@@ -148,57 +148,6 @@ export async function analyzeImage(
     subject: visionResult.subject,
     orientation: visionResult.orientation,
   };
-}
-
-// ── Claude Vision call ─────────────────────────────────────────────
-
-async function analyzeWithVision(
-  base64Image: string,
-  mediaType: ImageMediaType,
-  ctx: BusinessContext
-): Promise<VisionResponse> {
-  const prompt = buildPrompt(ctx);
-  const jsonSchema = zodToAnthropicSchema(visionResponseSchema);
-
-  const response = await getClient().messages.create({
-    model: VISION_MODEL,
-    max_tokens: 1024,
-    temperature: 0.3,
-    tools: [
-      {
-        name: "image_analysis",
-        description:
-          "Return the image analysis as structured JSON matching the provided schema.",
-        input_schema: jsonSchema,
-      },
-    ],
-    tool_choice: { type: "tool", name: "image_analysis" },
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "image",
-            source: {
-              type: "base64",
-              media_type: mediaType,
-              data: base64Image,
-            },
-          },
-          { type: "text", text: prompt },
-        ],
-      },
-    ],
-  });
-
-  const toolBlock = response.content.find((block) => block.type === "tool_use");
-  if (!toolBlock || toolBlock.type !== "tool_use") {
-    throw new Error(
-      "[image-description] Claude Vision did not return a tool use response"
-    );
-  }
-
-  return visionResponseSchema.parse(toolBlock.input);
 }
 
 // ── Prompt builder ─────────────────────────────────────────────────
@@ -217,16 +166,4 @@ Analyze this image and return:
 4. orientation: Whether the image is landscape (wider than tall), portrait (taller than wide), or square (roughly equal dimensions).
 
 Be specific and marketing-aware. "A confident healthcare professional in a modern clinic" is better than "a person in a room".`;
-}
-
-// ── Schema conversion helper ───────────────────────────────────────
-
-/**
- * Convert a Zod schema to Anthropic tool input_schema format.
- * Uses zod's toJSONSchema for the conversion.
- */
-function zodToAnthropicSchema(
-  schema: z.ZodType
-): Anthropic.Tool["input_schema"] {
-  return toJSONSchema(schema) as Anthropic.Tool["input_schema"];
 }
