@@ -7,6 +7,8 @@
 
 import { z } from "zod";
 import type { SectionDesignBrief } from "@/lib/code-components/types";
+import type { CuratedComponent } from "@/lib/curated-components/loader";
+import type { TrendEntry } from "@/lib/curated-components/trends-loader";
 
 // ---------------------------------------------------------------------------
 // Zod Output Schema
@@ -60,6 +62,11 @@ export const CodeComponentResponseSchema = z.object({
 });
 
 export type CodeComponentResponse = z.infer<typeof CodeComponentResponseSchema>;
+
+export interface CuratedPromptContext {
+  selectedComponent?: CuratedComponent;
+  trendSuggestions?: TrendEntry[];
+}
 
 // ---------------------------------------------------------------------------
 // Section-Type Guidance
@@ -310,7 +317,8 @@ const VISUAL_STYLE_GUIDANCE: Record<string, string> = {
 export function buildCodeComponentPrompt(
   brief: SectionDesignBrief,
   previousSections?: Array<{ machineName: string; sectionType: string }>,
-  designRulesFragment?: string
+  designRulesFragment?: string,
+  curatedContext?: CuratedPromptContext
 ): string {
   const sectionGuidance =
     SECTION_TYPE_GUIDANCE[brief.sectionType] ||
@@ -325,6 +333,14 @@ export function buildCodeComponentPrompt(
   const contextSection = buildContextSection(brief);
   const rhythmSection = buildRhythmSection(previousSections);
   const examplesSection = buildExamplesSection(brief.sectionType);
+
+  const curatedReferenceSection = curatedContext?.selectedComponent
+    ? buildCuratedReferenceSection(curatedContext.selectedComponent)
+    : "";
+
+  const trendsSection = curatedContext?.trendSuggestions?.length
+    ? buildTrendsSection(curatedContext.trendSuggestions)
+    : "";
 
   return `You are a senior frontend designer generating a React/Preact component for Drupal Canvas.
 
@@ -411,7 +427,8 @@ Return a single JSON object matching this exact structure:
 - Descriptions: write a real sentence that fits the section purpose
 - Only use null for image, video, and link props (these get populated by the image pipeline)
 
-${examplesSection}
+${curatedReferenceSection || examplesSection}
+${trendsSection}
 ${designRulesFragment ? `\n${designRulesFragment}\n` : ""}
 ## GENERATE NOW
 
@@ -493,6 +510,53 @@ function buildExamplesSection(sectionType: string): string {
     .join("\n\n");
 
   return `## REFERENCE EXAMPLES\n\nStudy these examples for output format and quality level. Your output should match or exceed this quality.\n\n${formatted}`;
+}
+
+function buildCuratedReferenceSection(component: CuratedComponent): string {
+  const exampleJson = JSON.stringify({
+    machineName: component.id.replace(/-/g, "_") + "_ref",
+    name: component.name,
+    jsx: component.jsx,
+    css: component.css,
+    props: component.propsSchema.map(p => ({
+      name: p.name,
+      type: p.type,
+      required: p.required,
+      default: p.default ?? null,
+      description: p.description || "",
+    })),
+    slots: [],
+  }, null, 2);
+
+  return `## CURATED REFERENCE COMPONENT
+
+You have a production-quality reference component for this section type. Use it as your starting point:
+- Adapt its layout and visual quality to match the section context above
+- Keep the same level of brand token integration (CSS custom properties)
+- Keep the same level of animation quality and accessibility
+- You may modify the structure but MUST match or exceed this quality level
+
+\`\`\`json
+${exampleJson}
+\`\`\`
+
+**IMPORTANT**: Your output must be at least as polished as this reference. Use the same brand token patterns, responsive design approach, and animation quality.`;
+}
+
+function buildTrendsSection(trends: TrendEntry[]): string {
+  if (trends.length === 0) return "";
+
+  const lines = trends.map(
+    (t) => `- **${t.name}**: ${t.description}\n  CSS hint: \`${t.cssPattern}\``
+  );
+
+  return `## CURRENT DESIGN TRENDS (use selectively for visual impact)
+
+Consider incorporating one or two of these current UI trends if they fit naturally:
+
+${lines.join("\n\n")}
+
+Do NOT force trends — only use them if they enhance the section's purpose and visual quality.`;
 }
 
 /**

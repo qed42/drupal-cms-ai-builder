@@ -1,0 +1,12 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.logo-cloud-item:hover .logo-cloud-img {
+  filter: grayscale(0%) opacity(1) !important;
+}

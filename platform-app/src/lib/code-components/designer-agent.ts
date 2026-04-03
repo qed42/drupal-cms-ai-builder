@@ -21,6 +21,9 @@ import type {
   CodeComponentOutput,
   ValidationResult,
 } from "./types";
+import { selectCuratedComponent } from "@/lib/curated-components/loader";
+import { getApplicableTrends } from "@/lib/curated-components/trends-loader";
+import type { CuratedPromptContext } from "@/lib/ai/prompts/code-component-generation";
 
 const MAX_VALIDATION_RETRIES = 2;
 const CODE_COMPONENT_MAX_TOKENS = 6000;
@@ -100,7 +103,25 @@ export async function generateCodeComponent(
   designRulesFragment?: string
 ): Promise<DesignerAgentResult> {
   const provider = await getAIProvider("generate");
-  const basePrompt = buildCodeComponentPrompt(brief, previousSections, designRulesFragment);
+
+  // Select curated reference component and applicable trends
+  const curatedComponent = selectCuratedComponent(
+    brief.sectionType,
+    brief.visualStyle,
+    brief.animationLevel
+  );
+  const trendSuggestions = getApplicableTrends(
+    brief.sectionType,
+    brief.visualStyle,
+    3
+  );
+
+  const curatedContext: CuratedPromptContext = {
+    selectedComponent: curatedComponent ?? undefined,
+    trendSuggestions: trendSuggestions.length > 0 ? trendSuggestions : undefined,
+  };
+
+  const basePrompt = buildCodeComponentPrompt(brief, previousSections, designRulesFragment, curatedContext);
 
   let lastValidation: ValidationResult | undefined;
 

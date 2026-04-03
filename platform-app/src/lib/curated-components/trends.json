@@ -1,0 +1,141 @@
+{
+  "version": "2026-Q2",
+  "lastUpdated": "2026-04-03",
+  "trends": [
+    {
+      "id": "bento-grid",
+      "name": "Bento Grid Layouts",
+      "description": "Asymmetric grid layouts inspired by Japanese bento boxes. Mix card sizes (1x1, 2x1, 1x2) for visual interest and information hierarchy.",
+      "applicableSections": ["features", "services", "gallery", "about"],
+      "cssPattern": "grid grid-cols-2 md:grid-cols-4 gap-4 [&>:nth-child(1)]:col-span-2 [&>:nth-child(1)]:row-span-2",
+      "visualStyles": ["bold", "playful"],
+      "since": "2024"
+    },
+    {
+      "id": "glassmorphism",
+      "name": "Glass Morphism",
+      "description": "Frosted glass effect with backdrop blur and semi-transparent backgrounds. Creates depth and layering.",
+      "applicableSections": ["hero", "cta", "header", "testimonials"],
+      "cssPattern": "bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl",
+      "visualStyles": ["elegant", "bold"],
+      "since": "2023"
+    },
+    {
+      "id": "gradient-mesh",
+      "name": "Gradient Mesh Backgrounds",
+      "description": "Multi-point gradient backgrounds using radial gradients and blend modes for organic, fluid color transitions.",
+      "applicableSections": ["hero", "cta", "footer"],
+      "cssPattern": "bg-gradient-to-br from-[var(--color-primary)] via-purple-500 to-[var(--color-accent)]",
+      "visualStyles": ["bold", "playful", "elegant"],
+      "since": "2024"
+    },
+    {
+      "id": "scroll-reveal",
+      "name": "Scroll-Triggered Reveals",
+      "description": "Elements animate into view as user scrolls. Uses IntersectionObserver with staggered timing for child elements.",
+      "applicableSections": ["features", "testimonials", "stats", "team", "gallery"],
+      "cssPattern": "animate-on-scroll fade-up stagger-children",
+      "visualStyles": ["minimal", "bold", "elegant", "playful"],
+      "since": "2022"
+    },
+    {
+      "id": "large-typography",
+      "name": "Oversized Typography Heroes",
+      "description": "Hero sections dominated by extremely large display type (text-7xl to text-9xl) with minimal supporting elements.",
+      "applicableSections": ["hero"],
+      "cssPattern": "text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight leading-none",
+      "visualStyles": ["minimal", "bold"],
+      "since": "2024"
+    },
+    {
+      "id": "floating-cards",
+      "name": "Floating Card Effects",
+      "description": "Cards with elevated shadows and subtle hover animations that create a 3D floating effect.",
+      "applicableSections": ["features", "pricing", "testimonials", "team"],
+      "cssPattern": "hover-lift rounded-2xl shadow-lg bg-white/80 backdrop-blur-sm",
+      "visualStyles": ["elegant", "playful"],
+      "since": "2023"
+    },
+    {
+      "id": "grain-texture",
+      "name": "Subtle Grain/Noise Texture",
+      "description": "CSS-only noise overlay using SVG filter for organic, tactile feel. Adds warmth and reduces flat digital appearance.",
+      "applicableSections": ["hero", "cta", "about"],
+      "cssPattern": "relative before:absolute before:inset-0 before:bg-[url('data:image/svg+xml,...')] before:opacity-[0.03] before:pointer-events-none",
+      "visualStyles": ["elegant", "bold"],
+      "since": "2024"
+    },
+    {
+      "id": "split-screen",
+      "name": "Split-Screen Layouts",
+      "description": "50/50 or asymmetric split layouts with contrasting content on each side. Often text vs image or dark vs light.",
+      "applicableSections": ["hero", "about", "cta", "contact"],
+      "cssPattern": "grid grid-cols-1 lg:grid-cols-2 min-h-[80vh]",
+      "visualStyles": ["bold", "elegant"],
+      "since": "2023"
+    },
+    {
+      "id": "animated-borders",
+      "name": "Animated Gradient Borders",
+      "description": "Cards and buttons with animated gradient borders using conic-gradient and CSS animation for eye-catching UI elements.",
+      "applicableSections": ["features", "pricing", "cta"],
+      "cssPattern": "relative before:absolute before:inset-[-2px] before:bg-[conic-gradient(from_var(--angle),var(--color-primary),var(--color-accent),var(--color-primary))] before:rounded-xl before:animate-[spin_3s_linear_infinite]",
+      "visualStyles": ["bold", "playful"],
+      "since": "2024"
+    },
+    {
+      "id": "micro-interactions",
+      "name": "Micro-Interaction Hover States",
+      "description": "Detailed hover animations on interactive elements: icon shifts, underline slides, arrow movements, color transitions.",
+      "applicableSections": ["features", "pricing", "cta", "footer", "header"],
+      "cssPattern": "group hover:translate-x-1 transition-transform group-hover:text-[var(--color-accent)]",
+      "visualStyles": ["minimal", "elegant", "playful"],
+      "since": "2023"
+    },
+    {
+      "id": "dark-sections",
+      "name": "Dark Mode Sections",
+      "description": "Individual dark-background sections within an otherwise light page for contrast and emphasis. Often used for CTAs and testimonials.",
+      "applicableSections": ["cta", "testimonials", "stats", "footer"],
+      "cssPattern": "bg-gray-950 text-white [--color-text:#f1f5f9]",
+      "visualStyles": ["bold", "elegant"],
+      "since": "2023"
+    },
+    {
+      "id": "sticky-header",
+      "name": "Sticky Transparent Header",
+      "description": "Header that starts transparent over hero content, then gains background/blur on scroll. Creates immersive hero experience.",
+      "applicableSections": ["header"],
+      "cssPattern": "fixed top-0 inset-x-0 z-50 transition-all bg-transparent data-[scrolled=true]:bg-white/80 data-[scrolled=true]:backdrop-blur-lg data-[scrolled=true]:shadow-sm",
+      "visualStyles": ["minimal", "elegant", "bold"],
+      "since": "2022"
+    },
+    {
+      "id": "asymmetric-layout",
+      "name": "Asymmetric Grid Layouts",
+      "description": "Breaking away from symmetric grids with intentional misalignment, overlapping elements, and varied column widths.",
+      "applicableSections": ["features", "about", "gallery", "team"],
+      "cssPattern": "grid grid-cols-12 gap-6 [&>:nth-child(1)]:col-span-7 [&>:nth-child(2)]:col-span-5",
+      "visualStyles": ["elegant", "playful"],
+      "since": "2024"
+    },
+    {
+      "id": "variable-fonts",
+      "name": "Variable Font Weight Transitions",
+      "description": "Animated font-weight changes on hover or scroll using variable fonts for fluid, eye-catching text effects.",
+      "applicableSections": ["hero", "header"],
+      "cssPattern": "font-[var(--font-heading)] transition-[font-weight] duration-300 hover:font-black",
+      "visualStyles": ["minimal", "bold"],
+      "since": "2024"
+    },
+    {
+      "id": "layered-shadows",
+      "name": "Multi-Layer Shadow Depth",
+      "description": "Multiple stacked box-shadows creating realistic depth perception. Replaces flat shadows with dimensional lighting effects.",
+      "applicableSections": ["features", "pricing", "testimonials"],
+      "cssPattern": "shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_8px_rgba(0,0,0,0.04),0_16px_32px_rgba(0,0,0,0.04)]",
+      "visualStyles": ["elegant", "minimal"],
+      "since": "2024"
+    }
+  ]
+}

@@ -93,6 +93,44 @@ export function buildPreviewHtml(payload: PreviewPayload): string {
     .section-error { padding: 2rem; text-align: center; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.5rem; margin: 1rem 0; }
     .section-error h3 { color: #991b1b; font-size: 0.875rem; font-weight: 600; }
     .section-error p { color: #b91c1c; font-size: 0.75rem; margin-top: 0.5rem; }
+
+    /* --- Curated Component Animation Library --- */
+    /* Scroll-triggered entrance base */
+    .animate-on-scroll { opacity: 0; transform: translateY(24px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+    .animate-on-scroll.is-visible { opacity: 1; transform: translateY(0); }
+
+    /* Entrance variants */
+    .fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+    .fade-up.is-visible { opacity: 1; transform: translateY(0); }
+    .fade-in { opacity: 0; transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1); }
+    .fade-in.is-visible { opacity: 1; }
+    .slide-left { opacity: 0; transform: translateX(-30px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+    .slide-left.is-visible { opacity: 1; transform: translateX(0); }
+    .slide-right { opacity: 0; transform: translateX(30px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+    .slide-right.is-visible { opacity: 1; transform: translateX(0); }
+    .scale-in { opacity: 0; transform: scale(0.92); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+    .scale-in.is-visible { opacity: 1; transform: scale(1); }
+
+    /* Staggered children — set --stagger-index via style attribute */
+    .stagger-children > * { transition-delay: calc(var(--stagger-index, 0) * 120ms); }
+
+    /* Hover micro-interactions */
+    .hover-lift { transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s cubic-bezier(0.16,1,0.3,1); }
+    .hover-lift:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -12px rgba(0,0,0,0.15); }
+    .hover-glow { transition: box-shadow 0.3s ease; }
+    .hover-glow:hover { box-shadow: 0 0 30px -5px var(--color-primary, rgba(59,130,246,0.4)); }
+    .hover-scale { transition: transform 0.25s cubic-bezier(0.16,1,0.3,1); }
+    .hover-scale:hover { transform: scale(1.03); }
+
+    /* Reduced motion — disable all animations */
+    @media (prefers-reduced-motion: reduce) {
+      .animate-on-scroll, .fade-up, .fade-in, .slide-left, .slide-right, .scale-in {
+        opacity: 1 !important; transform: none !important; transition: none !important;
+      }
+      .stagger-children > * { transition-delay: 0ms !important; }
+      .hover-lift:hover, .hover-scale:hover { transform: none !important; }
+      .hover-glow:hover { box-shadow: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -258,6 +296,32 @@ export function buildPreviewHtml(payload: PreviewPayload): string {
         document.getElementById("root").textContent = "Preview error: " + mountErr.message;
         window.parent.postMessage({ type: "ready" }, "*");
       }
+
+      // --- Scroll-triggered animation observer ---
+      (function initScrollAnimations() {
+        if (!('IntersectionObserver' in window)) return;
+        var animObserver = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              animObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        function observeAnimatedElements() {
+          var selectors = '.animate-on-scroll, .fade-up, .fade-in, .slide-left, .slide-right, .scale-in';
+          document.querySelectorAll(selectors).forEach(function(el) {
+            if (!el.classList.contains('is-visible')) animObserver.observe(el);
+          });
+        }
+        // Observe after React renders + small buffer
+        setTimeout(observeAnimatedElements, 300);
+        // Re-observe on DOM changes (for dynamically added elements)
+        if ('MutationObserver' in window) {
+          new MutationObserver(function() { setTimeout(observeAnimatedElements, 50); })
+            .observe(document.getElementById('root') || document.body, { childList: true, subtree: true });
+        }
+      })();
 
       // --- Listen for parent messages ---
       window.addEventListener("message", function(e) {
