@@ -94,6 +94,7 @@ export async function runPlanPhase(
   );
 
   const depthCheck = validatePlanDepth(plan);
+  console.log(JSON.stringify({ event: "pipeline_validation", phase: "plan", attempt: 1, valid: depthCheck.valid, pages: plan.pages.map((p) => ({ slug: p.slug, sections: p.sections.length })) }));
   if (!depthCheck.valid) {
     console.log(`[plan] Depth validation failed. Retrying with feedback...`);
     const retryPrompt = `${basePrompt}\n\n--- SECTION COUNT VALIDATION ERROR ---\nYour previous plan was rejected because it did not meet minimum section count requirements:\n${depthCheck.feedback.map((f) => `- ${f}`).join("\n")}\n\nYou MUST produce a plan where every page meets its minimum section count. This is a hard requirement.`;
@@ -110,6 +111,7 @@ export async function runPlanPhase(
     );
 
     const retryCheck = validatePlanDepth(plan);
+    console.log(JSON.stringify({ event: "pipeline_validation", phase: "plan", attempt: 2, valid: retryCheck.valid, pages: plan.pages.map((p) => ({ slug: p.slug, sections: p.sections.length })) }));
     if (!retryCheck.valid) {
       console.warn(
         `[plan] Depth validation still failing after retry. Using best-effort plan.`,

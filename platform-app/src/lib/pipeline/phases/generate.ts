@@ -9,6 +9,7 @@ import { validateAndRewriteUrls } from "@/lib/blueprint/url-validator";
 import { validateSections, formatValidationFeedback } from "@/lib/blueprint/component-validator";
 import { safeParsePropsJson } from "@/lib/ai/safe-parse-props";
 import { reviewPage, formatReviewLog } from "./review";
+import { runDeterministicChecks } from "./deterministic-checks";
 import type { ReviewResult } from "./review";
 import type { OnboardingData, BlueprintBundle, PageLayout, PageSection, FormField, HeaderConfig, FooterConfig } from "@/lib/blueprint/types";
 
@@ -225,6 +226,15 @@ export async function runGeneratePhase(
       }
     }
 
+    // Stage 1.5: Deterministic pre-checks with auto-fix
+    const deterministicResult = runDeterministicChecks(pageSlug, pageTitle, sections);
+    if (deterministicResult.autoFixed.length > 0) {
+      console.log(`[deterministic] Auto-fixed ${deterministicResult.autoFixed.length} issue(s) for "${planPage.title}": ${deterministicResult.autoFixed.join("; ")}`);
+    }
+    if (deterministicResult.unfixable.length > 0) {
+      console.warn(`[deterministic] Unfixable issues for "${planPage.title}": ${deterministicResult.unfixable.join("; ")}`);
+    }
+
     // Stage 2: Content Review + retry (TASK-293, ADR-011)
     // Set SKIP_CONTENT_REVIEW=1 to bypass the review agent for faster/cheaper test runs.
     const skipReview = process.env.SKIP_CONTENT_REVIEW === "1" || process.env.SKIP_CONTENT_REVIEW === "true";
@@ -254,6 +264,7 @@ export async function runGeneratePhase(
       }, "quality_only");
 
       console.log(formatReviewLog(planPage.title, reviewResult));
+      console.log(JSON.stringify({ event: "pipeline_review", phase: "generate", page: planPage.title, attempt: reviewAttempt + 1, passed: reviewResult.passed, score: reviewResult.score, failedChecks: reviewResult.checks.filter((c) => !c.passed).map((c) => c.name) }));
 
       if (reviewResult.score > bestAttempt.score) {
         bestAttempt = { page: currentPage, score: reviewResult.score };
