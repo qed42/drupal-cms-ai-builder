@@ -1,6 +1,6 @@
 import type { OnboardingData } from "@/lib/blueprint/types";
 import type { ResearchBrief } from "@/lib/pipeline/schemas";
-import { formatRulesForPlan, classifyPageType, getRule } from "../page-design-rules";
+import { formatRulesForPlan, classifyPageType, getRule, buildSectionSkeleton } from "../page-design-rules";
 
 /**
  * Build the plan phase prompt from research brief + onboarding data.
@@ -87,12 +87,24 @@ export function buildPlanPrompt(
     `- Include SEO keywords naturally in section briefs`,
     `- Every content section MUST have an estimatedWordCount that meets the word count range specified in the page requirements above`,
     ``,
-    `## FINAL CHECK — Minimum Section Counts (your output will be REJECTED if any page falls below)`,
-    ...pages.map((p) => {
+    `## EXACT SECTION SLOTS PER PAGE (CRITICAL — you MUST produce exactly these sections)`,
+    ``,
+    `For each page below, produce EXACTLY the listed section types in the given order.`,
+    `You fill in the "heading", "contentBrief", "estimatedWordCount", and "componentSuggestion" for each slot.`,
+    `You may swap optional section types for another type of equal weight, but the TOTAL COUNT must match exactly.`,
+    ``,
+    ...pages.flatMap((p) => {
       const pageType = classifyPageType(p.slug, p.title);
-      const rule = getRule(pageType);
-      return `- ${p.title} (/${p.slug}): MINIMUM ${rule.sectionCountRange[0]} sections`;
+      const skeleton = buildSectionSkeleton(pageType);
+      return [
+        `### ${p.title} (/${p.slug}) — EXACTLY ${skeleton.length} sections:`,
+        ...skeleton.map((s, i) =>
+          `  ${i + 1}. type: "${s.type}" ${s.required ? "(REQUIRED)" : "(optional — may swap type)"}`
+        ),
+        ``,
+      ];
     }),
+    `If you produce fewer sections than specified for ANY page, your output will be REJECTED.`,
     ``,
     `Return ONLY valid JSON.`
   );

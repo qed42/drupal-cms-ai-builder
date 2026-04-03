@@ -135,6 +135,36 @@ function resolvePatternLabel(patternName: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Section Skeleton Builder
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a pre-determined section skeleton for a page type.
+ * Returns the exact section slots (required first, then optional to fill to minimum).
+ * The AI fills in headings/content for these slots rather than deciding the count.
+ */
+export function buildSectionSkeleton(
+  pageType: PageType
+): Array<{ type: string; required: boolean; position: string }> {
+  const rule = getRule(pageType);
+  const sections: Array<{ type: string; required: boolean; position: string }> = [];
+
+  // Add all required sections in their declared order
+  for (const s of rule.sections.filter((s) => s.required)) {
+    sections.push({ type: s.type, required: true, position: s.position });
+  }
+
+  // Fill remaining slots with optional sections up to minimum count
+  const remaining = rule.sectionCountRange[0] - sections.length;
+  const optional = rule.sections.filter((s) => !s.required);
+  for (let i = 0; i < remaining && i < optional.length; i++) {
+    sections.push({ type: optional[i].type, required: false, position: optional[i].position });
+  }
+
+  return sections;
+}
+
+// ---------------------------------------------------------------------------
 // Prompt Formatters
 // ---------------------------------------------------------------------------
 

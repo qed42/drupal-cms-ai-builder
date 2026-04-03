@@ -896,14 +896,26 @@ function checkPatternVariety(input: ReviewInput): ReviewCheck {
 // Main Review Function
 // ---------------------------------------------------------------------------
 
-export function reviewPage(input: ReviewInput): ReviewResult {
-  const checks: ReviewCheck[] = [
-    // Depth checks (TASK-290)
-    checkSectionCount(input),
+export function reviewPage(
+  input: ReviewInput,
+  mode: "full" | "quality_only" = "full"
+): ReviewResult {
+  // Deterministic structural checks — skipped in quality_only mode
+  // (handled by deterministic pre-check pass in generate phase)
+  const deterministicChecks: ReviewCheck[] = mode === "full"
+    ? [
+        checkSectionCount(input),
+        checkNoPlaceholders(input),
+        checkVisualRhythm(input),
+        checkRequiredSections(input),
+        checkConsecutiveBackgrounds(input),
+        checkPatternVariety(input),
+      ]
+    : [];
+
+  // Content quality checks — always run
+  const qualityChecks: ReviewCheck[] = [
     checkTotalWordCount(input),
-    checkNoPlaceholders(input),
-    checkVisualRhythm(input),
-    checkRequiredSections(input),
     checkSectionWordCount(input),
     // SEO checks (TASK-291)
     checkMetaTitleLength(input),
@@ -923,12 +935,12 @@ export function reviewPage(input: ReviewInput): ReviewResult {
     checkGenericCtaText(input),
     checkSelfLinks(input),
     // Design checks (TASK-425)
-    checkConsecutiveBackgrounds(input),
     checkImageAlternation(input),
-    checkPatternVariety(input),
     // Hero heading quality (TASK-423) — error severity, triggers retry
     checkHeroHeadingQuality(input),
   ];
+
+  const checks = [...deterministicChecks, ...qualityChecks];
 
   // Score weights: errors count fully, warnings count at 0.3 weight.
   // This prevents warning-heavy pages from showing misleadingly low scores.
@@ -948,12 +960,15 @@ export function reviewPage(input: ReviewInput): ReviewResult {
 
   // Build feedback string for retry prompt — include errors and high-impact warnings
   const failedChecks = checks.filter((c) => !c.passed && (c.severity === "error") && c.fix);
+  const structureWarning = mode === "quality_only"
+    ? `\nIMPORTANT: Improve content quality only. Do NOT change the number of sections or section types — the section structure is correct.`
+    : `\nIMPORTANT: Address the issues above while preserving the existing content structure. Focus on adding depth and specificity.`;
   const feedback = failedChecks.length > 0
     ? [
-        `--- CONTENT REVIEW FAILED ---`,
+        mode === "quality_only" ? `--- CONTENT QUALITY REVIEW ---` : `--- CONTENT REVIEW FAILED ---`,
         ...failedChecks.map((c) => `- [${c.dimension}/${c.name}] ${c.message}. Fix: ${c.fix}`),
         ``,
-        `IMPORTANT: Address the issues above while preserving the existing content structure. Focus on adding depth and specificity.`,
+        structureWarning,
       ].join("\n")
     : "";
 

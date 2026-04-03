@@ -251,7 +251,7 @@ export async function runGeneratePhase(
           targetAudience: { primary: research.targetAudience.primary },
         },
         sitePages: pages.map((p) => ({ slug: p.slug, sections: p.sections })),
-      });
+      }, "quality_only");
 
       console.log(formatReviewLog(planPage.title, reviewResult));
 

@@ -45,7 +45,7 @@ export const ContentPlanPageSchema = z.object({
       estimatedWordCount: z.number().describe("Target word count for this section"),
       componentSuggestion: z.string().describe("Suggested Space DS component or empty string if none"),
     })
-  ),
+  ).min(3, "Each page must have at least 3 sections"),
 });
 
 export const ContentPlanSchema = z.object({
