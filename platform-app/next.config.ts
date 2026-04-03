@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
     "@ai-builder/ds-mercury",
     "@ai-builder/ds-civictheme",
   ],
+  outputFileTracingIncludes: {
+    "/**": [
+      "./src/lib/curated-components/**/*.json",
+      "./src/lib/curated-components/components/**/*.tsx",
+      "./src/lib/curated-components/components/**/*.css",
+      "./src/lib/rules/definitions/**/*.yaml",
+    ],
+  },
 };
 
 export default nextConfig;
