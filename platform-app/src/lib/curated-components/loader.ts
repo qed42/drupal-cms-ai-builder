@@ -4,8 +4,9 @@
  * Server-side only (uses fs.readFileSync). Caches manifest in memory after first load.
  */
 
-import fs from "fs";
-import path from "path";
+import { readFileSync, existsSync } from "node:fs";
+import { resolve, join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { CodeComponentProp } from "@/lib/code-components/types";
 
 // ---------------------------------------------------------------------------
@@ -41,14 +42,18 @@ interface Manifest {
 // Cache
 // ---------------------------------------------------------------------------
 
-const COMPONENTS_DIR = path.resolve(__dirname);
+const COMPONENTS_DIR = dirname(fileURLToPath(import.meta.url));
 let cachedManifest: Manifest | null = null;
 const componentCache = new Map<string, CuratedComponent>();
 
-function loadManifest(): Manifest {
+function loadManifest(): Manifest | null {
   if (cachedManifest) return cachedManifest;
-  const manifestPath = path.join(COMPONENTS_DIR, "manifest.json");
-  const raw = fs.readFileSync(manifestPath, "utf-8");
+  const manifestPath = join(COMPONENTS_DIR, "manifest.json");
+  if (!existsSync(manifestPath)) {
+    console.warn(`[curated-components] manifest.json not found at ${manifestPath}`);
+    return null;
+  }
+  const raw = readFileSync(manifestPath, "utf-8");
   cachedManifest = JSON.parse(raw) as Manifest;
   return cachedManifest;
 }
@@ -57,11 +62,11 @@ function loadComponentSource(meta: CuratedComponentMeta): CuratedComponent {
   const cached = componentCache.get(meta.id);
   if (cached) return cached;
 
-  const jsxPath = path.join(COMPONENTS_DIR, meta.source.jsx);
-  const cssPath = path.join(COMPONENTS_DIR, meta.source.css);
+  const jsxPath = join(COMPONENTS_DIR, meta.source.jsx);
+  const cssPath = join(COMPONENTS_DIR, meta.source.css);
 
-  const jsx = fs.existsSync(jsxPath) ? fs.readFileSync(jsxPath, "utf-8") : "";
-  const css = fs.existsSync(cssPath) ? fs.readFileSync(cssPath, "utf-8") : "";
+  const jsx = existsSync(jsxPath) ? readFileSync(jsxPath, "utf-8") : "";
+  const css = existsSync(cssPath) ? readFileSync(cssPath, "utf-8") : "";
 
   const component: CuratedComponent = { ...meta, jsx, css };
   componentCache.set(meta.id, component);
@@ -81,6 +86,7 @@ export function getCuratedComponents(filter?: {
   animationLevel?: string;
 }): CuratedComponent[] {
   const manifest = loadManifest();
+  if (!manifest) return [];
   let components = manifest.components;
 
   if (filter?.category) {
@@ -101,6 +107,7 @@ export function getCuratedComponents(filter?: {
  */
 export function getCuratedComponent(id: string): CuratedComponent | null {
   const manifest = loadManifest();
+  if (!manifest) return null;
   const meta = manifest.components.find((c) => c.id === id);
   if (!meta) return null;
   return loadComponentSource(meta);
@@ -121,6 +128,7 @@ export function selectCuratedComponent(
   animationLevel: string
 ): CuratedComponent | null {
   const manifest = loadManifest();
+  if (!manifest) return null;
 
   // Map section types to categories
   const categoryMap: Record<string, string> = {

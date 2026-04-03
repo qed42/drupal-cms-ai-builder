@@ -2,8 +2,9 @@
  * Trend database loader — reads and filters design trends for prompt injection.
  */
 
-import fs from "fs";
-import path from "path";
+import { readFileSync, existsSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -29,12 +30,17 @@ interface TrendsDatabase {
 // Cache
 // ---------------------------------------------------------------------------
 
+const TRENDS_DIR = dirname(fileURLToPath(import.meta.url));
 let cachedTrends: TrendsDatabase | null = null;
 
-function loadTrends(): TrendsDatabase {
+function loadTrends(): TrendsDatabase | null {
   if (cachedTrends) return cachedTrends;
-  const trendsPath = path.join(path.resolve(__dirname), "trends.json");
-  const raw = fs.readFileSync(trendsPath, "utf-8");
+  const trendsPath = join(TRENDS_DIR, "trends.json");
+  if (!existsSync(trendsPath)) {
+    console.warn(`[curated-components] trends.json not found at ${trendsPath}`);
+    return null;
+  }
+  const raw = readFileSync(trendsPath, "utf-8");
   cachedTrends = JSON.parse(raw) as TrendsDatabase;
   return cachedTrends;
 }
@@ -53,6 +59,7 @@ export function getApplicableTrends(
   limit: number = 3
 ): TrendEntry[] {
   const db = loadTrends();
+  if (!db) return [];
 
   const applicable = db.trends.filter((t) =>
     t.applicableSections.includes(sectionType)
