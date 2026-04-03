@@ -94,17 +94,14 @@ function validateJsxStructure(jsx: string, errors: ValidationError[], warnings: 
     }
   }
 
-  // Check for balanced JSX tags (basic check)
-  const openTags = jsx.match(/<[A-Za-z][A-Za-z0-9.]*(?:\s|>|\/)/g) || [];
-  const selfClosing = jsx.match(/<[A-Za-z][A-Za-z0-9.]*\s[^>]*\/>/g) || [];
-  const closeTags = jsx.match(/<\/[A-Za-z][A-Za-z0-9.]*>/g) || [];
-
-  // Rough balance check (open - selfClosing should roughly equal close)
-  const expectedClose = openTags.length - selfClosing.length;
-  if (Math.abs(expectedClose - closeTags.length) > 2) {
-    warnings.push({
-      rule: "jsx-balance",
-      message: "JSX tags may be unbalanced — verify all tags are properly closed",
+  // Stack-based JSX tag balance check.
+  // Extracts opening tags, self-closing tags, and closing tags, then verifies
+  // the nesting is correct. Promoted to error severity so it triggers a retry.
+  const tagBalance = checkJsxTagBalance(jsx);
+  if (!tagBalance.balanced) {
+    errors.push({
+      rule: "jsx-tag-balance",
+      message: `JSX tags are unbalanced: ${tagBalance.detail}. The component will fail to render in the preview. Carefully check that every opening <div>, <section>, etc. has a matching closing tag, and remove any extra closing tags.`,
     });
   }
 }
@@ -236,4 +233,64 @@ function validateCss(css: string, errors: ValidationError[]): void {
       break;
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+// JSX Tag Balance Checker
+// ---------------------------------------------------------------------------
+
+/**
+ * Stack-based JSX tag balance check.
+ * Parses opening/closing/self-closing tags and verifies proper nesting.
+ * Returns a diagnostic if tags are unbalanced.
+ */
+function checkJsxTagBalance(jsx: string): { balanced: boolean; detail: string } {
+  // Extract the JSX body (inside the return statement) to avoid false positives
+  // from string literals in the function signature
+  const returnMatch = jsx.match(/return\s*\(\s*([\s\S]*)\s*\)\s*;?\s*\}$/);
+  const jsxBody = returnMatch ? returnMatch[1] : jsx;
+
+  // Remove string literals and template expressions to avoid false matches
+  const cleaned = jsxBody
+    .replace(/"(?:[^"\\]|\\.)*"/g, '""')       // double-quoted strings
+    .replace(/'(?:[^'\\]|\\.)*'/g, "''")        // single-quoted strings
+    .replace(/`(?:[^`\\]|\\.)*`/g, "``")        // template literals
+    .replace(/\{[^{}]*\}/g, "{}");              // JSX expressions (single level)
+
+  const stack: string[] = [];
+
+  // Match all tags: opening, closing, and self-closing
+  const tagRegex = /<\/?([A-Za-z][A-Za-z0-9.]*)[^>]*?\/?>/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = tagRegex.exec(cleaned)) !== null) {
+    const fullTag = match[0];
+    const tagName = match[1];
+
+    // Self-closing: <img />, <br />, <input />, <Component />
+    if (fullTag.endsWith("/>")) {
+      continue;
+    }
+
+    // Closing tag: </div>
+    if (fullTag.startsWith("</")) {
+      if (stack.length === 0) {
+        return { balanced: false, detail: `extra closing </${tagName}> with no matching opening tag` };
+      }
+      const expected = stack.pop()!;
+      if (expected !== tagName) {
+        return { balanced: false, detail: `expected closing </${expected}> but found </${tagName}>` };
+      }
+      continue;
+    }
+
+    // Opening tag: <div>, <section>
+    stack.push(tagName);
+  }
+
+  if (stack.length > 0) {
+    return { balanced: false, detail: `unclosed tag(s): ${stack.map((t) => `<${t}>`).join(", ")}` };
+  }
+
+  return { balanced: true, detail: "" };
 }
