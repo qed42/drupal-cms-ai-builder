@@ -56,6 +56,7 @@ function buildSectionDesignBrief(
     toneGuidance: research.toneGuidance?.primary || "professional",
     animationLevel: prefs.animationLevel,
     visualStyle: prefs.visualStyle,
+    interactivity: prefs.interactivity || "scroll_effects",
     previousSectionSummary: previousSummary,
     targetKeywords,
   };
@@ -82,6 +83,7 @@ function buildHeaderBrief(
     toneGuidance: research.toneGuidance?.primary || "professional",
     animationLevel: "subtle", // Headers always subtle
     visualStyle: data.designPreferences?.visualStyle || "minimal",
+    interactivity: "static", // Headers stay static
   };
 }
 
@@ -106,6 +108,7 @@ function buildFooterBrief(
     toneGuidance: research.toneGuidance?.primary || "professional",
     animationLevel: "subtle", // Footers always subtle
     visualStyle: data.designPreferences?.visualStyle || "minimal",
+    interactivity: "static", // Footers stay static
   };
 }
 

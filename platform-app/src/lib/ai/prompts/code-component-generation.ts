@@ -304,6 +304,45 @@ const VISUAL_STYLE_GUIDANCE: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// Interactivity Level Guidance
+// ---------------------------------------------------------------------------
+
+const INTERACTIVITY_GUIDANCE: Record<string, string> = {
+  static: `INTERACTIVITY: Static
+- Do NOT add any scroll-triggered animation classes (fade-up, slide-left, animate-on-scroll, etc.)
+- Do NOT add hover interaction classes (hover-lift, hover-glow, hover-scale)
+- Simple CSS transitions for focus states are acceptable (for a11y)
+- Keep the page clean and immediate-loading`,
+  scroll_effects: `INTERACTIVITY: Scroll Effects
+- Add scroll-triggered entrance animations using these CSS classes (NOT Tailwind animate-* utilities):
+  - .fade-up — fades in and slides up (use on headings, content blocks, cards)
+  - .fade-in — simple opacity fade (use on background elements, images)
+  - .slide-left / .slide-right — horizontal entrance (use on alternating layouts)
+  - .scale-in — scale from 0.92 to 1 (use on cards and images)
+  - .animate-on-scroll — generic entrance trigger (use as fallback)
+- For lists/grids (features, testimonials, team, pricing cards): wrap the parent in class "stagger-children" and set style={{ '--stagger-index': i }} on each child element
+- These classes are activated by IntersectionObserver — elements start invisible and animate into view on scroll
+- IMPORTANT: Do NOT use Tailwind motion-safe:animate-[...] for entrance animations — use the CSS classes listed above
+- Do NOT add @keyframes in the css field for entrance animations — the CSS classes handle it`,
+  interactive: `INTERACTIVITY: Full Interactive
+- Apply ALL scroll-triggered entrance animations from the list below using CSS classes (NOT Tailwind animate-* utilities):
+  - .fade-up — fades in and slides up (use on headings, content blocks, cards)
+  - .fade-in — simple opacity fade (use on background elements, images)
+  - .slide-left / .slide-right — horizontal entrance (use on alternating layouts)
+  - .scale-in — scale from 0.92 to 1 (use on cards and images)
+  - .animate-on-scroll — generic entrance trigger (use as fallback)
+- For lists/grids: wrap parent in class "stagger-children" and set style={{ '--stagger-index': i }} on each child — REQUIRED on all list/grid layouts
+- Additionally, add hover micro-interactions using these CSS classes:
+  - .hover-lift — card lifts up with enhanced shadow on hover (use on cards, CTA sections)
+  - .hover-glow — glowing box-shadow using brand primary color on hover (use on featured/highlighted items)
+  - .hover-scale — subtle scale to 1.03 on hover (use on images, avatars, thumbnails)
+- Combine entrance + hover on the same element: e.g., className="fade-up hover-lift"
+- For buttons/links: add Tailwind hover: utilities (hover:translate-x-1, hover:brightness-110)
+- IMPORTANT: Do NOT use Tailwind motion-safe:animate-[...] for entrance animations — use the CSS classes listed above
+- Do NOT add @keyframes in the css field for entrance animations — the CSS classes handle it`,
+};
+
+// ---------------------------------------------------------------------------
 // Prompt Builder
 // ---------------------------------------------------------------------------
 
@@ -328,6 +367,8 @@ export function buildCodeComponentPrompt(
     ANIMATION_GUIDANCE[brief.animationLevel] || ANIMATION_GUIDANCE.moderate;
   const styleGuidance =
     VISUAL_STYLE_GUIDANCE[brief.visualStyle] || VISUAL_STYLE_GUIDANCE.minimal;
+  const interactivityGuidance =
+    INTERACTIVITY_GUIDANCE[brief.interactivity || "scroll_effects"] || INTERACTIVITY_GUIDANCE.scroll_effects;
 
   const brandSection = buildBrandSection(brief);
   const contextSection = buildContextSection(brief);
@@ -361,6 +402,8 @@ ${brandSection}
 ## ${animationGuidance}
 
 ## ${styleGuidance}
+
+## ${interactivityGuidance}
 
 ## RESPONSIVE DESIGN
 
@@ -540,7 +583,9 @@ You have a production-quality reference component for this section type. Use it 
 ${exampleJson}
 \`\`\`
 
-**IMPORTANT**: Your output must be at least as polished as this reference. Use the same brand token patterns, responsive design approach, and animation quality.`;
+**IMPORTANT**: Your output must be at least as polished as this reference. Use the same brand token patterns, responsive design approach, and animation quality.
+
+**ANIMATION NOTE**: This reference uses CSS animation classes (fade-up, hover-lift, stagger-children, animate-on-scroll) — NOT Tailwind motion-safe:animate-[...] utilities. You MUST use the same CSS class-based animation approach as shown in the reference. Do NOT generate @keyframes for entrance animations — the CSS classes handle the animation automatically via IntersectionObserver.`;
 }
 
 function buildTrendsSection(trends: TrendEntry[]): string {

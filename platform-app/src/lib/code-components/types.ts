@@ -88,6 +88,8 @@ export interface SectionDesignBrief {
   animationLevel: "subtle" | "moderate" | "dramatic";
   /** Visual style preference. */
   visualStyle: "minimal" | "bold" | "elegant" | "playful";
+  /** Interactivity level preference. */
+  interactivity?: "static" | "scroll_effects" | "interactive";
   /** Summary of the previous section for visual flow continuity. */
   previousSectionSummary?: string;
   /** SEO target keywords for this section. */
