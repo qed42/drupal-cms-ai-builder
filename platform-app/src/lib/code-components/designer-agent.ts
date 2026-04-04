@@ -140,7 +140,7 @@ export async function generateCodeComponent(
       {
         phase: "generate",
         maxTokens: CODE_COMPONENT_MAX_TOKENS,
-        temperature: 0.4,
+        temperature: 0.65,
       }
     );
 

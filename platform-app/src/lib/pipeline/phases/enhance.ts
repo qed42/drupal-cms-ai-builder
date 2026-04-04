@@ -124,7 +124,6 @@ async function enhanceCodeComponentImages(
   let imagesFailed = 0;
   const usedPhotoIds = new Set<string>();
   const usedUserImageIds = new Set<string>();
-  const MATCH_THRESHOLD = 0.25;
 
   for (const page of blueprint.pages) {
     for (const section of page.sections) {
@@ -147,8 +146,13 @@ async function enhanceCodeComponentImages(
           if (typeof imgUrl === "string" && !isPlaceholderUrl(imgUrl)) continue;
         }
 
-        // Build search query from section context
-        const query = buildCodeComponentSearchQuery(section, page.title, industry, audience);
+        // Infer section type from metadata for threshold + query tuning
+        const sectionType = (section._meta as Record<string, unknown>)?.contentBrief
+          ? inferSectionTypeFromMeta(section)
+          : "default";
+
+        // Build search query from section context with section-type prefix
+        const query = buildCodeComponentSearchQuery(section, page.title, industry, audience, sectionType);
 
         // Try user images first
         let resolved = false;
@@ -164,8 +168,9 @@ async function enhanceCodeComponentImages(
             usedUserImageIds
           );
 
+          const threshold = getMatchThreshold(sectionType);
           const best = candidates[0];
-          if (best && best.score >= MATCH_THRESHOLD) {
+          if (best && best.score >= threshold) {
             const matched = userImages.find((img) => img.id === best.imageId);
             if (matched) {
               const userImg = matched as UserImage & { url?: string; file_url?: string };
@@ -298,27 +303,78 @@ function isPlaceholderUrl(url: string): boolean {
 }
 
 /**
+ * Get section-type-specific image match threshold.
+ * Higher thresholds for sections where semantic accuracy matters most.
+ */
+function getMatchThreshold(sectionType: string): number {
+  const thresholds: Record<string, number> = {
+    logos: 0.55,
+    logo: 0.55,
+    testimonials: 0.45,
+    testimonial: 0.45,
+    team: 0.45,
+    hero: 0.35,
+  };
+  return thresholds[sectionType] ?? 0.40;
+}
+
+/**
+ * Infer a normalized section type string from section metadata.
+ */
+function inferSectionTypeFromMeta(section: PageSection): string {
+  const machineName = section._meta?.codeComponent?.machineName ?? "";
+  const brief = section._meta?.contentBrief ?? "";
+  const combined = `${machineName} ${brief}`.toLowerCase();
+
+  if (combined.includes("logo")) return "logos";
+  if (combined.includes("testimonial") || combined.includes("review")) return "testimonials";
+  if (combined.includes("team") || combined.includes("staff") || combined.includes("people")) return "team";
+  if (combined.includes("hero") || combined.includes("banner")) return "hero";
+  if (combined.includes("gallery") || combined.includes("portfolio")) return "gallery";
+  return "default";
+}
+
+/**
+ * Get a search query prefix for section types that need specific image semantics.
+ */
+function getSectionTypeSearchPrefix(sectionType: string): string {
+  const prefixes: Record<string, string> = {
+    logos: "company logo brand",
+    logo: "company logo brand",
+    team: "professional headshot portrait",
+    testimonials: "professional headshot",
+    testimonial: "professional headshot",
+    gallery: "portfolio showcase",
+  };
+  return prefixes[sectionType] ?? "";
+}
+
+/**
  * Build a stock image search query from code component section context.
  */
 function buildCodeComponentSearchQuery(
   section: PageSection,
   pageTitle: string,
   industry: string,
-  _audience: string
+  _audience: string,
+  sectionType?: string
 ): string {
+  // Add section-type-specific prefix for semantic accuracy
+  const prefix = sectionType ? getSectionTypeSearchPrefix(sectionType) : "";
+
   // Use content brief from metadata
   if (section._meta?.contentBrief) {
     const words = section._meta.contentBrief.split(/\s+/).slice(0, 4).join(" ");
-    return `${industry} ${words}`.trim();
+    return `${prefix} ${industry} ${words}`.replace(/\s+/g, " ").trim();
   }
 
   // Use heading from props
   const heading = section.props.heading || section.props.title;
   if (typeof heading === "string" && heading) {
-    return `${industry} ${heading.split(/\s+/).slice(0, 3).join(" ")}`.trim();
+    return `${prefix} ${industry} ${heading.split(/\s+/).slice(0, 3).join(" ")}`.replace(/\s+/g, " ").trim();
   }
 
-  return `${industry} ${pageTitle} professional`.trim();
+  return `${prefix} ${industry} ${pageTitle} professional`.replace(/\s+/g, " ").trim();
 }
 
 /**

@@ -222,6 +222,56 @@ export function formatRulesForPlan(
 }
 
 /**
+ * Format relaxed plan rules for code component mode.
+ * No composition pattern references, fewer required sections,
+ * encourages creative/novel section types.
+ */
+export function formatCodeComponentPlanRules(
+  pages: Array<{ slug: string; title: string }>
+): string[] {
+  const lines: string[] = [
+    `## Page Composition Guidelines (Code Component Mode)`,
+    ``,
+    `You are planning for a BESPOKE React/Tailwind implementation where every section is a custom-built component.`,
+    `You have full creative freedom over section types, layouts, and visual treatments.`,
+    `Think beyond standard web patterns — consider unconventional sections like:`,
+    `- Bento grids, masonry layouts, asymmetric hero splits`,
+    `- Scroll-driven narratives, animated timelines, process flows`,
+    `- Interactive comparison tables, pricing calculators`,
+    `- Parallax showcases, staggered card reveals, statistics counters`,
+    `- Full-bleed image galleries, video backgrounds, split-screen layouts`,
+    ``,
+    `You MAY invent section types that best serve the business narrative.`,
+    `The "type" field can be any descriptive string — you are NOT limited to the standard set.`,
+    ``,
+  ];
+
+  for (const page of pages) {
+    const pageType = classifyPageType(page.slug, page.title);
+    const rule = getRule(pageType);
+    // Reduce minimums by 2 for code components (more freedom, fewer forced sections)
+    const relaxedMin = Math.max(3, rule.sectionCountRange[0] - 2);
+    const relaxedMax = rule.sectionCountRange[1];
+    lines.push(
+      `- **${page.title}** (/${page.slug}) [${pageType}]:`,
+      `  - ${relaxedMin}–${relaxedMax} sections`,
+      `  - REQUIRED: hero section at the opening position`,
+      `  - STRONGLY RECOMMENDED: a conversion-oriented closing section (CTA, contact form, or newsletter signup)`,
+      `  - Remaining sections: choose what best serves the page's purpose and business narrative`,
+      `  - Section ORDER is flexible for non-hero sections — arrange for maximum storytelling impact`,
+      `  - Rhythm guidance: ${rule.rhythm.guidance}`,
+      ``,
+    );
+  }
+
+  lines.push(
+    `REMINDER: Every page MUST have at least a hero section. Content-rich pages (home, services, about, landing) should have at least ${Math.max(3, 5)} sections for sufficient depth, but prioritize quality and narrative flow over hitting a number.`
+  );
+
+  return lines.filter(Boolean);
+}
+
+/**
  * Format rules for the generation phase prompt. Produces composition rules,
  * hero selection guidance, and component mapping for a specific page.
  */

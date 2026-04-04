@@ -1,6 +1,6 @@
 import type { OnboardingData } from "@/lib/blueprint/types";
 import type { ResearchBrief } from "@/lib/pipeline/schemas";
-import { formatRulesForPlan, classifyPageType, getRule, buildSectionSkeleton } from "../page-design-rules";
+import { formatRulesForPlan, formatCodeComponentPlanRules, classifyPageType, getRule, buildSectionSkeleton } from "../page-design-rules";
 
 /**
  * Build the plan phase prompt from research brief + onboarding data.
@@ -16,6 +16,16 @@ export function buildPlanPrompt(
     { slug: "about", title: "About Us" },
     { slug: "contact", title: "Contact" },
   ];
+
+  const isCodeComponents = data.generationMode === "code_components";
+
+  const componentSuggestionDesc = isCodeComponents
+    ? `Visual treatment description — describe the desired layout, animation style, and visual approach (e.g., "bento grid with staggered reveal", "full-bleed parallax hero with gradient overlay")`
+    : `Optional Space DS component suggestion`;
+
+  const sectionTypeDesc = isCodeComponents
+    ? `Section type — use standard types (hero, features, testimonials, cta, text, gallery, faq, team, pricing, stats) OR invent descriptive types that fit the narrative (e.g., "scroll-timeline", "bento-showcase", "process-flow", "comparison-table")`
+    : `Section type (hero, features, testimonials, cta, text, gallery, faq, team, pricing, stats)`;
 
   const sections: string[] = [
     `You are a senior content planner creating a detailed content plan for a website.`,
@@ -60,16 +70,16 @@ export function buildPlanPrompt(
     `  - "targetKeywords": 2-3 SEO keywords for this page`,
     `  - "sections": Array of content sections, each with:`,
     `    - "heading": Section heading text`,
-    `    - "type": Section type (hero, features, testimonials, cta, text, gallery, faq, team, pricing, stats)`,
+    `    - "type": ${sectionTypeDesc}`,
     `    - "contentBrief": 2-3 sentences describing what content to generate for this section`,
     `    - "estimatedWordCount": Target word count for this section (e.g., hero: 30-50, text: 150-300, features: 100-200)`,
-    `    - "componentSuggestion": Optional Space DS component suggestion`,
+    `    - "componentSuggestion": ${componentSuggestionDesc}`,
     `- "globalContent": Shared content used across pages:`,
     `  - "services": Array of { "title": string, "briefDescription": string } — 3-5 services`,
     `  - "teamMembers": Optional array of { "name": string, "role": string } — 2-4 members`,
     `  - "testimonials": Optional array of { "quote": string, "authorName": string, "authorRole": string } — 2-3 testimonials`,
     ``,
-    ...formatRulesForPlan(pages),
+    ...(isCodeComponents ? formatCodeComponentPlanRules(pages) : formatRulesForPlan(pages)),
     ``,
     `## Hero Headline Quality (CRITICAL — applies to EVERY hero section heading)`,
     `- The hero section "heading" field is the h1 of the page — it MUST be a compelling, marketing-grade headline`,
@@ -86,28 +96,66 @@ export function buildPlanPrompt(
     `- Each section's contentBrief should be specific and actionable, not vague`,
     `- Include SEO keywords naturally in section briefs`,
     `- Every content section MUST have an estimatedWordCount that meets the word count range specified in the page requirements above`,
-    ``,
-    `## EXACT SECTION SLOTS PER PAGE (CRITICAL — you MUST produce exactly these sections)`,
-    ``,
-    `For each page below, produce EXACTLY the listed section types in the given order.`,
-    `You fill in the "heading", "contentBrief", "estimatedWordCount", and "componentSuggestion" for each slot.`,
-    `You may swap optional section types for another type of equal weight, but the TOTAL COUNT must match exactly.`,
-    ``,
-    ...pages.flatMap((p) => {
-      const pageType = classifyPageType(p.slug, p.title);
-      const skeleton = buildSectionSkeleton(pageType);
-      return [
-        `### ${p.title} (/${p.slug}) — EXACTLY ${skeleton.length} sections:`,
-        ...skeleton.map((s, i) =>
-          `  ${i + 1}. type: "${s.type}" ${s.required ? "(REQUIRED)" : "(optional — may swap type)"}`
-        ),
-        ``,
-      ];
-    }),
-    `If you produce fewer sections than specified for ANY page, your output will be REJECTED.`,
-    ``,
-    `Return ONLY valid JSON.`
   );
+
+  // SDC mode: strict skeleton enforcement. Code components: soft guidance.
+  if (isCodeComponents) {
+    sections.push(
+      ``,
+      `## Suggested Section Flow (flexible — you may reorder or substitute non-hero sections)`,
+      ``,
+      `For each page below, the suggested sections are a starting point. You MUST include a hero section`,
+      `at the opening. Beyond that, choose sections that best serve the page's purpose and business narrative.`,
+      `You may reorder non-hero sections, substitute types, or introduce novel section types.`,
+      ``,
+      ...pages.flatMap((p) => {
+        const pageType = classifyPageType(p.slug, p.title);
+        const rule = getRule(pageType);
+        const relaxedMin = Math.max(3, rule.sectionCountRange[0] - 2);
+        const required = rule.sections.filter((s) => s.required);
+        const optional = rule.sections.filter((s) => !s.required);
+        return [
+          `### ${p.title} (/${p.slug}) — at least ${relaxedMin} sections:`,
+          `  1. type: "hero" (REQUIRED — opening)`,
+          ...required.filter((s) => s.type !== "hero").map((s, i) =>
+            `  ${i + 2}. type: "${s.type}" (recommended)`
+          ),
+          ...optional.map((s) =>
+            `  - type: "${s.type}" (optional)`
+          ),
+          `  - Or: any creative section type that serves the narrative`,
+          ``,
+        ];
+      }),
+      `Aim for variety and storytelling impact over rigid structure.`,
+      ``,
+      `Return ONLY valid JSON.`
+    );
+  } else {
+    sections.push(
+      ``,
+      `## EXACT SECTION SLOTS PER PAGE (CRITICAL — you MUST produce exactly these sections)`,
+      ``,
+      `For each page below, produce EXACTLY the listed section types in the given order.`,
+      `You fill in the "heading", "contentBrief", "estimatedWordCount", and "componentSuggestion" for each slot.`,
+      `You may swap optional section types for another type of equal weight, but the TOTAL COUNT must match exactly.`,
+      ``,
+      ...pages.flatMap((p) => {
+        const pageType = classifyPageType(p.slug, p.title);
+        const skeleton = buildSectionSkeleton(pageType);
+        return [
+          `### ${p.title} (/${p.slug}) — EXACTLY ${skeleton.length} sections:`,
+          ...skeleton.map((s, i) =>
+            `  ${i + 1}. type: "${s.type}" ${s.required ? "(REQUIRED)" : "(optional — may swap type)"}`
+          ),
+          ``,
+        ];
+      }),
+      `If you produce fewer sections than specified for ANY page, your output will be REJECTED.`,
+      ``,
+      `Return ONLY valid JSON.`
+    );
+  }
 
   return sections.join("\n");
 }

@@ -16,13 +16,17 @@ interface PlanDepthValidation {
  * Validate that each page in the content plan meets the minimum section count
  * defined in PAGE_DESIGN_RULES for its page type.
  */
-function validatePlanDepth(plan: ContentPlan): PlanDepthValidation {
+function validatePlanDepth(plan: ContentPlan, mode?: string): PlanDepthValidation {
   const feedback: string[] = [];
+  const isCodeComponents = mode === "code_components";
 
   for (const page of plan.pages) {
     const pageType = classifyPageType(page.slug, page.title);
     const rule = getRule(pageType);
-    const min = rule.sectionCountRange[0];
+    // Code components: relax minimum by 2 (more freedom, fewer forced sections)
+    const min = isCodeComponents
+      ? Math.max(3, rule.sectionCountRange[0] - 2)
+      : rule.sectionCountRange[0];
     const actual = page.sections.length;
 
     if (actual < min) {
@@ -81,6 +85,9 @@ export async function runPlanPhase(
   const pageCount = data.pages?.length ?? 3;
   const planTokenBudget = Math.min(6000 + pageCount * 1500, 16000);
 
+  // Code components get higher temperature for more creative/diverse plans
+  const planTemperature = data.generationMode === "code_components" ? 0.5 : 0.3;
+
   // Generate plan with depth validation + max 1 retry (ADR-012)
   let plan = await generateValidatedJSON<ContentPlan>(
     provider,
@@ -88,12 +95,12 @@ export async function runPlanPhase(
     ContentPlanSchema,
     {
       phase: "plan",
-      temperature: 0.3,
+      temperature: planTemperature,
       maxTokens: planTokenBudget,
     }
   );
 
-  const depthCheck = validatePlanDepth(plan);
+  const depthCheck = validatePlanDepth(plan, data.generationMode);
   console.log(JSON.stringify({ event: "pipeline_validation", phase: "plan", attempt: 1, valid: depthCheck.valid, pages: plan.pages.map((p) => ({ slug: p.slug, sections: p.sections.length })) }));
   if (!depthCheck.valid) {
     console.log(`[plan] Depth validation failed. Retrying with feedback...`);
@@ -105,12 +112,12 @@ export async function runPlanPhase(
       ContentPlanSchema,
       {
         phase: "plan",
-        temperature: 0.3,
+        temperature: planTemperature,
         maxTokens: planTokenBudget,
       }
     );
 
-    const retryCheck = validatePlanDepth(plan);
+    const retryCheck = validatePlanDepth(plan, data.generationMode);
     console.log(JSON.stringify({ event: "pipeline_validation", phase: "plan", attempt: 2, valid: retryCheck.valid, pages: plan.pages.map((p) => ({ slug: p.slug, sections: p.sections.length })) }));
     if (!retryCheck.valid) {
       console.warn(

@@ -63,6 +63,7 @@ const SUBJECT_FIT: Record<string, Record<ImageSubject, number>> = {
   cta:          { person: 0.6, group: 0.6, place: 0.7, product: 0.7, food: 0.7, abstract: 0.8 },
   feature:      { person: 0.5, group: 0.5, place: 0.6, product: 1.0, food: 0.8, abstract: 0.6 },
   gallery:      { person: 0.8, group: 0.8, place: 0.9, product: 0.9, food: 0.9, abstract: 0.7 },
+  logo:         { person: 0.2, group: 0.2, place: 0.3, product: 0.8, food: 0.3, abstract: 0.9 },
 };
 
 const DEFAULT_SUBJECT_FIT: Record<ImageSubject, number> = {
@@ -192,7 +193,8 @@ function removeStopwords(tokens: string[]): Set<string> {
 
 function normalizeComponentType(type: string): string {
   const lower = type.toLowerCase();
-  // Map Mercury component names to generic types
+  // Map component names to generic types
+  if (lower.includes("logo")) return "logo";
   if (lower.includes("hero")) return "hero";
   if (lower.includes("testimonial")) return "testimonial";
   if (lower.includes("team")) return "team";
